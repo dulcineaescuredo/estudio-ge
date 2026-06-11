@@ -304,7 +304,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
   );
 }
 
-function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar }) {
+function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, clientes }) {
   const [guardando, setGuardando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
   const e = expActual;
@@ -362,10 +362,16 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
       <Card>
         <div style={{fontSize:11,color:'#8a8a8a',marginBottom:3}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
         <div style={{fontSize:16,fontWeight:600,marginBottom:6}}>{e.caratula}</div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
           <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
+          <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            <option value="">Sin vincular</option>
+            {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+          </select>
         </div>
         <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <div>
