@@ -725,7 +725,7 @@ function Clientes({ clientes, expedientes, setVista, setCliActual }) {
       <Card>
         {lista.length ? (
           <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-            <thead><tr>{['Nombre','DNI','Teléfono','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+            <thead><tr>{['Nombre','DNI','Teléfono','Quién lo lleva','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
             <tbody>
               {lista.map(cl=>{
                 const exps = expedientes.filter(e=>e.cliente_id===cl.id && e.estado!=='archivado');
@@ -733,7 +733,8 @@ function Clientes({ clientes, expedientes, setVista, setCliActual }) {
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{cl.nombre}</td>
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12,color:'#8a8a8a'}}>{cl.dni||'—'}</td>
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{cl.telefono||'—'}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#E6F1FB" color="#0C447C">{exps.length}</Badge></td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{cl.responsable?<Badge bg="#E6F1FB" color="#0C447C">{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#8a8a8a'}}>—</span>}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{exps.length}</Badge></td>
                 </tr>;
               })}
             </tbody>
@@ -751,7 +752,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
   if (!cl) return null;
   const exps = expedientes.filter(e=>e.cliente_id===cl.id);
   async function guardarDatos() {
-    await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas }).eq('id', cl.id);
+    await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas, responsable:f.responsable }).eq('id', cl.id);
     setCliActual(f); setEditando(false); recargar();
   }
   return (
@@ -768,6 +769,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
             <div><span style={{color:'#8a8a8a',fontSize:11}}>Teléfono</span><br/>{cl.telefono||'—'}</div>
             <div><span style={{color:'#8a8a8a',fontSize:11}}>Email</span><br/>{cl.email||'—'}</div>
             <div><span style={{color:'#8a8a8a',fontSize:11}}>Domicilio</span><br/>{cl.domicilio||'—'}</div>
+            <div><span style={{color:'#8a8a8a',fontSize:11}}>Quién lo lleva</span><br/>{cl.responsable||'—'}</div>
             {cl.notas && <div style={{gridColumn:'1/3'}}><span style={{color:'#8a8a8a',fontSize:11}}>Notas</span><br/>{cl.notas}</div>}
           </div>
         ) : (
@@ -776,6 +778,11 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
               <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
               <input style={inputStyle} value={f[k]||''} onChange={e=>setF({...f,[k]:e.target.value})} /></div>
             ))}
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Quién lo lleva</label>
+            <select style={inputStyle} value={f.responsable||''} onChange={e=>setF({...f,responsable:e.target.value})}>
+              <option value="">Seleccioná</option>
+              {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+            </select>
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
             <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas||''} onChange={e=>setF({...f,notas:e.target.value})} />
             <button onClick={guardarDatos} style={btnPrimary}>Guardar cambios</button>
@@ -814,7 +821,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
 }
 
 function NuevoCliente({ perfil, recargar, setVista }) {
-  const [f, setF] = useState({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'' });
+  const [f, setF] = useState({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
@@ -823,7 +830,7 @@ function NuevoCliente({ perfil, recargar, setVista }) {
     const { error } = await supabase.from('clientes').insert({ ...f, estudio_id: perfil.estudio_id });
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Cliente ${f.nombre} guardado.`);
-    setF({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'' });
+    setF({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
@@ -835,6 +842,11 @@ function NuevoCliente({ perfil, recargar, setVista }) {
           <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
           <input style={inputStyle} value={f[k]} onChange={e=>set(k,e.target.value)} /></div>
         ))}
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Quién lo lleva</label>
+        <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
+          <option value="">Seleccioná</option>
+          {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+        </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
         <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas} onChange={e=>set('notas',e.target.value)} />
         <button onClick={guardar} style={btnPrimary}>Guardar cliente</button>
