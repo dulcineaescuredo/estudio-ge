@@ -376,6 +376,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
 
 function NuevoExpediente({ perfil, recargar, setVista }) {
   const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'' });
+  useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v) => setF({...f,[k]:v});
   async function guardar() {
@@ -489,6 +490,7 @@ function Consultas({ consultas }) {
 
 function NuevaConsulta({ perfil, recargar }) {
   const [f, setF] = useState({ tipo:'primera', cliente:'', telefono:'', fecha:HOY, abogada:'', motivo:'', comentario:'' });
+  useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, abogada: prev.abogada||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
@@ -568,6 +570,7 @@ function Tareas({ tareas, recargar }) {
 
 function NuevaTarea({ perfil, recargar }) {
   const [f, setF] = useState({ descripcion:'', responsable:'', deadline:'', comentario:'' });
+  useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
