@@ -90,7 +90,9 @@ export default function Home() {
   const [consultas, setConsultas] = useState([]);
   const [tareas, setTareas] = useState([]);
   const [notas, setNotas] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [expActual, setExpActual] = useState(null);
+  const [cliActual, setCliActual] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(false);
 
   useEffect(() => {
@@ -114,16 +116,18 @@ export default function Home() {
 
   async function cargarDatos() {
     setCargandoDatos(true);
-    const [e, c, t, n] = await Promise.all([
+    const [e, c, t, n, cl] = await Promise.all([
       supabase.from('expedientes').select('*').order('creado_en', { ascending: false }),
       supabase.from('consultas').select('*').order('fecha', { ascending: false }),
       supabase.from('tareas').select('*').order('creado_en', { ascending: false }),
       supabase.from('notas').select('*').order('creado_en', { ascending: false }),
+      supabase.from('clientes').select('*').order('nombre', { ascending: true }),
     ]);
     setExpedientes(e.data || []);
     setConsultas(c.data || []);
     setTareas(t.data || []);
     setNotas(n.data || []);
+    setClientes(cl.data || []);
     setCargandoDatos(false);
   }
 
@@ -165,7 +169,7 @@ export default function Home() {
           <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>General Pico, LP</div>
         </div>
         <div style={{padding:'10px 8px',flex:1}}>
-          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea']].map(([id,label])=>(
+          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['clientes','Clientes'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea']].map(([id,label])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
               style={{display:'block',width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',background:vista===id?'#E6F1FB':'none',color:vista===id?'#0C447C':'#4a4a4a',fontWeight:vista===id?500:400,cursor:'pointer',marginBottom:1}}>
               {label}
@@ -188,8 +192,9 @@ export default function Home() {
         <Contenido
           vista={vista} setVista={setVista}
           perfil={perfil}
-          expedientes={expedientes} consultas={consultas} tareas={tareas} notas={notas}
+          expedientes={expedientes} consultas={consultas} tareas={tareas} notas={notas} clientes={clientes}
           expActual={expActual} setExpActual={setExpActual}
+          cliActual={cliActual} setCliActual={setCliActual}
           recargar={cargarDatos}
         />
       </div>
@@ -215,6 +220,9 @@ function Contenido(props) {
   const { vista } = props;
   if (vista === 'dashboard') return <Dashboard {...props} />;
   if (vista === 'vencimientos') return <Vencimientos {...props} />;
+  if (vista === 'clientes') return <Clientes {...props} />;
+  if (vista === 'detalle-cliente') return <DetalleCliente {...props} />;
+  if (vista === 'nuevo-cliente') return <NuevoCliente {...props} />;
   if (vista === 'expedientes') return <Expedientes {...props} />;
   if (vista === 'detalle') return <Detalle {...props} />;
   if (vista === 'nuevo-exp') return <NuevoExpediente {...props} />;
@@ -372,6 +380,18 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
           </div>
           {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
         </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:12,borderTop:'1px solid #f5f5f3',paddingTop:12}}>
+          <div>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÁXIMA</label>
+            <textarea defaultValue={e.hipotesis_maxima||''} onBlur={ev=>actualizarVencimiento('hipotesis_maxima',ev.target.value)} placeholder="El mejor resultado posible..."
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+          </div>
+          <div>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÍNIMA</label>
+            <textarea defaultValue={e.hipotesis_minima||''} onBlur={ev=>actualizarVencimiento('hipotesis_minima',ev.target.value)} placeholder="El resultado aceptable mínimo..."
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+          </div>
+        </div>
       </Card>
       <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr',gap:14,alignItems:'start'}}>
         <Card title="Etapas del proceso">
@@ -423,18 +443,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
   );
 }
 
-function NuevoExpediente({ perfil, recargar, setVista }) {
-  const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'' });
+function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
+  const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v) => setF({...f,[k]:v});
   async function guardar() {
     if (!f.numero||!f.caratula||!f.tipo_proceso||!f.responsable) { alert('Completá los campos obligatorios (*)'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
-    const { error } = await supabase.from('expedientes').insert({ ...f, estudio_id: perfil.estudio_id, progreso: {} });
+    const payload = { ...f, estudio_id: perfil.estudio_id, progreso: {}, cliente_id: f.cliente_id||null };
+    const { error } = await supabase.from('expedientes').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Expediente ${f.numero} guardado.`);
-    setF({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'' });
+    setF({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'' });
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
@@ -472,6 +493,15 @@ function NuevoExpediente({ perfil, recargar, setVista }) {
           <option value="">Seleccioná</option>
           {ABOGADAS.map(a=><option key={a}>{a}</option>)}
         </select>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
+        <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
+          <option value="">Sin vincular</option>
+          {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+        </select>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de máxima</label>
+        <textarea style={{...inputStyle,minHeight:52,resize:'vertical'}} placeholder="El mejor resultado posible para el cliente..." value={f.hipotesis_maxima} onChange={e=>set('hipotesis_maxima',e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de mínima</label>
+        <textarea style={{...inputStyle,minHeight:52,resize:'vertical'}} placeholder="El resultado aceptable mínimo..." value={f.hipotesis_minima} onChange={e=>set('hipotesis_minima',e.target.value)} />
         <button onClick={guardar} style={btnPrimary}>Guardar expediente</button>
       </div>
     </Card>
@@ -538,7 +568,7 @@ function Consultas({ consultas }) {
 }
 
 function NuevaConsulta({ perfil, recargar }) {
-  const [f, setF] = useState({ tipo:'primera', cliente:'', telefono:'', fecha:HOY, abogada:'', motivo:'', comentario:'' });
+  const [f, setF] = useState({ tipo:'primera', cliente:'', fecha:HOY, abogada:'', motivo:'', comentario:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, abogada: prev.abogada||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
@@ -548,7 +578,7 @@ function NuevaConsulta({ perfil, recargar }) {
     const { error } = await supabase.from('consultas').insert({ ...f, estudio_id: perfil.estudio_id });
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Consulta de ${f.cliente} guardada.`);
-    setF({ tipo:'primera', cliente:'', telefono:'', fecha:HOY, abogada:'', motivo:'', comentario:'' });
+    setF({ tipo:'primera', cliente:'', fecha:HOY, abogada:'', motivo:'', comentario:'' });
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
@@ -564,8 +594,6 @@ function NuevaConsulta({ perfil, recargar }) {
         </div>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente *</label>
         <input style={inputStyle} value={f.cliente} onChange={e=>set('cliente',e.target.value)} />
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Teléfono</label>
-        <input style={inputStyle} value={f.telefono} onChange={e=>set('telefono',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
         <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Abogada/o *</label>
@@ -582,34 +610,61 @@ function NuevaConsulta({ perfil, recargar }) {
   );
 }
 
+const ESTADOS_TAREA = ['pendiente','en proceso','terminado'];
+const ESTADO_COLOR = {
+  'pendiente': { bg:'#FAEEDA', color:'#633806' },
+  'en proceso': { bg:'#E6F1FB', color:'#0C447C' },
+  'terminado': { bg:'#EAF3DE', color:'#27500A' }
+};
+// compatibilidad con tareas viejas que tenían 'completada'
+function normEstado(e) { return e==='completada' ? 'terminado' : (e||'pendiente'); }
+
 function Tareas({ tareas, recargar }) {
-  const [estado, setEstado] = useState('pendiente');
-  async function toggle(t) {
-    const nuevo = t.estado==='completada'?'pendiente':'completada';
+  const [filtro, setFiltro] = useState('activas');
+  async function cambiarEstado(t, nuevo) {
     await supabase.from('tareas').update({ estado: nuevo }).eq('id', t.id);
     recargar();
   }
-  const lista = tareas.filter(t=>estado==='todas'||t.estado===estado).sort((a,b)=>{
-    if(a.estado!==b.estado) return a.estado==='pendiente'?-1:1;
-    if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1;
-    return a.deadline.localeCompare(b.deadline);
-  });
+  const lista = tareas
+    .map(t=>({...t, estado: normEstado(t.estado)}))
+    .filter(t=> filtro==='todas' ? true : (filtro==='activas' ? t.estado!=='terminado' : t.estado===filtro))
+    .sort((a,b)=>{
+      const orden = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
+      if(orden[a.estado]!==orden[b.estado]) return orden[a.estado]-orden[b.estado];
+      if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    });
   return (
     <Card title="Tareas">
-      <select style={{...inputStyle,width:'auto'}} value={estado} onChange={e=>setEstado(e.target.value)}>
-        <option value="pendiente">Solo pendientes</option><option value="todas">Todas</option><option value="completada">Completadas</option>
+      <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
+        <option value="activas">Activas (pendiente + en proceso)</option>
+        <option value="pendiente">Solo pendientes</option>
+        <option value="en proceso">Solo en proceso</option>
+        <option value="terminado">Solo terminadas</option>
+        <option value="todas">Todas</option>
       </select>
       {lista.length ? lista.map(t=>{
-        const done = t.estado==='completada';
-        return <div key={t.id} style={{display:'flex',gap:8,padding:'10px 0',borderBottom:'1px solid #f5f5f3',alignItems:'flex-start'}}>
-          <div onClick={()=>toggle(t)} style={{width:15,height:15,borderRadius:4,border:done?'none':'1.5px solid #c9c9c4',background:done?'#185FA5':'#fff',cursor:'pointer',flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:9}}>{done?'✓':''}</div>
+        const done = t.estado==='terminado';
+        return <div key={t.id} style={{display:'flex',gap:10,padding:'12px 0',borderBottom:'1px solid #f5f5f3',alignItems:'flex-start'}}>
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:5}}>{t.descripcion}</div>
-            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+            <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:6}}>{t.descripcion}</div>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
               <Badge bg="#E6F1FB" color="#0C447C">{t.responsable}</Badge>
               {t.deadline && <Badge bg="#FAEEDA" color="#633806">{formatFecha(t.deadline)}</Badge>}
             </div>
             {t.comentario && <div style={{fontSize:11,color:'#8a8a8a',marginTop:5,fontStyle:'italic'}}>{t.comentario}</div>}
+            <div style={{display:'flex',gap:6,marginTop:8}}>
+              {ESTADOS_TAREA.map(es=>{
+                const sel = t.estado===es;
+                const col = ESTADO_COLOR[es];
+                return <button key={es} onClick={()=>cambiarEstado(t,es)}
+                  style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',
+                  border: sel?`1px solid ${col.color}`:'1px solid #e2e2e2',
+                  background: sel?col.bg:'#fff', color: sel?col.color:'#8a8a8a', fontFamily:'system-ui'}}>
+                  {es.charAt(0).toUpperCase()+es.slice(1)}
+                </button>;
+              })}
+            </div>
           </div>
         </div>;
       }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin tareas.</div>}
@@ -652,6 +707,136 @@ function Vencimientos({ expedientes, setVista, setExpActual }) {
   );
 }
 
+function Clientes({ clientes, expedientes, setVista, setCliActual }) {
+  const [q, setQ] = useState('');
+  const lista = clientes.filter(cl=>!q || (cl.nombre||'').toLowerCase().includes(q.toLowerCase()) || (cl.dni||'').includes(q));
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <input style={{...inputStyle,marginBottom:0,maxWidth:360}} placeholder="Buscar cliente por nombre o DNI..." value={q} onChange={e=>setQ(e.target.value)} />
+        <button onClick={()=>setVista('nuevo-cliente')} style={btnPrimary}>+ Nuevo cliente</button>
+      </div>
+      <Card>
+        {lista.length ? (
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+            <thead><tr>{['Nombre','DNI','Teléfono','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {lista.map(cl=>{
+                const exps = expedientes.filter(e=>e.cliente_id===cl.id && e.estado!=='archivado');
+                return <tr key={cl.id} style={{cursor:'pointer'}} onClick={()=>{setCliActual(cl);setVista('detalle-cliente');}}>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{cl.nombre}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12,color:'#8a8a8a'}}>{cl.dni||'—'}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{cl.telefono||'—'}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#E6F1FB" color="#0C447C">{exps.length}</Badge></td>
+                </tr>;
+              })}
+            </tbody>
+          </table>
+        ) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin clientes todavía. Cargá el primero con "Nuevo cliente".</div>}
+      </Card>
+    </div>
+  );
+}
+
+function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExpActual, recargar }) {
+  const cl = cliActual;
+  const [editando, setEditando] = useState(false);
+  const [f, setF] = useState(cl);
+  if (!cl) return null;
+  const exps = expedientes.filter(e=>e.cliente_id===cl.id);
+  async function guardarDatos() {
+    await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas }).eq('id', cl.id);
+    setCliActual(f); setEditando(false); recargar();
+  }
+  return (
+    <div>
+      <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
+      <Card>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+          <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{cl.nombre}</div>
+          <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
+        </div>
+        {!editando ? (
+          <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:'8px 24px',marginTop:10,fontSize:13}}>
+            <div><span style={{color:'#8a8a8a',fontSize:11}}>DNI</span><br/>{cl.dni||'—'}</div>
+            <div><span style={{color:'#8a8a8a',fontSize:11}}>Teléfono</span><br/>{cl.telefono||'—'}</div>
+            <div><span style={{color:'#8a8a8a',fontSize:11}}>Email</span><br/>{cl.email||'—'}</div>
+            <div><span style={{color:'#8a8a8a',fontSize:11}}>Domicilio</span><br/>{cl.domicilio||'—'}</div>
+            {cl.notas && <div style={{gridColumn:'1/3'}}><span style={{color:'#8a8a8a',fontSize:11}}>Notas</span><br/>{cl.notas}</div>}
+          </div>
+        ) : (
+          <div style={{marginTop:12,maxWidth:520}}>
+            {[['nombre','Nombre'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+              <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
+              <input style={inputStyle} value={f[k]||''} onChange={e=>setF({...f,[k]:e.target.value})} /></div>
+            ))}
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
+            <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas||''} onChange={e=>setF({...f,notas:e.target.value})} />
+            <button onClick={guardarDatos} style={btnPrimary}>Guardar cambios</button>
+          </div>
+        )}
+      </Card>
+      <Card title={`Expedientes (${exps.length})`}>
+        {exps.length ? exps.map(e=>{
+          const mapa = PROCESOS[e.tipo_proceso];
+          return <div key={e.id} style={{padding:'12px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:500}}>{e.caratula}</div>
+                <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>{e.numero} · {mapa?mapa.nombre:'Sin proceso'} · {e.juzgado||'—'}</div>
+              </div>
+              <div style={{display:'flex',gap:5,flexShrink:0}}>
+                <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
+                <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+              </div>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:6}}>
+              <div style={{background:'#EAF3DE',borderRadius:8,padding:'8px 10px'}}>
+                <div style={{fontSize:10,color:'#27500A',fontWeight:600,marginBottom:2}}>HIPÓTESIS DE MÁXIMA</div>
+                <div style={{fontSize:12,color:'#1a1a1a'}}>{e.hipotesis_maxima||<span style={{color:'#8a8a8a'}}>Sin cargar</span>}</div>
+              </div>
+              <div style={{background:'#FAEEDA',borderRadius:8,padding:'8px 10px'}}>
+                <div style={{fontSize:10,color:'#633806',fontWeight:600,marginBottom:2}}>HIPÓTESIS DE MÍNIMA</div>
+                <div style={{fontSize:12,color:'#1a1a1a'}}>{e.hipotesis_minima||<span style={{color:'#8a8a8a'}}>Sin cargar</span>}</div>
+              </div>
+            </div>
+          </div>;
+        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Este cliente no tiene expedientes vinculados todavía. Vinculalos desde el expediente.</div>}
+      </Card>
+    </div>
+  );
+}
+
+function NuevoCliente({ perfil, recargar, setVista }) {
+  const [f, setF] = useState({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'' });
+  const [msg, setMsg] = useState('');
+  const set = (k,v)=>setF({...f,[k]:v});
+  async function guardar() {
+    if (!f.nombre) { alert('El nombre es obligatorio'); return; }
+    if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
+    const { error } = await supabase.from('clientes').insert({ ...f, estudio_id: perfil.estudio_id });
+    if (error) { alert('Error: '+error.message); return; }
+    setMsg(`Cliente ${f.nombre} guardado.`);
+    setF({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'' });
+    recargar();
+    setTimeout(()=>setMsg(''),3000);
+  }
+  return (
+    <Card title="Nuevo cliente">
+      {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
+      <div style={{maxWidth:520}}>
+        {[['nombre','Nombre completo *'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+          <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
+          <input style={inputStyle} value={f[k]} onChange={e=>set(k,e.target.value)} /></div>
+        ))}
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
+        <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas} onChange={e=>set('notas',e.target.value)} />
+        <button onClick={guardar} style={btnPrimary}>Guardar cliente</button>
+      </div>
+    </Card>
+  );
+}
+
 function NuevaTarea({ perfil, recargar }) {
   const [f, setF] = useState({ descripcion:'', responsable:'', deadline:'', comentario:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
@@ -677,7 +862,7 @@ function NuevaTarea({ perfil, recargar }) {
         <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
           <option value="">Seleccioná</option>{ABOGADAS.map(a=><option key={a}>{a}</option>)}<option>Todos</option>
         </select>
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Deadline (opcional)</label>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
         <input type="date" style={inputStyle} value={f.deadline} onChange={e=>set('deadline',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
         <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
