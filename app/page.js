@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-const ABOGADAS = ['Claudia', 'Dolores', 'Cande', 'Sergio', 'Dulcinea'];
+const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
 
 const PROCESOS = {
   ordinario: { nombre: 'Ordinario (conocimiento)', etapas: [
