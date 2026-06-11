@@ -54,6 +54,21 @@ PROCESOS.regimen = { nombre: 'Régimen comunicacional', etapas: JSON.parse(JSON.
 
 const HOY = new Date().toISOString().split('T')[0];
 
+function diasHasta(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(HOY + 'T00:00:00');
+  const f = new Date(fecha + 'T00:00:00');
+  return Math.round((f - hoy) / (1000*60*60*24));
+}
+function vencColor(fecha) {
+  const d = diasHasta(fecha);
+  if (d === null) return { bg:'#F1EFE8', color:'#444441', label:'sin fecha' };
+  if (d < 0) return { bg:'#FCEBEB', color:'#791F1F', label:`venció hace ${Math.abs(d)} día${Math.abs(d)===1?'':'s'}` };
+  if (d === 0) return { bg:'#FCEBEB', color:'#791F1F', label:'vence hoy' };
+  if (d <= 7) return { bg:'#FAEEDA', color:'#633806', label:`en ${d} día${d===1?'':'s'}` };
+  return { bg:'#EAF3DE', color:'#27500A', label:`en ${d} días` };
+}
+
 function formatFecha(f) {
   if (!f) return '';
   const p = f.split('-');
@@ -150,7 +165,7 @@ export default function Home() {
           <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>General Pico, LP</div>
         </div>
         <div style={{padding:'10px 8px',flex:1}}>
-          {[['dashboard','Inicio'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea']].map(([id,label])=>(
+          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea']].map(([id,label])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
               style={{display:'block',width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',background:vista===id?'#E6F1FB':'none',color:vista===id?'#0C447C':'#4a4a4a',fontWeight:vista===id?500:400,cursor:'pointer',marginBottom:1}}>
               {label}
@@ -199,6 +214,7 @@ const btnPrimary = {padding:'8px 13px',borderRadius:8,fontSize:13,cursor:'pointe
 function Contenido(props) {
   const { vista } = props;
   if (vista === 'dashboard') return <Dashboard {...props} />;
+  if (vista === 'vencimientos') return <Vencimientos {...props} />;
   if (vista === 'expedientes') return <Expedientes {...props} />;
   if (vista === 'detalle') return <Detalle {...props} />;
   if (vista === 'nuevo-exp') return <NuevoExpediente {...props} />;
@@ -215,16 +231,31 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
   const activos = expedientes.filter(e=>e.estado==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
   const tareasPend = tareas.filter(t=>t.estado==='pendiente').length;
+  const vencSemana = expedientes.filter(e=>{ const d=diasHasta(e.proximo_vencimiento); return d!==null && d<=7; });
+  const vencProximos = expedientes.filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
+    .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento)).slice(0,6);
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
-        {[['Expedientes activos',activos],['Consultas este mes',consMes],['Tareas pendientes',tareasPend],['Total expedientes',expedientes.length]].map(([l,v])=>(
+        {[['Expedientes activos',activos,null],['Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#E24B4A':null],['Tareas pendientes',tareasPend,null],['Consultas este mes',consMes,null]].map(([l,v,col])=>(
           <div key={l} style={{background:'#f9f8f5',borderRadius:8,padding:'13px 15px'}}>
             <div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div>
-            <div style={{fontSize:22,fontWeight:500}}>{v}</div>
+            <div style={{fontSize:22,fontWeight:500,color:col||'#1a1a1a'}}>{v}</div>
           </div>
         ))}
       </div>
+      <Card title="Próximos vencimientos">
+        {vencProximos.length ? vencProximos.map(e=>{
+          const vc = vencColor(e.proximo_vencimiento);
+          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
+              <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'}</div>
+            </div>
+            <Badge bg={vc.bg} color={vc.color}>{formatFecha(e.proximo_vencimiento)} · {vc.label}</Badge>
+          </div>;
+        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No hay vencimientos cargados. Cargá las fechas al crear o editar un expediente.</div>}
+      </Card>
       <Card title="Últimas anotaciones">
         {notas.length ? notas.slice(0,5).map(n=>{
           const ex = expedientes.find(e=>e.id===n.expediente_id);
@@ -297,6 +328,11 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
     if (np.dec[etId]===op) delete np.dec[etId]; else { np.dec[etId]=op; if(!np.hechas[etId]) np.hechas[etId]=HOY; }
     guardarProg(np);
   }
+  async function actualizarVencimiento(campo, valor) {
+    setExpActual({...e, [campo]: valor});
+    await supabase.from('expedientes').update({ [campo]: valor||null }).eq('id', e.id);
+    recargar();
+  }
   async function agregarNota() {
     if (!notaTexto.trim()) return;
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
@@ -318,10 +354,23 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar })
       <Card>
         <div style={{fontSize:11,color:'#8a8a8a',marginBottom:3}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
         <div style={{fontSize:16,fontWeight:600,marginBottom:6}}>{e.caratula}</div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
           <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+        </div>
+        <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
+          <div>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Próximo vencimiento</label>
+            <input type="date" value={e.proximo_vencimiento||''} onChange={ev=>actualizarVencimiento('proximo_vencimiento',ev.target.value)}
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui'}} />
+          </div>
+          <div style={{flex:1,minWidth:180}}>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo del vencimiento</label>
+            <input type="text" defaultValue={e.motivo_vencimiento||''} onBlur={ev=>actualizarVencimiento('motivo_vencimiento',ev.target.value)} placeholder="Ej: Contestar demanda"
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box'}} />
+          </div>
+          {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
         </div>
       </Card>
       <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr',gap:14,alignItems:'start'}}>
@@ -565,6 +614,41 @@ function Tareas({ tareas, recargar }) {
         </div>;
       }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin tareas.</div>}
     </Card>
+  );
+}
+
+function Vencimientos({ expedientes, setVista, setExpActual }) {
+  const [q, setQ] = useState('');
+  const conVenc = expedientes
+    .filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
+    .filter(e=>!q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.motivo_vencimiento||'').toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento));
+  const vencidos = conVenc.filter(e=>diasHasta(e.proximo_vencimiento)<0);
+  const estaSemana = conVenc.filter(e=>{const d=diasHasta(e.proximo_vencimiento);return d>=0&&d<=7;});
+  const masAdelante = conVenc.filter(e=>diasHasta(e.proximo_vencimiento)>7);
+
+  function bloque(titulo, lista, vacio) {
+    return <Card title={`${titulo} (${lista.length})`}>
+      {lista.length ? lista.map(e=>{
+        const vc = vencColor(e.proximo_vencimiento);
+        return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
+            <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'} · {e.responsable||'—'}</div>
+          </div>
+          <Badge bg={vc.bg} color={vc.color}>{formatFecha(e.proximo_vencimiento)} · {vc.label}</Badge>
+        </div>;
+      }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:16}}>{vacio}</div>}
+    </Card>;
+  }
+
+  return (
+    <div>
+      <input style={inputStyle} placeholder="Buscar por carátula o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
+      {vencidos.length>0 && bloque('⚠️ Vencidos', vencidos, '')}
+      {bloque('Esta semana', estaSemana, 'Nada vence esta semana.')}
+      {bloque('Más adelante', masAdelante, 'Sin vencimientos futuros cargados.')}
+    </div>
   );
 }
 
