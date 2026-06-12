@@ -305,7 +305,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
-          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
               <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'}</div>
@@ -317,7 +317,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
       <Card title="📝 Últimas anotaciones">
         {notas.length ? notas.slice(0,5).map(n=>{
           const ex = expedientes.find(e=>e.id===n.expediente_id);
-          return <div key={n.id} style={{padding:'9px 0',borderBottom:'1px solid #f5f5f3',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
+          return <div key={n.id} style={{padding:'9px 0',borderBottom:'1px solid #F0EFED',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
             <div style={{fontSize:11,color:'#8a8a8a',marginBottom:2}}>{ex?ex.caratula:''} · {formatFecha(n.fecha)} · {n.autora}</div>
             <div style={{fontSize:12}}>{n.texto.length>100?n.texto.slice(0,100)+'…':n.texto}</div>
           </div>;
@@ -750,7 +750,7 @@ function Consultas({ consultas, recargar }) {
         <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
-          return <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #f5f5f3'}}>
+          return <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
             {esEditando ? (
               <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
                 <div style={{display:'flex',gap:8}}>
@@ -912,7 +912,7 @@ function Tareas({ tareas, recargar }) {
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
         const verComentario = comentarioId===t.id;
-        return <div key={t.id} style={{padding:'12px 0',borderBottom:'1px solid #f5f5f3'}}>
+        return <div key={t.id} style={{padding:'12px 0',borderBottom:'1px solid #F0EFED'}}>
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
               <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
@@ -988,7 +988,7 @@ function Vencimientos({ expedientes, setVista, setExpActual }) {
     return <Card title={`${titulo} (${lista.length})`}>
       {lista.length ? lista.map(e=>{
         const vc = vencColor(e.proximo_vencimiento);
-        return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+        return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
             <div style={{fontSize:11,color:'#8a8a8a',display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'} · {e.responsable?<Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable}</Badge>:'—'}</div>
@@ -1100,7 +1100,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
       <Card title={`Expedientes (${exps.length})`}>
         {exps.length ? exps.map(e=>{
           const mapa = PROCESOS[e.tipo_proceso];
-          return <div key={e.id} style={{padding:'12px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+          return <div key={e.id} style={{padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
               <div>
                 <div style={{fontSize:13,fontWeight:500}}>{e.caratula}</div>
@@ -1475,7 +1475,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
       {h.en_cuotas && (
         <Card title="🧾 Cuotas">
           {cuotasH.length ? cuotasH.map(cu=>(
-            <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3'}}>
+            <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
               <div onClick={()=>toggleCuota(cu)} style={{width:16,height:16,borderRadius:4,border:cu.estado==='pagada'?'none':'1.5px solid #c9c9c4',background:cu.estado==='pagada'?'#185FA5':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{cu.estado==='pagada'?'✓':''}</div>
               <div style={{flex:1}}>
                 <span style={{fontSize:13,fontWeight:500}}>Cuota {cu.numero}</span>
