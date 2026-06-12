@@ -7,7 +7,7 @@ const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
 
 const SOCIO_COLORS = {
   'Dulcinea': { bg:'#FBEAF0', color:'#72243E' },
-  'Claudia':  { bg:'#F5E6E6', color:'#6B1414' },
+  'Claudia':  { bg:'#E8F0EB', color:'#2D5A3D' },
   'Candela':  { bg:'#E6F1FB', color:'#0C447C' },
   'Dolores':  { bg:'#EEEDFE', color:'#3C3489' },
   'Sergio':   { bg:'#FAEEDA', color:'#633806' },
