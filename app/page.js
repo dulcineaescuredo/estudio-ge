@@ -1006,7 +1006,7 @@ function Clientes({ clientes, expedientes, setVista, setCliActual }) {
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{cl.nombre}</td>
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12,color:'#8a8a8a'}}>{cl.dni||'—'}</td>
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{cl.telefono||'—'}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{cl.responsable?<Badge bg="#E6F1FB" color="#0C447C">{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#8a8a8a'}}>—</span>}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{cl.responsable?<Badge bg={socioColor(cl.responsable).bg} color={socioColor(cl.responsable).color}>{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#8a8a8a'}}>—</span>}</td>
                   <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{exps.length}</Badge></td>
                 </tr>;
               })}
