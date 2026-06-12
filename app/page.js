@@ -311,14 +311,26 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
       <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? (
         <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-          <thead><tr>{['N°','Carátula','Proceso','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+          <thead><tr>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
           <tbody>
             {lista.map(e=>{
               const mapa = PROCESOS[e.tipo_proceso];
+              const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},dec:{}}; } catch { return {hechas:{},dec:{}}; } })();
+              if (!prog.hechas) prog.hechas = {}; if (!prog.dec) prog.dec = {};
+              const esDemandada = e.rol === 'demandada';
+              const etapasVis = mapa && mapa.etapas.length ? mapa.etapas
+                .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
+                .filter(et => !(esDemandada && et.id === 'dem'))
+                .map(et => esDemandada && et.id === 'con' ? {...et, n:'Contestar demanda'} : et)
+                : [];
+              const etapaActual = !mapa || !etapasVis.length ? '—'
+                : etapasVis.every(et => prog.hechas[et.id]) ? 'Finalizado'
+                : (etapasVis.find(et => !prog.hechas[et.id])?.n || '—');
               return <tr key={e.id} style={{cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:11,color:'#8a8a8a'}}>{e.numero}</td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{e.caratula}</td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{mapa?mapa.nombre:'—'}</td>
+                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge></td>
               </tr>;
