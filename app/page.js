@@ -968,7 +968,7 @@ function Vencimientos({ expedientes, setVista, setExpActual }) {
         return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
-            <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'} · {e.responsable||'—'}</div>
+            <div style={{fontSize:11,color:'#8a8a8a',display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'} · {e.responsable?<Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable}</Badge>:'—'}</div>
           </div>
           <Badge bg={vc.bg} color={vc.color}>{formatFecha(e.proximo_vencimiento)} · {vc.label}</Badge>
         </div>;
