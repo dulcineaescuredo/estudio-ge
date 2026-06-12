@@ -675,7 +675,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
     recargar();
   }
   return (
-    <Card title="Todas las anotaciones">
+    <Card title="📝 Todas las anotaciones">
       <input style={inputStyle} placeholder="Buscar en las notas: cliente, tema, lo que recuerdes..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? lista.map(n=>{
         const ex = expedientes.find(e=>e.id===n.expediente_id);
