@@ -912,7 +912,7 @@ function Tareas({ tareas, recargar }) {
               <div style={{flex:1}}>
                 <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:6}}>{t.descripcion}</div>
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
-                  <Badge bg="#E6F1FB" color="#0C447C">{t.responsable}</Badge>
+                  <Badge bg={socioColor(t.responsable).bg} color={socioColor(t.responsable).color}>{t.responsable}</Badge>
                   {t.deadline && <Badge bg="#FAEEDA" color="#633806">{formatFecha(t.deadline)}</Badge>}
                 </div>
                 {t.comentario && <div style={{fontSize:11,color:'#4a4a4a',marginTop:5,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
