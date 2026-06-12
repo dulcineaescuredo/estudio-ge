@@ -1315,6 +1315,24 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
+  const mesActual = HOY.substring(0,7);
+  const [periodoVista, setPeriodoVista] = useState(mesActual);
+  const esMesActual = periodoVista === mesActual;
+
+  function navPeriodo(dir) {
+    const [y, m] = periodoVista.split('-').map(Number);
+    const d = new Date(y, m - 1 + dir, 1);
+    const nuevo = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (dir > 0 && nuevo > mesActual) return;
+    setPeriodoVista(nuevo);
+  }
+
+  const nombreMesPeriodo = (()=>{
+    const [y, m] = periodoVista.split('-').map(Number);
+    const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    return `${nombres[m-1]} ${y}`;
+  })();
+
   async function guardarUhon() {
     const eid = perfil?.estudio_id;
     if (!eid) { alert('Error: no se pudo obtener el estudio.'); return; }
@@ -1323,7 +1341,15 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     recargar();
   }
 
-  const lista = honorarios
+  const honPeriodo = honorarios.filter(h =>
+    esMesActual ? (!h.periodo || h.periodo === mesActual) : h.periodo === periodoVista
+  );
+
+  const cobradosPeriodo = honPeriodo.filter(h=>h.estado==='pagado');
+  const pendientesPeriodo = honPeriodo.filter(h=>h.estado!=='pagado');
+  const uhonCobradosPeriodo = cobradosPeriodo.filter(h=>h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
+
+  const lista = honPeriodo
     .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
     .filter(h=>{
       if (!q) return true;
@@ -1333,12 +1359,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       return blob.includes(q.toLowerCase());
     });
 
-  // Totales
   const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
   const totalUhonPendiente = honorarios.filter(h=>h.estado!=='pagado' && h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
 
   return (
     <div>
+      {/* Tarjetas globales */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:12,flexWrap:'wrap'}}>
         <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:200,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
@@ -1357,7 +1383,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           )}
         </div>
         <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Honorarios sin cobrar</div>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Sin cobrar (total)</div>
           <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
         </div>
         <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
@@ -1366,7 +1392,40 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         </div>
       </div>
 
+      {/* Navegador de período */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <button onClick={()=>navPeriodo(-1)} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
+          <span style={{fontWeight:600,fontSize:15,color:'#2c2c2c',minWidth:150,textAlign:'center'}}>{nombreMesPeriodo}</span>
+          <button onClick={()=>navPeriodo(1)} disabled={esMesActual}
+            style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:esMesActual?'default':'pointer',fontSize:16,color:esMesActual?'#c9c9c4':'#4a4a4a'}}>›</button>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          {!esMesActual && <span style={{fontSize:12,color:'#9C4221',background:'#FEF0E6',borderRadius:20,padding:'3px 10px',fontWeight:600}}>Solo lectura</span>}
+          {esMesActual && <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>}
+        </div>
+      </div>
+
       <Card>
+        {/* Tarjetas resumen del período */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
+          <div style={{background:'#EBF6E0',borderRadius:10,padding:'12px 14px',border:'1px solid #C0DD97'}}>
+            <div style={{fontSize:11,color:'#27500A',fontWeight:600,marginBottom:4}}>💰 COBRADOS</div>
+            <div style={{fontSize:22,fontWeight:700,color:'#27500A'}}>{cobradosPeriodo.length}</div>
+          </div>
+          <div style={{background:'#FAEEDA',borderRadius:10,padding:'12px 14px',border:'1px solid #F0CFAB'}}>
+            <div style={{fontSize:11,color:'#633806',fontWeight:600,marginBottom:4}}>⏳ PENDIENTES</div>
+            <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{pendientesPeriodo.length}</div>
+          </div>
+          <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 14px',border:'1px solid #DDDCDA'}}>
+            <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>📊 UHON COBRADOS</div>
+            <div style={{fontSize:22,fontWeight:700,color:'#444441'}}>
+              {uhonCobradosPeriodo}
+              {valorUhon && uhonCobradosPeriodo > 0 && <span style={{fontSize:12,fontWeight:400,color:'#6B7280',marginLeft:6}}>({fmtMoneda(uhonCobradosPeriodo*valorUhon)})</span>}
+            </div>
+          </div>
+        </div>
+
         <div style={{display:'flex',gap:10,marginBottom:14,flexWrap:'wrap'}}>
           <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
           <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={filtroEstado} onChange={e=>setFiltroEstado(e.target.value)}>
@@ -1375,11 +1434,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <option value="en proceso">En proceso</option>
             <option value="pagado">Pagados</option>
           </select>
-          <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
         </div>
         {lista.length ? (
           <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
-        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
+        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios para {nombreMesPeriodo}.</div>}
       </Card>
     </div>
   );
