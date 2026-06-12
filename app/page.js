@@ -847,6 +847,12 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
     await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas, responsable:f.responsable }).eq('id', cl.id);
     setCliActual(f); setEditando(false); recargar();
   }
+  async function eliminarCliente() {
+    if (!confirm(`¿Seguro que querés eliminar a ${cl.nombre}? Esta acción no se puede deshacer.`)) return;
+    await supabase.from('clientes').delete().eq('id', cl.id);
+    recargar();
+    setVista('clientes');
+  }
   return (
     <div>
       <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
