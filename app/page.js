@@ -1251,27 +1251,8 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
         </div>
         {lista.length ? (
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-            <thead><tr>{['Concepto','Vinculado a','Monto pactado','Cuotas','Estado'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
-            <tbody>
-              {lista.map(h=>{
-                const exp = expedientes.find(e=>e.id===h.expediente_id);
-                const cli = clientes.find(c=>c.id===h.cliente_id);
-                const vinc = exp?exp.caratula : (cli?cli.nombre : '—');
-                const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
-                const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
-                const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
-                return <tr key={h.id} style={{cursor:'pointer'}} onClick={()=>{setHonActual(h);setVista('detalle-honorario');}}>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{h.concepto}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{vinc}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{h.en_cuotas?`${pagadas}/${cuotasH.length}`:'—'}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
-                </tr>;
-              })}
-            </tbody>
-          </table>
-        ) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
+          <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
+        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
       </Card>
     </div>
   );
