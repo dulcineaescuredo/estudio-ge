@@ -406,9 +406,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
         <div style={{fontSize:11,color:'#8a8a8a',marginBottom:3}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
         <div style={{fontSize:16,fontWeight:600,marginBottom:6}}>{e.caratula}</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
-          <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
+          <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            <option value="activo">Activo</option>
+            <option value="espera">En espera</option>
+            <option value="apelado">Apelado</option>
+            <option value="archivado">Archivado</option>
+          </select>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
-          <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+          <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            <option value="">Sin asignar</option>
+            {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+          </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
           <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
