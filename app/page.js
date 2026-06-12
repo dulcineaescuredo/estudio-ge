@@ -966,7 +966,7 @@ const HON_ESTADO_COLOR = {
   'pagado': { bg:'#EAF3DE', color:'#27500A' }
 };
 
-function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar }) {
+function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar, perfil }) {
   const [q, setQ] = useState('');
   const [editUhon, setEditUhon] = useState(false);
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
