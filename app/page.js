@@ -48,6 +48,17 @@ const PROCESOS = {
     { id:'agr', n:'Agravios', req:['aud','Sin acuerdo (sigue a prueba)'] },
     { id:'sca', n:'Sentencia de Cámara', req:['aud','Sin acuerdo (sigue a prueba)'] }
   ]},
+  divorcio: { nombre: 'Divorcio', etapas: [
+    { id:'pre', n:'Presentación', op:['Conjunta (termina acá)','Separada (sigue)'] },
+    { id:'dem', n:'Demanda', req:['pre','Separada (sigue)'] },
+    { id:'nod', n:'Notificación al demandado', req:['pre','Separada (sigue)'] },
+    { id:'con', n:'Contestación de demanda', req:['pre','Separada (sigue)'] },
+    { id:'noc', n:'Notificación de contestación', req:['pre','Separada (sigue)'] },
+    { id:'doc', n:'Documental', req:['pre','Separada (sigue)'] },
+    { id:'pcr', n:'Propuesta del convenio regulador', req:['pre','Separada (sigue)'] },
+    { id:'nop', n:'Notificación de propuesta', req:['pre','Separada (sigue)'] },
+    { id:'sen', n:'Sentencia', req:['pre','Separada (sigue)'] }
+  ]},
   otro: { nombre: 'Otro / sin mapa', etapas: [] }
 };
 PROCESOS.regimen = { nombre: 'Régimen comunicacional', etapas: JSON.parse(JSON.stringify(PROCESOS.alimentos.etapas)) };
