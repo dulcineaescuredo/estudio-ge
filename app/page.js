@@ -512,6 +512,11 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
           <option value="regimen">Régimen comunicacional</option>
           <option value="otro">Otro / sin mapa</option>
         </select>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Rol del estudio</label>
+        <select style={inputStyle} value={f.rol} onChange={e=>set('rol',e.target.value)}>
+          <option value="actora">Actora</option>
+          <option value="demandada">Demandada</option>
+        </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Juzgado</label>
         <input style={inputStyle} placeholder="Civil N°1 - Gral. Pico" value={f.juzgado} onChange={e=>set('juzgado',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado *</label>
