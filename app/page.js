@@ -269,6 +269,7 @@ function Contenido(props) {
   if (vista === 'nueva-consulta') return <NuevaConsulta {...props} />;
   if (vista === 'tareas') return <Tareas {...props} />;
   if (vista === 'nueva-tarea') return <NuevaTarea {...props} />;
+  if (vista === 'cambiar-password') return <CambiarPassword {...props} />;
   return null;
 }
 
