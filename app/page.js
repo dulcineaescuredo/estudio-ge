@@ -331,7 +331,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
   const [q, setQ] = useState('');
   const lista = expedientes.filter(e=>!q||(e.caratula||'').toLowerCase().includes(q.toLowerCase())||(e.numero||'').toLowerCase().includes(q.toLowerCase()));
   return (
-    <Card title="Expedientes">
+    <Card title="📁 Expedientes">
       <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? (
         <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
