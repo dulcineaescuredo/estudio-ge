@@ -978,37 +978,116 @@ function Tareas({ tareas, recargar }) {
   );
 }
 
-function Vencimientos({ expedientes, setVista, setExpActual }) {
-  const [q, setQ] = useState('');
-  const conVenc = expedientes
-    .filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
-    .filter(e=>!q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.motivo_vencimiento||'').toLowerCase().includes(q.toLowerCase()))
-    .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento));
-  const vencidos = conVenc.filter(e=>diasHasta(e.proximo_vencimiento)<0);
-  const estaSemana = conVenc.filter(e=>{const d=diasHasta(e.proximo_vencimiento);return d>=0&&d<=7;});
-  const masAdelante = conVenc.filter(e=>diasHasta(e.proximo_vencimiento)>7);
+function Vencimientos({ expedientes, recargar }) {
+  const hoy = new Date();
+  const [mesVista, setMesVista] = useState(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
 
-  function bloque(titulo, lista, vacio) {
-    return <Card title={`${titulo} (${lista.length})`}>
-      {lista.length ? lista.map(e=>{
-        const vc = vencColor(e.proximo_vencimiento);
-        return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
-            <div style={{fontSize:11,color:'#8a8a8a',display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'} · {e.responsable?<Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable}</Badge>:'—'}</div>
-          </div>
-          <Badge bg={vc.bg} color={vc.color}>{formatFecha(e.proximo_vencimiento)} · {vc.label}</Badge>
-        </div>;
-      }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:16}}>{vacio}</div>}
-    </Card>;
+  const conVenc = expedientes.filter(e => e.proximo_vencimiento);
+  const ordenados = [...conVenc].sort((a, b) => a.proximo_vencimiento.localeCompare(b.proximo_vencimiento));
+
+  const año = mesVista.getFullYear();
+  const mes = mesVista.getMonth();
+  const primerDia = new Date(año, mes, 1).getDay();
+  const diasEnMes = new Date(año, mes + 1, 0).getDate();
+  const celdas = [];
+  for (let i = 0; i < (primerDia === 0 ? 6 : primerDia - 1); i++) celdas.push(null);
+  for (let d = 1; d <= diasEnMes; d++) celdas.push(d);
+
+  const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const diasSem = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  function vencimientosDelDia(dia) {
+    const fecha = `${año}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    return conVenc.filter(e => e.proximo_vencimiento === fecha);
   }
+
+  function esHoy(dia) {
+    return hoy.getFullYear() === año && hoy.getMonth() === mes && hoy.getDate() === dia;
+  }
+
+  const mesAnterior = () => setMesVista(new Date(año, mes - 1, 1));
+  const mesSiguiente = () => setMesVista(new Date(año, mes + 1, 1));
 
   return (
     <div>
-      <input style={inputStyle} placeholder="Buscar por carátula o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
-      {vencidos.length>0 && bloque('⚠️ Vencidos', vencidos, '')}
-      {bloque('Esta semana', estaSemana, 'Nada vence esta semana.')}
-      {bloque('Más adelante', masAdelante, 'Sin vencimientos futuros cargados.')}
+      <Card title="📅 Vencimientos">
+
+        {/* CALENDARIO */}
+        <div style={{marginBottom:24}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+            <button onClick={mesAnterior} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
+            <span style={{fontWeight:600,fontSize:15,color:'#2c2c2c'}}>{nombresMes[mes]} {año}</span>
+            <button onClick={mesSiguiente} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:3}}>
+            {diasSem.map(d => (
+              <div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#8a8a8a',padding:'4px 0',letterSpacing:'0.03em'}}>{d}</div>
+            ))}
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
+            {celdas.map((dia, i) => {
+              if (!dia) return <div key={`e-${i}`} />;
+              const vencs = vencimientosDelDia(dia);
+              const hoyFlag = esHoy(dia);
+              const hayVenc = vencs.length > 0;
+              const colorDia = hayVenc ? vencColor(vencs[0].proximo_vencimiento) : null;
+              return (
+                <div key={dia} style={{
+                  minHeight:52,
+                  borderRadius:8,
+                  padding:'5px 5px 4px',
+                  background: hoyFlag ? '#EBF2FA' : hayVenc ? '#FEF9F0' : '#F7F6F3',
+                  border: hoyFlag ? '1.5px solid #2B6CB0' : hayVenc ? `1.5px solid ${colorDia.color}` : '1.5px solid transparent',
+                  position:'relative'
+                }}>
+                  <div style={{fontSize:12,fontWeight:hoyFlag?700:400,color:hoyFlag?'#2B6CB0':'#4a4a4a',marginBottom:2}}>{dia}</div>
+                  {vencs.map((e, vi) => (
+                    <div key={vi} style={{
+                      fontSize:10,
+                      color: vencColor(e.proximo_vencimiento).color,
+                      fontWeight:600,
+                      lineHeight:1.3,
+                      overflow:'hidden',
+                      textOverflow:'ellipsis',
+                      whiteSpace:'nowrap',
+                      maxWidth:'100%'
+                    }} title={e.caratula}>
+                      • {e.caratula?.split(' ')[0]}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SEPARADOR */}
+        <div style={{borderTop:'1px solid #EEEDEA',marginBottom:16}} />
+
+        {/* LISTA */}
+        <div style={{fontSize:11,fontWeight:600,color:'#6B7280',marginBottom:10,letterSpacing:'0.04em',textTransform:'uppercase'}}>Todos los vencimientos</div>
+        {ordenados.length === 0
+          ? <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin vencimientos cargados.</div>
+          : ordenados.map(e => {
+              const col = vencColor(e.proximo_vencimiento);
+              return (
+                <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:col.color,flexShrink:0}} />
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:600,fontSize:13,color:'#2c2c2c'}}>{e.caratula}</div>
+                    {e.motivo_vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{e.motivo_vencimiento}</div>}
+                  </div>
+                  <div style={{fontSize:12,color:col.color,fontWeight:600,textAlign:'right',flexShrink:0}}>
+                    {formatFecha(e.proximo_vencimiento)}<br/>
+                    <span style={{fontSize:11,fontWeight:400}}>{col.label}</span>
+                  </div>
+                </div>
+              );
+            })
+        }
+      </Card>
     </div>
   );
 }
