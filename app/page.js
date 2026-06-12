@@ -449,8 +449,8 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     <div>
       <button onClick={()=>setVista('expedientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver</button>
       <Card>
-        <div style={{fontSize:11,color:'#8a8a8a',marginBottom:3}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
-        <div style={{fontSize:16,fontWeight:600,marginBottom:6}}>{e.caratula}</div>
+        <div style={{fontSize:11,color:'#6B7280',marginBottom:4}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
+        <div style={{fontSize:20,fontWeight:700,marginBottom:10,lineHeight:1.3}}>{e.caratula}</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
           <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
