@@ -180,7 +180,7 @@ export default function Home() {
     return (
       <div style={{position:'fixed',inset:0,background:'#F7F6F3',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'system-ui'}}>
         <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:16,padding:40,width:'90%',maxWidth:360,textAlign:'center',boxShadow:'0 4px 24px rgba(0,0,0,0.08)'}}>
-          <div style={{width:52,height:52,borderRadius:14,background:'#1B3A5C',color:'#fff',fontSize:18,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 18px'}}>GE</div>
+          <div style={{width:52,height:52,borderRadius:14,background:'#9B4F6A',color:'#fff',fontSize:18,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 18px'}}>GE</div>
           <div style={{fontSize:18,fontWeight:700,marginBottom:4,color:'#1A1A1A'}}>Guazzaroni Escuredo</div>
           <div style={{fontSize:13,color:'#6B7280',marginBottom:28}}>Sistema de gestión del estudio</div>
           <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
@@ -197,10 +197,10 @@ export default function Home() {
 
   return (
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#F7F6F3',color:'#1A1A1A'}}>
-      <div style={{width:224,minWidth:224,background:'#1B3A5C',display:'flex',flexDirection:'column'}}>
+      <div style={{width:224,minWidth:224,background:'#9B4F6A',display:'flex',flexDirection:'column'}}>
         <div style={{padding:'20px 18px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#1B3A5C',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
+            <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
             <div>
               <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
               <div style={{fontSize:11,color:'#8BABC7',marginTop:2}}>General Pico, LP</div>
