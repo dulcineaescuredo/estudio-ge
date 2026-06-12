@@ -1332,6 +1332,12 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     await supabase.from('cuotas').delete().eq('id', cu.id);
     recargar();
   }
+  async function guardarEdicion() {
+    await supabase.from('honorarios').update({ concepto: editForm.concepto, tipo_trabajo: editForm.tipo_trabajo, forma: editForm.forma, valor: Number(editForm.valor) }).eq('id', h.id);
+    setHonActual({...h, concepto: editForm.concepto, tipo_trabajo: editForm.tipo_trabajo, forma: editForm.forma, valor: Number(editForm.valor)});
+    setEditando(false);
+    recargar();
+  }
 
   const estadosDisp = h.en_cuotas ? ['pendiente','en proceso','pagado'] : ['pendiente','pagado'];
 
