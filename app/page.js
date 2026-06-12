@@ -1297,6 +1297,8 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
 function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuotas, valorUhon, perfil, setVista, recargar }) {
   const h = honActual;
   const [nuevaCuota, setNuevaCuota] = useState({ monto:'', vencimiento:'' });
+  const [editando, setEditando] = useState(false);
+  const [editForm, setEditForm] = useState({ concepto: h?.concepto||'', tipo_trabajo: h?.tipo_trabajo||'', forma: h?.forma||'uhon', valor: h?.valor||0 });
   if (!h) return null;
   const exp = expedientes.find(e=>e.id===h.expediente_id);
   const cli = clientes.find(c=>c.id===h.cliente_id);
