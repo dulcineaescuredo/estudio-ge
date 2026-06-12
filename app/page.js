@@ -478,7 +478,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
 }
 
 function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
-  const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'' });
+  const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'', rol:'actora' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
   const set = (k,v) => setF({...f,[k]:v});
