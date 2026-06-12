@@ -327,15 +327,18 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
   );
 }
 
+const ESTADO_DOT = { activo:'#27500A', espera:'#633806', apelado:'#0C447C', archivado:'#8a8a8a' };
+
 function Expedientes({ expedientes, setVista, setExpActual }) {
   const [q, setQ] = useState('');
+  const [hoveredRow, setHoveredRow] = useState(null);
   const lista = expedientes.filter(e=>!q||(e.caratula||'').toLowerCase().includes(q.toLowerCase())||(e.numero||'').toLowerCase().includes(q.toLowerCase()));
   return (
     <Card title="📁 Expedientes">
       <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? (
         <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-          <thead><tr>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+          <thead><tr style={{background:'#F7F6F3'}}>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
           <tbody>
             {lista.map(e=>{
               const mapa = PROCESOS[e.tipo_proceso];
@@ -350,18 +353,25 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
               const etapaActual = !mapa || !etapasVis.length ? '—'
                 : etapasVis.every(et => prog.hechas[et.id]) ? 'Finalizado'
                 : (etapasVis.find(et => !prog.hechas[et.id])?.n || '—');
-              return <tr key={e.id} style={{cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:11,color:'#8a8a8a'}}>{e.numero}</td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{e.caratula}</td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{mapa?mapa.nombre:'—'}</td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
+              return <tr key={e.id} style={{cursor:'pointer',background:hoveredRow===e.id?'#F7F6F3':'transparent'}}
+                onMouseEnter={()=>setHoveredRow(e.id)} onMouseLeave={()=>setHoveredRow(null)}
+                onClick={()=>{setExpActual(e);setVista('detalle');}}>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:11,color:'#6B7280'}}>{e.numero}</td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:7}}>
+                    <span style={{width:8,height:8,borderRadius:'50%',background:ESTADO_DOT[e.estado]||'#8a8a8a',display:'inline-block',flexShrink:0}}></span>
+                    <span style={{fontWeight:500}}>{e.caratula}</span>
+                  </div>
+                </td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{mapa?mapa.nombre:'—'}</td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
               </tr>;
             })}
           </tbody>
         </table>
-      ) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin expedientes todavía. Cargá el primero desde "Nuevo expediente".</div>}
+      ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin expedientes todavía. Cargá el primero desde "Nuevo expediente".</div>}
     </Card>
   );
 }
