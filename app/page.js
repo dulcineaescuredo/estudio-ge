@@ -328,7 +328,14 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},subs:{},dec:{}}; } catch { return {hechas:{},subs:{},dec:{}}; } })();
   if (!prog.hechas) prog.hechas = {}; if (!prog.subs) prog.subs = {}; if (!prog.dec) prog.dec = {};
 
-  const etapasVis = mapa ? mapa.etapas.filter(et=>!et.req || prog.dec[et.req[0]]===et.req[1]) : [];
+  const esDemandada = e.rol === 'demandada';
+  const etapasVis = mapa ? mapa.etapas
+    .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
+    .filter(et => !(esDemandada && et.id === 'dem'))
+    .map(et => {
+      if (esDemandada && et.id === 'con') return { ...et, n: 'Contestar demanda' };
+      return et;
+    }) : [];
 
   async function guardarProg(nuevoProg) {
     setExpActual({...e, progreso: nuevoProg});
