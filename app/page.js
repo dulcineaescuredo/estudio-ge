@@ -293,15 +293,16 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
     .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento)).slice(0,6);
   return (
     <div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
-        {[['Expedientes activos',activos,null],['Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#E24B4A':null],['Tareas pendientes',tareasPend,null],['Consultas este mes',consMes,null]].map(([l,v,col])=>(
-          <div key={l} style={{background:'#f9f8f5',borderRadius:8,padding:'13px 15px'}}>
-            <div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div>
-            <div style={{fontSize:22,fontWeight:500,color:col||'#1a1a1a'}}>{v}</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
+        {[['📁','Expedientes activos',activos,null],['⚠️','Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#C53030':null],['✅','Tareas pendientes',tareasPend,null],['💬','Consultas este mes',consMes,null]].map(([emoji,l,v,col])=>(
+          <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+            <span style={{fontSize:28,display:'block',marginBottom:8}}>{emoji}</span>
+            <div style={{fontSize:32,fontWeight:700,color:col||'#1A1A1A',lineHeight:1}}>{v}</div>
+            <div style={{fontSize:12,color:'#6B7280',marginTop:8,lineHeight:1.4}}>{l}</div>
           </div>
         ))}
       </div>
-      <Card title="Próximos vencimientos">
+      <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
           return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
