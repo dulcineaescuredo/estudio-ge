@@ -859,7 +859,10 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
           <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{cl.nombre}</div>
-          <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
+          <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
+              {!editando && <button onClick={eliminarCliente} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',color:'#A32D2D'}}>Eliminar</button>}
+            </div>
         </div>
         {!editando ? (
           <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:'8px 24px',marginTop:10,fontSize:13}}>
