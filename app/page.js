@@ -521,6 +521,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
           <option value="sucesorio">Sucesorio</option>
           <option value="alimentos">Alimentos</option>
           <option value="regimen">Régimen comunicacional</option>
+          <option value="divorcio">Divorcio</option>
           <option value="otro">Otro / sin mapa</option>
         </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Rol del estudio</label>
