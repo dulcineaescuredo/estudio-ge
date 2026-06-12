@@ -355,7 +355,14 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   }
   function tildar(etId) {
     const np = JSON.parse(JSON.stringify(prog));
-    if (np.hechas[etId]) delete np.hechas[etId]; else np.hechas[etId] = HOY;
+    if (np.hechas[etId]) {
+      delete np.hechas[etId];
+    } else {
+      const idx = etapasVis.findIndex(et => et.id === etId);
+      etapasVis.slice(0, idx + 1).forEach(et => {
+        if (!np.hechas[et.id]) np.hechas[et.id] = HOY;
+      });
+    }
     guardarProg(np);
   }
   function tildarSub(etId, si) {
