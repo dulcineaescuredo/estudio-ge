@@ -567,7 +567,25 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Próximo vencimiento</label>
         <input type="date" style={inputStyle} value={f.proximo_vencimiento} onChange={e=>set('proximo_vencimiento',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Motivo del vencimiento</label>
-        <input style={inputStyle} placeholder="Contestar demanda" value={f.motivo_vencimiento} onChange={e=>set('motivo_vencimiento',e.target.value)} />
+        {(() => {
+          const etapasForm = f.tipo_proceso && PROCESOS[f.tipo_proceso]
+            ? PROCESOS[f.tipo_proceso].etapas.filter(et => et.id !== 'med')
+            : [];
+          const esOtro = f.motivo_vencimiento && !etapasForm.find(et => et.n === f.motivo_vencimiento);
+          return <>
+            <select style={inputStyle} value={esOtro ? 'Otro' : f.motivo_vencimiento} onChange={e => {
+              if (e.target.value !== 'Otro') set('motivo_vencimiento', e.target.value);
+              else set('motivo_vencimiento', '');
+            }}>
+              <option value="">— Sin motivo —</option>
+              {etapasForm.map(et => <option key={et.id} value={et.n}>{et.n}</option>)}
+              <option value="Otro">Otro</option>
+            </select>
+            {(esOtro || f.motivo_vencimiento === '') && f.tipo_proceso && etapasForm.length > 0 && (esOtro) &&
+              <input style={{...inputStyle, marginTop:6}} placeholder="Describí el motivo..." value={f.motivo_vencimiento} onChange={e=>set('motivo_vencimiento',e.target.value)} />
+            }
+          </>;
+        })()}
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
         <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
           <option value="">Seleccioná</option>
