@@ -815,7 +815,7 @@ function NuevaConsulta({ perfil, recargar }) {
     setTimeout(()=>setMsg(''),3000);
   }
   return (
-    <Card title="Registrar consulta">
+    <Card title="💬 Registrar consulta">
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
       <div style={{maxWidth:520}}>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo *</label>
