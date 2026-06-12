@@ -209,7 +209,7 @@ export default function Home() {
           ))}
         </div>
         <div style={{padding:'12px 14px',borderTop:'1px solid #e2e2e2',display:'flex',alignItems:'center',gap:9}}>
-          <div style={{width:28,height:28,borderRadius:'50%',background:'#E6F1FB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600,color:'#0C447C'}}>
+          <div style={{width:28,height:28,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600,color:socioColor(perfil?.nombre).color}}>
             {perfil?.nombre?.[0] || session.user.email[0].toUpperCase()}
           </div>
           <div style={{flex:1,minWidth:0}}>
