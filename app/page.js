@@ -348,6 +348,9 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
       return et;
     }) : [];
 
+  const motivoEsOtro = !etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||''));
+  const [motivoOtro, setMotivoOtro] = useState(motivoEsOtro ? (e.motivo_vencimiento||'') : '');
+
   async function guardarProg(nuevoProg) {
     setExpActual({...e, progreso: nuevoProg});
     await supabase.from('expedientes').update({ progreso: nuevoProg }).eq('id', e.id);
