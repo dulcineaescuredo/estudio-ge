@@ -593,11 +593,13 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="demandada">Demandada</option>
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
-          <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Sin vincular</option>
-            {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
-          </select>
+          <ClienteAutocompletar
+            clientes={clientes}
+            clienteId={e.cliente_id||null}
+            onSelect={id=>actualizarVencimiento('cliente_id',id)}
+            estiloInput={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',outline:'none',boxSizing:'border-box',minWidth:150}}
+            placeholder="Sin vincular"
+          />
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Tipo:</span>
           <select value={e.tipo_proceso||''} onChange={ev=>actualizarVencimiento('tipo_proceso', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
