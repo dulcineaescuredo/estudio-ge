@@ -541,14 +541,14 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <select value={e.tipo_proceso||''} onChange={ev=>actualizarVencimiento('tipo_proceso', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="">Sin asignar</option>
+            <option value="ordinario">Ordinario (conocimiento)</option>
+            <option value="ejecutivo">Ejecutivo (monitorio)</option>
+            <option value="ejecucion">Ejecución de sentencia</option>
+            <option value="sucesorio">Sucesorio</option>
             <option value="alimentos">Alimentos</option>
-            <option value="sucesion">Sucesión</option>
+            <option value="regimen">Régimen comunicacional</option>
             <option value="divorcio">Divorcio</option>
-            <option value="ordinario">Ordinario</option>
-            <option value="ejecutivo">Ejecutivo</option>
-            <option value="laboral">Laboral</option>
-            <option value="incidente">Incidente</option>
-            <option value="medida_cautelar">Medida cautelar</option>
+            <option value="otro">Otro / sin mapa</option>
           </select>
         </div>
         <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
