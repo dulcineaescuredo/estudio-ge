@@ -1345,14 +1345,38 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     <div>
       <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
       <Card>
-        <div style={{fontSize:18,fontWeight:600,marginBottom:6}}>{h.concepto}</div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
-          {h.tipo_trabajo && <Badge bg="#EEEDFE" color="#3C3489">{h.tipo_trabajo}</Badge>}
-          <Badge bg="#F1EFE8" color="#444441">{formaLabel(h, valorUhon)}</Badge>
-          {exp && <Badge bg="#E6F1FB" color="#0C447C">Exp: {exp.caratula}</Badge>}
-          {cli && <Badge bg="#FBEAF0" color="#72243E">Cliente: {cli.nombre}</Badge>}
-          {h.en_cuotas && <Badge bg="#FAEEDA" color="#633806">En cuotas</Badge>}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+          <div style={{fontSize:18,fontWeight:600}}>{h.concepto}</div>
+          <button onClick={()=>{setEditando(!editando);setEditForm({concepto:h.concepto,tipo_trabajo:h.tipo_trabajo||'',forma:h.forma,valor:h.valor});}}
+            style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',flexShrink:0}}>
+            {editando?'Cancelar':'Editar'}
+          </button>
         </div>
+        {editando ? (
+          <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480,marginBottom:12}}>
+            <input value={editForm.concepto} onChange={ev=>setEditForm({...editForm,concepto:ev.target.value})} placeholder="Concepto"
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <input value={editForm.tipo_trabajo} onChange={ev=>setEditForm({...editForm,tipo_trabajo:ev.target.value})} placeholder="Tipo de trabajo"
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <div style={{display:'flex',gap:6}}>
+              {[['uhon','UHON'],['porcentaje','%'],['fijo','$ fijo']].map(([v,l])=>(
+                <button key={v} onClick={()=>setEditForm({...editForm,forma:v})}
+                  style={{flex:1,padding:'6px',border:editForm.forma===v?'1px solid #185FA5':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:editForm.forma===v?'#E6F1FB':'#f9f8f5',color:editForm.forma===v?'#0C447C':'#4a4a4a'}}>{l}</button>
+              ))}
+            </div>
+            <input type="number" value={editForm.valor} onChange={ev=>setEditForm({...editForm,valor:ev.target.value})} placeholder="Valor"
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <button onClick={guardarEdicion} style={{...btnPrimary,padding:'6px 12px',fontSize:12,alignSelf:'flex-start'}}>Guardar cambios</button>
+          </div>
+        ) : (
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+            {h.tipo_trabajo && <Badge bg="#EEEDFE" color="#3C3489">{h.tipo_trabajo}</Badge>}
+            <Badge bg="#F1EFE8" color="#444441">{formaLabel(h, valorUhon)}</Badge>
+            {exp && <Badge bg="#E6F1FB" color="#0C447C">Exp: {exp.caratula}</Badge>}
+            {cli && <Badge bg="#FBEAF0" color="#72243E">Cliente: {cli.nombre}</Badge>}
+            {h.en_cuotas && <Badge bg="#FAEEDA" color="#633806">En cuotas</Badge>}
+          </div>
+        )}
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12,marginBottom:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
             {h.forma==='uhon'?'CANTIDAD DE UHON':h.forma==='porcentaje'?'PORCENTAJE (%)':'MONTO FIJO ($)'}
