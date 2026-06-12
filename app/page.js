@@ -784,9 +784,17 @@ function Consultas({ consultas, recargar }) {
   const [q, setQ] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [orden, setOrden] = useState('reciente');
   const mes = HOY.substring(0,7);
   const mesA = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes));
-  const lista = consultas.filter(c=>!q||(c.cliente||'').toLowerCase().includes(q.toLowerCase())||(c.motivo||'').toLowerCase().includes(q.toLowerCase()));
+  const lista = consultas
+    .filter(c=>!q||(c.cliente||'').toLowerCase().includes(q.toLowerCase())||(c.motivo||'').toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>{
+      if (orden==='reciente') return (b.fecha||'').localeCompare(a.fecha||'');
+      if (orden==='antiguo') return (a.fecha||'').localeCompare(b.fecha||'');
+      if (orden==='cliente-az') return (a.cliente||'').localeCompare(b.cliente||'');
+      return 0;
+    });
 
   async function eliminarConsulta(c) {
     if (!confirm(`¿Eliminar la consulta de ${c.cliente}?`)) return;
