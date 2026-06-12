@@ -616,26 +616,58 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
   );
 }
 
-function Notas({ notas, expedientes, setVista, setExpActual }) {
+function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
   const [q, setQ] = useState('');
+  const [editandoId, setEditandoId] = useState(null);
+  const [editTexto, setEditTexto] = useState('');
   const lista = notas.filter(n=>{
     const ex = expedientes.find(e=>e.id===n.expediente_id);
     const blob = (n.texto+' '+(ex?ex.caratula+' '+ex.numero:'')+' '+(n.etapa||'')+' '+n.autora).toLowerCase();
     return !q || blob.includes(q.toLowerCase());
   });
+  async function eliminarNota(n, ev) {
+    ev.stopPropagation();
+    if (!confirm('¿Eliminar esta nota?')) return;
+    await supabase.from('notas').delete().eq('id', n.id);
+    recargar();
+  }
+  async function guardarEdicion(n, ev) {
+    ev.stopPropagation();
+    if (!editTexto.trim()) return;
+    await supabase.from('notas').update({ texto: editTexto.trim() }).eq('id', n.id);
+    setEditandoId(null);
+    recargar();
+  }
   return (
     <Card title="Todas las anotaciones">
       <input style={inputStyle} placeholder="Buscar en las notas: cliente, tema, lo que recuerdes..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? lista.map(n=>{
         const ex = expedientes.find(e=>e.id===n.expediente_id);
-        return <div key={n.id} style={{background:'#f9f8f5',borderRadius:8,padding:'11px 13px',marginBottom:8,cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
-          <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,fontWeight:600}}>{ex?ex.caratula:'(expediente)'}</span>
-            <Badge bg="#E6F1FB" color="#0C447C">{n.autora}</Badge>
-            <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(n.fecha)}</span>
-            {n.etapa && <Badge>{n.etapa}</Badge>}
+        const esEditando = editandoId===n.id;
+        return <div key={n.id} style={{background:'#f9f8f5',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
+          <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap',justifyContent:'space-between'}}>
+            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
+              <span style={{fontSize:12,fontWeight:600}}>{ex?ex.caratula:'(expediente)'}</span>
+              <Badge bg="#E6F1FB" color="#0C447C">{n.autora}</Badge>
+              <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(n.fecha)}</span>
+              {n.etapa && <Badge>{n.etapa}</Badge>}
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={ev=>{ev.stopPropagation();setEditandoId(esEditando?null:n.id);setEditTexto(n.texto);}}
+                style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer'}}>{esEditando?'cancelar':'editar'}</button>
+              <button onClick={ev=>eliminarNota(n,ev)}
+                style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
+            </div>
           </div>
-          <div style={{fontSize:13,lineHeight:1.5,whiteSpace:'pre-wrap'}}>{n.texto}</div>
+          {esEditando ? (
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <textarea value={editTexto} onChange={ev=>setEditTexto(ev.target.value)}
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui',resize:'vertical',minHeight:72,boxSizing:'border-box'}} />
+              <button onClick={ev=>guardarEdicion(n,ev)} style={{...btnPrimary,padding:'6px 12px',fontSize:12,alignSelf:'flex-start'}}>Guardar</button>
+            </div>
+          ) : (
+            <div style={{fontSize:13,lineHeight:1.5,whiteSpace:'pre-wrap'}}>{n.texto}</div>
+          )}
         </div>;
       }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>No hay notas que coincidan.</div>}
     </Card>
