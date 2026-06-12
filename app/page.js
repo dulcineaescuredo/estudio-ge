@@ -514,7 +514,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
         </div>
       </Card>
       <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr',gap:14,alignItems:'start'}}>
-        <Card title="Etapas del proceso">
+        <Card title="🗺️ Etapas del proceso">
           {!mapa || !mapa.etapas.length ? <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin mapa de proceso asignado.</div> :
             etapasVis.map((et,i)=>{
               const hecha = prog.hechas[et.id];
