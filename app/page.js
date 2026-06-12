@@ -729,8 +729,31 @@ function normEstado(e) { return e==='completada' ? 'terminado' : (e||'pendiente'
 
 function Tareas({ tareas, recargar }) {
   const [filtro, setFiltro] = useState('activas');
+  const [editandoId, setEditandoId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [comentarioId, setComentarioId] = useState(null);
+  const [nuevoComentario, setNuevoComentario] = useState('');
+
   async function cambiarEstado(t, nuevo) {
     await supabase.from('tareas').update({ estado: nuevo }).eq('id', t.id);
+    recargar();
+  }
+  async function eliminarTarea(t) {
+    if (!confirm(`¿Eliminar la tarea "${t.descripcion}"?`)) return;
+    await supabase.from('tareas').delete().eq('id', t.id);
+    recargar();
+  }
+  async function guardarEdicion(t) {
+    await supabase.from('tareas').update({ descripcion: editForm.descripcion, responsable: editForm.responsable, deadline: editForm.deadline||null }).eq('id', t.id);
+    setEditandoId(null);
+    recargar();
+  }
+  async function agregarComentario(t) {
+    if (!nuevoComentario.trim()) return;
+    const actual = t.comentario ? t.comentario + '\n' + nuevoComentario.trim() : nuevoComentario.trim();
+    await supabase.from('tareas').update({ comentario: actual }).eq('id', t.id);
+    setNuevoComentario('');
+    setComentarioId(null);
     recargar();
   }
   const lista = tareas
