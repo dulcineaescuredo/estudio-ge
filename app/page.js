@@ -226,8 +226,8 @@ export default function Home() {
                 padding:'8px 10px',paddingLeft: indented ? 26 : 10,
                 borderRadius:8,fontSize: indented ? 12 : 13,border:'none',
                 background:vista===id?'rgba(255,255,255,0.15)':'none',
-                color:vista===id?'#fff': indented ? '#C9899F' : '#D4A0B5',
-                fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
+                color: vista===id ? '#fff' : indented ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.92)',
+                fontWeight: vista===id ? 700 : indented ? 400 : 500,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
               <span style={{fontSize: indented ? 12 : 14,flexShrink:0}}>{emoji}</span>{label}
             </button>
           ))}
