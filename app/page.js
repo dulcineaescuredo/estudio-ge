@@ -91,8 +91,12 @@ export default function Home() {
   const [tareas, setTareas] = useState([]);
   const [notas, setNotas] = useState([]);
   const [clientes, setClientes] = useState([]);
+  const [honorarios, setHonorarios] = useState([]);
+  const [cuotas, setCuotas] = useState([]);
+  const [valorUhon, setValorUhon] = useState(null);
   const [expActual, setExpActual] = useState(null);
   const [cliActual, setCliActual] = useState(null);
+  const [honActual, setHonActual] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(false);
 
   useEffect(() => {
@@ -116,18 +120,24 @@ export default function Home() {
 
   async function cargarDatos() {
     setCargandoDatos(true);
-    const [e, c, t, n, cl] = await Promise.all([
+    const [e, c, t, n, cl, h, cu, cfg] = await Promise.all([
       supabase.from('expedientes').select('*').order('creado_en', { ascending: false }),
       supabase.from('consultas').select('*').order('fecha', { ascending: false }),
       supabase.from('tareas').select('*').order('creado_en', { ascending: false }),
       supabase.from('notas').select('*').order('creado_en', { ascending: false }),
       supabase.from('clientes').select('*').order('nombre', { ascending: true }),
+      supabase.from('honorarios').select('*').order('creado_en', { ascending: false }),
+      supabase.from('cuotas').select('*').order('numero', { ascending: true }),
+      supabase.from('config').select('*').maybeSingle(),
     ]);
     setExpedientes(e.data || []);
     setConsultas(c.data || []);
     setTareas(t.data || []);
     setNotas(n.data || []);
     setClientes(cl.data || []);
+    setHonorarios(h.data || []);
+    setCuotas(cu.data || []);
+    setValorUhon(cfg.data?.valor_uhon ?? null);
     setCargandoDatos(false);
   }
 
@@ -169,7 +179,7 @@ export default function Home() {
           <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>General Pico, LP</div>
         </div>
         <div style={{padding:'10px 8px',flex:1}}>
-          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['clientes','Clientes'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea']].map(([id,label])=>(
+          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['clientes','Clientes'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea'],['honorarios','Honorarios']].map(([id,label])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
               style={{display:'block',width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',background:vista===id?'#E6F1FB':'none',color:vista===id?'#0C447C':'#4a4a4a',fontWeight:vista===id?500:400,cursor:'pointer',marginBottom:1}}>
               {label}
@@ -193,8 +203,10 @@ export default function Home() {
           vista={vista} setVista={setVista}
           perfil={perfil}
           expedientes={expedientes} consultas={consultas} tareas={tareas} notas={notas} clientes={clientes}
+          honorarios={honorarios} cuotas={cuotas} valorUhon={valorUhon}
           expActual={expActual} setExpActual={setExpActual}
           cliActual={cliActual} setCliActual={setCliActual}
+          honActual={honActual} setHonActual={setHonActual}
           recargar={cargarDatos}
         />
       </div>
@@ -223,6 +235,9 @@ function Contenido(props) {
   if (vista === 'clientes') return <Clientes {...props} />;
   if (vista === 'detalle-cliente') return <DetalleCliente {...props} />;
   if (vista === 'nuevo-cliente') return <NuevoCliente {...props} />;
+  if (vista === 'honorarios') return <Honorarios {...props} />;
+  if (vista === 'nuevo-honorario') return <NuevoHonorario {...props} />;
+  if (vista === 'detalle-honorario') return <DetalleHonorario {...props} />;
   if (vista === 'expedientes') return <Expedientes {...props} />;
   if (vista === 'detalle') return <Detalle {...props} />;
   if (vista === 'nuevo-exp') return <NuevoExpediente {...props} />;
@@ -852,6 +867,293 @@ function NuevoCliente({ perfil, recargar, setVista }) {
         <button onClick={guardar} style={btnPrimary}>Guardar cliente</button>
       </div>
     </Card>
+  );
+}
+
+function fmtMoneda(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  return '$' + Number(n).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+}
+function formaLabel(h, valorUhon) {
+  if (h.forma === 'uhon') {
+    let s = `${h.valor} UHON`;
+    if (valorUhon) s += ` (${fmtMoneda(h.valor * valorUhon)})`;
+    return s;
+  }
+  if (h.forma === 'porcentaje') return `${h.valor}%`;
+  return fmtMoneda(h.valor);
+}
+const HON_ESTADO_COLOR = {
+  'pendiente': { bg:'#FAEEDA', color:'#633806' },
+  'en proceso': { bg:'#E6F1FB', color:'#0C447C' },
+  'pagado': { bg:'#EAF3DE', color:'#27500A' }
+};
+
+function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar }) {
+  const [q, setQ] = useState('');
+  const [editUhon, setEditUhon] = useState(false);
+  const [uhonInput, setUhonInput] = useState(valorUhon||'');
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+
+  async function guardarUhon() {
+    // upsert config
+    const { data: existing } = await supabase.from('config').select('estudio_id').maybeSingle();
+    const perfil = await supabase.from('perfiles').select('estudio_id').single();
+    const eid = perfil.data?.estudio_id;
+    if (existing) {
+      await supabase.from('config').update({ valor_uhon: Number(uhonInput), actualizado_en: new Date().toISOString() }).eq('estudio_id', eid);
+    } else {
+      await supabase.from('config').insert({ estudio_id: eid, valor_uhon: Number(uhonInput) });
+    }
+    setEditUhon(false);
+    recargar();
+  }
+
+  const lista = honorarios
+    .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
+    .filter(h=>{
+      if (!q) return true;
+      const exp = expedientes.find(e=>e.id===h.expediente_id);
+      const cli = clientes.find(c=>c.id===h.cliente_id);
+      const blob = `${h.concepto} ${h.tipo_trabajo||''} ${exp?exp.caratula:''} ${cli?cli.nombre:''}`.toLowerCase();
+      return blob.includes(q.toLowerCase());
+    });
+
+  // Totales
+  const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
+  const totalUhonPendiente = honorarios.filter(h=>h.estado!=='pagado' && h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14,gap:12,flexWrap:'wrap'}}>
+        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:200}}>
+          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Valor actual del UHON</div>
+          {!editUhon ? (
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:18,fontWeight:600}}>{valorUhon?fmtMoneda(valorUhon):'Sin cargar'}</span>
+              <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>editar</button>
+            </div>
+          ) : (
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <input type="number" value={uhonInput} onChange={e=>setUhonInput(e.target.value)} placeholder="Ej: 45000"
+                style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:120,fontFamily:'system-ui'}} />
+              <button onClick={guardarUhon} style={{...btnPrimary,padding:'6px 12px'}}>OK</button>
+              <button onClick={()=>setEditUhon(false)} style={{fontSize:12,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
+            </div>
+          )}
+        </div>
+        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
+          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Honorarios sin cobrar</div>
+          <div style={{fontSize:18,fontWeight:600}}>{totalPendiente}</div>
+        </div>
+        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
+          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>UHON por cobrar</div>
+          <div style={{fontSize:18,fontWeight:600}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:12,color:'#8a8a8a'}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
+        </div>
+      </div>
+
+      <Card>
+        <div style={{display:'flex',gap:10,marginBottom:14,flexWrap:'wrap'}}>
+          <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
+          <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={filtroEstado} onChange={e=>setFiltroEstado(e.target.value)}>
+            <option value="todos">Todos</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="en proceso">En proceso</option>
+            <option value="pagado">Pagados</option>
+          </select>
+          <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
+        </div>
+        {lista.length ? (
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+            <thead><tr>{['Concepto','Vinculado a','Monto pactado','Cuotas','Estado'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {lista.map(h=>{
+                const exp = expedientes.find(e=>e.id===h.expediente_id);
+                const cli = clientes.find(c=>c.id===h.cliente_id);
+                const vinc = exp?exp.caratula : (cli?cli.nombre : '—');
+                const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
+                const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
+                const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
+                return <tr key={h.id} style={{cursor:'pointer'}} onClick={()=>{setHonActual(h);setVista('detalle-honorario');}}>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{h.concepto}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{vinc}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{h.en_cuotas?`${pagadas}/${cuotasH.length}`:'—'}</td>
+                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
+                </tr>;
+              })}
+            </tbody>
+          </table>
+        ) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
+      </Card>
+    </div>
+  );
+}
+
+function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
+  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'' });
+  const [msg, setMsg] = useState('');
+  const set = (k,v)=>setF({...f,[k]:v});
+  async function guardar() {
+    if (!f.concepto || !f.valor) { alert('Completá al menos el concepto y el valor.'); return; }
+    if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
+    const payload = { concepto:f.concepto, tipo_trabajo:f.tipo_trabajo, forma:f.forma, valor:Number(f.valor),
+      expediente_id:f.expediente_id||null, cliente_id:f.cliente_id||null, en_cuotas:f.en_cuotas, notas:f.notas,
+      estado:'pendiente', estudio_id: perfil.estudio_id };
+    const { error } = await supabase.from('honorarios').insert(payload);
+    if (error) { alert('Error: '+error.message); return; }
+    setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
+    setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'' });
+    recargar();
+    setTimeout(()=>setMsg(''),4000);
+  }
+  return (
+    <Card title="Nuevo honorario">
+      {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
+      <div style={{maxWidth:560}}>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Concepto *</label>
+        <input style={inputStyle} placeholder="Ej: Honorarios juicio de alimentos / Redacción de contrato" value={f.concepto} onChange={e=>set('concepto',e.target.value)} />
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo de trabajo</label>
+        <input style={inputStyle} placeholder="Ej: Judicial, contrato de locación, puesta al día de sociedad..." value={f.tipo_trabajo} onChange={e=>set('tipo_trabajo',e.target.value)} />
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Forma de cobro *</label>
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          {[['uhon','En UHON'],['porcentaje','Porcentaje (%)'],['fijo','Monto fijo ($)']].map(([v,l])=>(
+            <button key={v} onClick={()=>set('forma',v)} style={{flex:1,padding:9,border:f.forma===v?'1px solid #185FA5':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:f.forma===v?'#E6F1FB':'#f9f8f5',color:f.forma===v?'#0C447C':'#4a4a4a'}}>{l}</button>
+          ))}
+        </div>
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>
+          {f.forma==='uhon'?'Cantidad de UHON *':f.forma==='porcentaje'?'Porcentaje *':'Monto en pesos *'}
+        </label>
+        <input type="number" style={inputStyle} placeholder={f.forma==='uhon'?'Ej: 10':f.forma==='porcentaje'?'Ej: 20':'Ej: 500000'} value={f.valor} onChange={e=>set('valor',e.target.value)} />
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a expediente</label>
+        <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
+          <option value="">Sin vincular</option>
+          {expedientes.map(ex=><option key={ex.id} value={ex.id}>{ex.caratula}</option>)}
+        </select>
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a cliente</label>
+        <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
+          <option value="">Sin vincular</option>
+          {clientes.map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+        </select>
+
+        <label style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,cursor:'pointer',fontSize:13}}>
+          <input type="checkbox" checked={f.en_cuotas} onChange={e=>set('en_cuotas',e.target.checked)} style={{width:16,height:16,cursor:'pointer'}} />
+          Se cobra en cuotas
+        </label>
+        {f.en_cuotas && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:12,marginTop:-4,fontStyle:'italic'}}>Después de guardar, vas a poder cargar las cuotas (monto, vencimiento y estado) desde el detalle del honorario.</div>}
+
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
+        <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas} onChange={e=>set('notas',e.target.value)} />
+
+        <button onClick={guardar} style={btnPrimary}>Guardar honorario</button>
+      </div>
+    </Card>
+  );
+}
+
+function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuotas, valorUhon, perfil, setVista, recargar }) {
+  const h = honActual;
+  const [nuevaCuota, setNuevaCuota] = useState({ monto:'', vencimiento:'' });
+  if (!h) return null;
+  const exp = expedientes.find(e=>e.id===h.expediente_id);
+  const cli = clientes.find(c=>c.id===h.cliente_id);
+  const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id).sort((a,b)=>(a.numero||0)-(b.numero||0));
+
+  async function cambiarEstadoGeneral(nuevo) {
+    setHonActual({...h, estado:nuevo});
+    await supabase.from('honorarios').update({ estado:nuevo }).eq('id', h.id);
+    recargar();
+  }
+  async function agregarCuota() {
+    if (!nuevaCuota.monto) { alert('Poné el monto de la cuota.'); return; }
+    const numero = cuotasH.length + 1;
+    await supabase.from('cuotas').insert({ honorario_id:h.id, estudio_id:perfil.estudio_id, numero, monto:Number(nuevaCuota.monto), vencimiento:nuevaCuota.vencimiento||null, estado:'pendiente' });
+    setNuevaCuota({ monto:'', vencimiento:'' });
+    recargar();
+  }
+  async function toggleCuota(cu) {
+    const nuevo = cu.estado==='pagada'?'pendiente':'pagada';
+    await supabase.from('cuotas').update({ estado:nuevo }).eq('id', cu.id);
+    // sugerir estado general
+    const otras = cuotasH.filter(x=>x.id!==cu.id);
+    const todasPagadas = [...otras, {...cu, estado:nuevo}].every(x=>x.estado==='pagada');
+    const algunaPagada = [...otras, {...cu, estado:nuevo}].some(x=>x.estado==='pagada');
+    let sugerido = h.estado;
+    if (todasPagadas) sugerido='pagado'; else if (algunaPagada) sugerido='en proceso'; else sugerido='pendiente';
+    if (sugerido!==h.estado) { await supabase.from('honorarios').update({ estado:sugerido }).eq('id', h.id); setHonActual({...h, estado:sugerido}); }
+    recargar();
+  }
+  async function borrarCuota(cu) {
+    await supabase.from('cuotas').delete().eq('id', cu.id);
+    recargar();
+  }
+
+  const estadosDisp = h.en_cuotas ? ['pendiente','en proceso','pagado'] : ['pendiente','pagado'];
+
+  return (
+    <div>
+      <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
+      <Card>
+        <div style={{fontSize:18,fontWeight:600,marginBottom:6}}>{h.concepto}</div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+          {h.tipo_trabajo && <Badge bg="#EEEDFE" color="#3C3489">{h.tipo_trabajo}</Badge>}
+          <Badge bg="#F1EFE8" color="#444441">{formaLabel(h, valorUhon)}</Badge>
+          {exp && <Badge bg="#E6F1FB" color="#0C447C">Exp: {exp.caratula}</Badge>}
+          {cli && <Badge bg="#FBEAF0" color="#72243E">Cliente: {cli.nombre}</Badge>}
+          {h.en_cuotas && <Badge bg="#FAEEDA" color="#633806">En cuotas</Badge>}
+        </div>
+        <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12}}>
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>ESTADO {h.en_cuotas?'(sugerido por las cuotas, podés cambiarlo)':''}</label>
+          <div style={{display:'flex',gap:6}}>
+            {estadosDisp.map(es=>{
+              const ec = HON_ESTADO_COLOR[es];
+              const sel = h.estado===es;
+              return <button key={es} onClick={()=>cambiarEstadoGeneral(es)}
+                style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',
+                border:sel?`1px solid ${ec.color}`:'1px solid #e2e2e2', background:sel?ec.bg:'#fff', color:sel?ec.color:'#8a8a8a', fontFamily:'system-ui'}}>
+                {es.charAt(0).toUpperCase()+es.slice(1)}
+              </button>;
+            })}
+          </div>
+        </div>
+        {h.notas && <div style={{marginTop:12,fontSize:13,color:'#4a4a4a',fontStyle:'italic'}}>{h.notas}</div>}
+      </Card>
+
+      {h.en_cuotas && (
+        <Card title="Cuotas">
+          {cuotasH.length ? cuotasH.map(cu=>(
+            <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3'}}>
+              <div onClick={()=>toggleCuota(cu)} style={{width:16,height:16,borderRadius:4,border:cu.estado==='pagada'?'none':'1.5px solid #c9c9c4',background:cu.estado==='pagada'?'#185FA5':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{cu.estado==='pagada'?'✓':''}</div>
+              <div style={{flex:1}}>
+                <span style={{fontSize:13,fontWeight:500}}>Cuota {cu.numero}</span>
+                <span style={{fontSize:13,marginLeft:10}}>{fmtMoneda(cu.monto)}</span>
+                {cu.vencimiento && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:10}}>vence {formatFecha(cu.vencimiento)}</span>}
+              </div>
+              <Badge bg={cu.estado==='pagada'?'#EAF3DE':'#FAEEDA'} color={cu.estado==='pagada'?'#27500A':'#633806'}>{cu.estado}</Badge>
+              <button onClick={()=>borrarCuota(cu)} style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>borrar</button>
+            </div>
+          )) : <div style={{color:'#8a8a8a',fontSize:12,textAlign:'center',padding:14}}>Sin cuotas cargadas todavía.</div>}
+          <div style={{display:'flex',gap:8,marginTop:12,alignItems:'flex-end',flexWrap:'wrap'}}>
+            <div>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Monto cuota</label>
+              <input type="number" value={nuevaCuota.monto} onChange={e=>setNuevaCuota({...nuevaCuota,monto:e.target.value})} placeholder="Ej: 100000"
+                style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:130,fontFamily:'system-ui'}} />
+            </div>
+            <div>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Vencimiento</label>
+              <input type="date" value={nuevaCuota.vencimiento} onChange={e=>setNuevaCuota({...nuevaCuota,vencimiento:e.target.value})}
+                style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            </div>
+            <button onClick={agregarCuota} style={{...btnPrimary,padding:'8px 14px'}}>+ Agregar cuota</button>
+          </div>
+        </Card>
+      )}
+    </div>
   );
 }
 
