@@ -1139,11 +1139,26 @@ function Vencimientos({ expedientes, recargar }) {
 function Clientes({ clientes, expedientes, setVista, setCliActual }) {
   const [q, setQ] = useState('');
   const [hoveredRow, setHoveredRow] = useState(null);
-  const lista = clientes.filter(cl=>!q || (cl.nombre||'').toLowerCase().includes(q.toLowerCase()) || (cl.dni||'').includes(q));
+  const [orden, setOrden] = useState('nombre-az');
+  const lista = clientes
+    .filter(cl=>!q || (cl.nombre||'').toLowerCase().includes(q.toLowerCase()) || (cl.dni||'').includes(q))
+    .sort((a,b)=>{
+      if (orden==='nombre-az') return (a.nombre||'').localeCompare(b.nombre||'');
+      if (orden==='nombre-za') return (b.nombre||'').localeCompare(a.nombre||'');
+      if (orden==='reciente') return (b.creado_en||'').localeCompare(a.creado_en||'');
+      if (orden==='antiguo') return (a.creado_en||'').localeCompare(b.creado_en||'');
+      return 0;
+    });
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-        <input style={{...inputStyle,marginBottom:0,maxWidth:360}} placeholder="Buscar cliente por nombre o DNI..." value={q} onChange={e=>setQ(e.target.value)} />
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,gap:8,flexWrap:'wrap'}}>
+        <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:180}} placeholder="Buscar cliente por nombre o DNI..." value={q} onChange={e=>setQ(e.target.value)} />
+        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
+          <option value="nombre-az">Nombre A→Z</option>
+          <option value="nombre-za">Nombre Z→A</option>
+          <option value="reciente">Más reciente primero</option>
+          <option value="antiguo">Más antiguo primero</option>
+        </select>
         <button onClick={()=>setVista('nuevo-cliente')} style={btnPrimary}>+ Nuevo cliente</button>
       </div>
       <Card>
