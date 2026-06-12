@@ -1130,7 +1130,7 @@ function NuevoCliente({ perfil, recargar, setVista }) {
     setTimeout(()=>setMsg(''),3000);
   }
   return (
-    <Card title="Nuevo cliente">
+    <Card title="👤 Nuevo cliente">
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
       <div style={{maxWidth:520}}>
         {[['nombre','Nombre completo *'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
