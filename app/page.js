@@ -535,7 +535,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                   <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
                     <span style={{fontSize:13,fontWeight:500,color:hecha?'#8a8a8a':'#1a1a1a'}}>{et.n}</span>
                     {hecha && <span style={{fontSize:11,color:'#639922',fontWeight:500}}>✓ {formatFecha(hecha)}</span>}
-                    {esActual && <Badge bg="#185FA5" color="#fff">ACTUAL</Badge>}
+                    {esActual && <Badge bg="#2B6CB0" color="#fff">ACTUAL</Badge>}
                   </div>
                   {et.sub && <div style={{marginTop:5}}>
                     {et.sub.map((s,si)=>{
