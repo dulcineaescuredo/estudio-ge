@@ -388,6 +388,12 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
+          <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            <option value="actora">Actora</option>
+            <option value="demandada">Demandada</option>
+          </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
           <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
             style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
