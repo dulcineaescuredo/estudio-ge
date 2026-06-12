@@ -700,7 +700,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
             </div>
             <div style={{display:'flex',gap:10}}>
               <button onClick={ev=>{ev.stopPropagation();setEditandoId(esEditando?null:n.id);setEditTexto(n.texto);}}
-                style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer'}}>{esEditando?'cancelar':'editar'}</button>
+                style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer'}}>{esEditando?'cancelar':'editar'}</button>
               <button onClick={ev=>eliminarNota(n,ev)}
                 style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
             </div>
@@ -795,7 +795,7 @@ function Consultas({ consultas, recargar }) {
                   </div>
                   <div style={{display:'flex',gap:10,flexShrink:0,marginLeft:12}}>
                     <button onClick={()=>{setEditandoId(c.id);setEditForm({cliente:c.cliente,tipo:c.tipo,fecha:c.fecha,abogada:c.abogada,motivo:c.motivo,comentario:c.comentario||''}); }}
-                      style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer'}}>editar</button>
+                      style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer'}}>editar</button>
                     <button onClick={()=>eliminarConsulta(c)}
                       style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
                   </div>
@@ -951,9 +951,9 @@ function Tareas({ tareas, recargar }) {
                     </button>;
                   })}
                   <button onClick={()=>{setEditandoId(t.id);setEditForm({descripcion:t.descripcion,responsable:t.responsable,deadline:t.deadline||''});}}
-                    style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>editar</button>
+                    style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>editar</button>
                   <button onClick={()=>setComentarioId(verComentario?null:t.id)}
-                    style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer'}}>+ comentario</button>
+                    style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer'}}>+ comentario</button>
                   <button onClick={()=>eliminarTarea(t)}
                     style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
                 </div>
@@ -1246,7 +1246,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontSize:18,fontWeight:600}}>{valorUhon?fmtMoneda(valorUhon):'Sin cargar'}</span>
-              <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#185FA5',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>editar</button>
+              <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>editar</button>
             </div>
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:6}}>
