@@ -537,6 +537,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="">Sin vincular</option>
             {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
           </select>
+          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Tipo:</span>
+          <select value={e.tipo_proceso||''} onChange={ev=>actualizarVencimiento('tipo_proceso', ev.target.value)}
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            <option value="">Sin asignar</option>
+            <option value="alimentos">Alimentos</option>
+            <option value="sucesion">Sucesión</option>
+            <option value="divorcio">Divorcio</option>
+            <option value="ordinario">Ordinario</option>
+            <option value="ejecutivo">Ejecutivo</option>
+            <option value="laboral">Laboral</option>
+            <option value="incidente">Incidente</option>
+            <option value="medida_cautelar">Medida cautelar</option>
+          </select>
         </div>
         <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <div>
