@@ -314,7 +314,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No hay vencimientos cargados. Cargá las fechas al crear o editar un expediente.</div>}
       </Card>
-      <Card title="Últimas anotaciones">
+      <Card title="📝 Últimas anotaciones">
         {notas.length ? notas.slice(0,5).map(n=>{
           const ex = expedientes.find(e=>e.id===n.expediente_id);
           return <div key={n.id} style={{padding:'9px 0',borderBottom:'1px solid #f5f5f3',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
