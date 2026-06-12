@@ -176,51 +176,61 @@ export default function Home() {
 
   if (!session) {
     return (
-      <div style={{position:'fixed',inset:0,background:'#f9f8f5',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'system-ui'}}>
-        <div style={{background:'#fff',border:'1px solid #e2e2e2',borderRadius:14,padding:36,width:'90%',maxWidth:360,textAlign:'center'}}>
-          <div style={{width:48,height:48,borderRadius:12,background:'#185FA5',color:'#fff',fontSize:18,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}>GE</div>
-          <div style={{fontSize:16,fontWeight:600,marginBottom:4}}>Guazzaroni Escuredo</div>
-          <div style={{fontSize:13,color:'#8a8a8a',marginBottom:24}}>Sistema de gestión del estudio</div>
+      <div style={{position:'fixed',inset:0,background:'#F7F6F3',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'system-ui'}}>
+        <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:16,padding:40,width:'90%',maxWidth:360,textAlign:'center',boxShadow:'0 4px 24px rgba(0,0,0,0.08)'}}>
+          <div style={{width:52,height:52,borderRadius:14,background:'#1B3A5C',color:'#fff',fontSize:18,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 18px'}}>GE</div>
+          <div style={{fontSize:18,fontWeight:700,marginBottom:4,color:'#1A1A1A'}}>Guazzaroni Escuredo</div>
+          <div style={{fontSize:13,color:'#6B7280',marginBottom:28}}>Sistema de gestión del estudio</div>
           <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
-            style={{width:'100%',padding:'11px 14px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:14,outline:'none',marginBottom:10,boxSizing:'border-box'}} />
+            style={{width:'100%',padding:'11px 14px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:14,outline:'none',marginBottom:10,boxSizing:'border-box',background:'#F7F6F3'}} />
           <input type="password" placeholder="Contraseña" value={pass} onChange={e=>setPass(e.target.value)}
             onKeyDown={e=>e.key==='Enter'&&login()}
-            style={{width:'100%',padding:'11px 14px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:14,outline:'none',marginBottom:10,boxSizing:'border-box'}} />
+            style={{width:'100%',padding:'11px 14px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:14,outline:'none',marginBottom:10,boxSizing:'border-box',background:'#F7F6F3'}} />
           {loginError && <div style={{fontSize:12,color:'#A32D2D',marginBottom:10}}>{loginError}</div>}
-          <button onClick={login} style={{width:'100%',padding:11,background:'#185FA5',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:500,cursor:'pointer'}}>Entrar</button>
+          <button onClick={login} style={{width:'100%',padding:12,background:'#2B6CB0',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>Entrar</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#f9f8f5',color:'#1a1a1a'}}>
-      <div style={{width:210,minWidth:210,background:'#fff',borderRight:'1px solid #e2e2e2',display:'flex',flexDirection:'column'}}>
-        <div style={{padding:'18px 16px',borderBottom:'1px solid #e2e2e2'}}>
-          <div style={{fontSize:13,fontWeight:600,lineHeight:1.3}}>Guazzaroni<br/>Escuredo</div>
-          <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>General Pico, LP</div>
+    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#F7F6F3',color:'#1A1A1A'}}>
+      <div style={{width:224,minWidth:224,background:'#1B3A5C',display:'flex',flexDirection:'column'}}>
+        <div style={{padding:'20px 18px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#1B3A5C',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
+              <div style={{fontSize:11,color:'#8BABC7',marginTop:2}}>General Pico, LP</div>
+            </div>
+          </div>
         </div>
-        <div style={{padding:'10px 8px',flex:1}}>
-          {[['dashboard','Inicio'],['vencimientos','Vencimientos'],['clientes','Clientes'],['expedientes','Expedientes'],['nuevo-exp','Nuevo expediente'],['notas','Anotaciones'],['consultas','Consultas'],['nueva-consulta','Nueva consulta'],['tareas','Tareas'],['nueva-tarea','Nueva tarea'],['honorarios','Honorarios']].map(([id,label])=>(
+        <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
+          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios']].map(([id,emoji,label])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'block',width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',background:vista===id?'#E6F1FB':'none',color:vista===id?'#0C447C':'#4a4a4a',fontWeight:vista===id?500:400,cursor:'pointer',marginBottom:1}}>
-              {label}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',
+                background:vista===id?'rgba(255,255,255,0.12)':'none',
+                color:vista===id?'#fff':'#8BABC7',
+                fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
+              <span style={{fontSize:14,flexShrink:0}}>{emoji}</span>{label}
             </button>
           ))}
         </div>
-        <div style={{padding:'12px 14px',borderTop:'1px solid #e2e2e2',display:'flex',alignItems:'center',gap:9}}>
-          <div style={{width:28,height:28,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600,color:socioColor(perfil?.nombre).color}}>
+        <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:9}}>
+          <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
             {perfil?.nombre?.[0] || session.user.email[0].toUpperCase()}
           </div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:12,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
-            <button onClick={logout} style={{fontSize:11,color:'#8a8a8a',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
-          <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#8a8a8a',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cambiar contraseña</button>
+            <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
+            <div style={{display:'flex',gap:8,marginTop:1}}>
+              <button onClick={logout} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
+              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{flex:1,overflowY:'auto',padding:22}}>
+      <div style={{flex:1,overflowY:'auto',padding:24}}>
         {cargandoDatos && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:12}}>Cargando datos...</div>}
         <Contenido
           vista={vista} setVista={setVista}
