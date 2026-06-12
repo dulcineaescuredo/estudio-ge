@@ -5,6 +5,17 @@ import { supabase } from '../lib/supabase';
 
 const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
 
+const SOCIO_COLORS = {
+  'Dulcinea': { bg:'#FBEAF0', color:'#72243E' },
+  'Claudia':  { bg:'#EEEDFE', color:'#3C3489' },
+  'Sergio':   { bg:'#E6F1FB', color:'#0C447C' },
+  'Dolores':  { bg:'#EAF3DE', color:'#27500A' },
+  'Candela':  { bg:'#FAEEDA', color:'#633806' },
+};
+function socioColor(nombre) {
+  return SOCIO_COLORS[nombre] || { bg:'#F1EFE8', color:'#444441' };
+}
+
 const PROCESOS = {
   ordinario: { nombre: 'Ordinario (conocimiento)', etapas: [
     { id:'med', n:'Mediación' }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
