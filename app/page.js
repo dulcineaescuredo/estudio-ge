@@ -1451,7 +1451,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
       </Card>
 
       {h.en_cuotas && (
-        <Card title="Cuotas">
+        <Card title="🧾 Cuotas">
           {cuotasH.length ? cuotasH.map(cu=>(
             <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #f5f5f3'}}>
               <div onClick={()=>toggleCuota(cu)} style={{width:16,height:16,borderRadius:4,border:cu.estado==='pagada'?'none':'1.5px solid #c9c9c4',background:cu.estado==='pagada'?'#185FA5':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{cu.estado==='pagada'?'✓':''}</div>
