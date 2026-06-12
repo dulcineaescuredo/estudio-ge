@@ -447,13 +447,13 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
 
   return (
     <div>
-      <button onClick={()=>setVista('expedientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver</button>
+      <button onClick={()=>setVista('expedientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver</button>
       <Card>
         <div style={{fontSize:11,color:'#6B7280',marginBottom:4}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
         <div style={{fontSize:20,fontWeight:700,marginBottom:10,lineHeight:1.3}}>{e.caratula}</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
           <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="activo">Activo</option>
             <option value="espera">En espera</option>
             <option value="apelado">Apelado</option>
@@ -461,19 +461,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           </select>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="">Sin asignar</option>
             {ABOGADAS.map(a=><option key={a}>{a}</option>)}
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
           <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="actora">Actora</option>
             <option value="demandada">Demandada</option>
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
           <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="">Sin vincular</option>
             {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
           </select>
@@ -482,7 +482,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Próximo vencimiento</label>
             <input type="date" value={e.proximo_vencimiento||''} onChange={ev=>actualizarVencimiento('proximo_vencimiento',ev.target.value)}
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui'}} />
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui'}} />
           </div>
           <div style={{flex:1,minWidth:180}}>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo del vencimiento</label>
@@ -496,7 +496,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                   actualizarVencimiento('motivo_vencimiento', '');
                 }
               }}
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box'}}>
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box'}}>
               <option value="">— Sin motivo —</option>
               {etapasVis.filter(et => et.id !== 'med').map(et => <option key={et.id} value={et.n}>{et.n}</option>)}
               <option value="Otro">Otro</option>
@@ -505,7 +505,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
               <input type="text" value={motivoOtro} onChange={ev=>setMotivoOtro(ev.target.value)}
                 onBlur={ev=>actualizarVencimiento('motivo_vencimiento', ev.target.value)}
                 placeholder="Describí el motivo..."
-                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
             }
           </div>
           {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
@@ -514,12 +514,12 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÁXIMA</label>
             <textarea defaultValue={e.hipotesis_maxima||''} onBlur={ev=>actualizarVencimiento('hipotesis_maxima',ev.target.value)} placeholder="El mejor resultado posible..."
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
           </div>
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÍNIMA</label>
             <textarea defaultValue={e.hipotesis_minima||''} onBlur={ev=>actualizarVencimiento('hipotesis_minima',ev.target.value)} placeholder="El resultado aceptable mínimo..."
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
           </div>
         </div>
       </Card>
@@ -708,7 +708,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               <textarea value={editTexto} onChange={ev=>setEditTexto(ev.target.value)}
-                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui',resize:'vertical',minHeight:72,boxSizing:'border-box'}} />
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui',resize:'vertical',minHeight:72,boxSizing:'border-box'}} />
               <button onClick={ev=>guardarEdicion(n,ev)} style={{...btnPrimary,padding:'6px 12px',fontSize:12,alignSelf:'flex-start'}}>Guardar</button>
             </div>
           ) : (
@@ -760,22 +760,22 @@ function Consultas({ consultas, recargar }) {
                   ))}
                 </div>
                 <input value={editForm.cliente} onChange={ev=>setEditForm({...editForm,cliente:ev.target.value})} placeholder="Cliente"
-                  style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
                 <div style={{display:'flex',gap:8}}>
                   <input type="date" value={editForm.fecha} onChange={ev=>setEditForm({...editForm,fecha:ev.target.value})}
-                    style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
+                    style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
                   <select value={editForm.abogada} onChange={ev=>setEditForm({...editForm,abogada:ev.target.value})}
-                    style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui',flex:1}}>
+                    style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',flex:1}}>
                     {ABOGADAS.map(a=><option key={a}>{a}</option>)}
                   </select>
                 </div>
                 <input value={editForm.motivo} onChange={ev=>setEditForm({...editForm,motivo:ev.target.value})} placeholder="Motivo"
-                  style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
                 <textarea value={editForm.comentario||''} onChange={ev=>setEditForm({...editForm,comentario:ev.target.value})} placeholder="Comentario (opcional)"
-                  style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={()=>guardarEdicion(c)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
-                  <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>Cancelar</button>
+                  <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
                 </div>
               </div>
             ) : (
@@ -916,18 +916,18 @@ function Tareas({ tareas, recargar }) {
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
               <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
-                style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+                style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
               <div style={{display:'flex',gap:8}}>
                 <select value={editForm.responsable} onChange={ev=>setEditForm({...editForm,responsable:ev.target.value})}
-                  style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui'}}>
+                  style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}}>
                   {ABOGADAS.map(a=><option key={a}>{a}</option>)}
                 </select>
                 <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
-                  style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
+                  style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
               </div>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>guardarEdicion(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
-                <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>Cancelar</button>
+                <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
               </div>
             </div>
           ) : (
@@ -961,7 +961,7 @@ function Tareas({ tareas, recargar }) {
                   <div style={{marginTop:8,display:'flex',gap:8,alignItems:'flex-start'}}>
                     <textarea value={nuevoComentario} onChange={ev=>setNuevoComentario(ev.target.value)}
                       placeholder="Escribí un comentario..."
-                      style={{flex:1,padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
+                      style={{flex:1,padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
                     <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
                   </div>
                 )}
@@ -1062,13 +1062,13 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
   }
   return (
     <div>
-      <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
+      <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
           <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{cl.nombre}</div>
           <div style={{display:'flex',gap:8}}>
-              <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
-              {!editando && <button onClick={eliminarCliente} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',color:'#A32D2D'}}>Eliminar</button>}
+              <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
+              {!editando && <button onClick={eliminarCliente} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D'}}>Eliminar</button>}
             </div>
         </div>
         {!editando ? (
@@ -1251,7 +1251,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           ) : (
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               <input type="number" value={uhonInput} onChange={e=>setUhonInput(e.target.value)} placeholder="Ej: 45000"
-                style={{padding:'6px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:120,fontFamily:'system-ui'}} />
+                style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:120,fontFamily:'system-ui'}} />
               <button onClick={guardarUhon} style={{...btnPrimary,padding:'6px 12px'}}>OK</button>
               <button onClick={()=>setEditUhon(false)} style={{fontSize:12,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
             </div>
@@ -1401,21 +1401,21 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
 
   return (
     <div>
-      <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
+      <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{fontSize:18,fontWeight:600}}>{h.concepto}</div>
           <button onClick={()=>{setEditando(!editando);setEditForm({concepto:h.concepto,tipo_trabajo:h.tipo_trabajo||'',forma:h.forma,valor:h.valor});}}
-            style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff',flexShrink:0}}>
+            style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',flexShrink:0}}>
             {editando?'Cancelar':'Editar'}
           </button>
         </div>
         {editando ? (
           <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480,marginBottom:12}}>
             <input value={editForm.concepto} onChange={ev=>setEditForm({...editForm,concepto:ev.target.value})} placeholder="Concepto"
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
             <input value={editForm.tipo_trabajo} onChange={ev=>setEditForm({...editForm,tipo_trabajo:ev.target.value})} placeholder="Tipo de trabajo"
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
             <div style={{display:'flex',gap:6}}>
               {[['uhon','UHON'],['porcentaje','%'],['fijo','$ fijo']].map(([v,l])=>(
                 <button key={v} onClick={()=>setEditForm({...editForm,forma:v})}
@@ -1423,7 +1423,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
               ))}
             </div>
             <input type="number" value={editForm.valor} onChange={ev=>setEditForm({...editForm,valor:ev.target.value})} placeholder="Valor"
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
             <button onClick={guardarEdicion} style={{...btnPrimary,padding:'6px 12px',fontSize:12,alignSelf:'flex-start'}}>Guardar cambios</button>
           </div>
         ) : (
@@ -1449,7 +1449,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
                 await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
                 recargar();
               }}
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
             <span style={{fontSize:12,color:'#8a8a8a'}}>
               {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
             </span>
@@ -1490,12 +1490,12 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
             <div>
               <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Monto cuota</label>
               <input type="number" value={nuevaCuota.monto} onChange={e=>setNuevaCuota({...nuevaCuota,monto:e.target.value})} placeholder="Ej: 100000"
-                style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:130,fontFamily:'system-ui'}} />
+                style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:130,fontFamily:'system-ui'}} />
             </div>
             <div>
               <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Vencimiento</label>
               <input type="date" value={nuevaCuota.vencimiento} onChange={e=>setNuevaCuota({...nuevaCuota,vencimiento:e.target.value})}
-                style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+                style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
             </div>
             <button onClick={agregarCuota} style={{...btnPrimary,padding:'8px 14px'}}>+ Agregar cuota</button>
           </div>
@@ -1543,7 +1543,7 @@ function CambiarPassword({ setVista }) {
           onKeyDown={e=>e.key==='Enter'&&guardar()} />
         <div style={{display:'flex',gap:8,marginTop:4}}>
           <button onClick={guardar} disabled={guardando} style={btnPrimary}>{guardando?'Guardando...':'Actualizar contraseña'}</button>
-          <button onClick={()=>setVista('dashboard')} style={{padding:'8px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>Cancelar</button>
+          <button onClick={()=>setVista('dashboard')} style={{padding:'8px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
         </div>
       </div>
     </Card>
