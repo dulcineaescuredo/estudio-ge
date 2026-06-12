@@ -765,7 +765,7 @@ function Consultas({ consultas, recargar }) {
                     </div>
                     <div style={{display:'flex',gap:8,marginBottom:3,flexWrap:'wrap'}}>
                       <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(c.fecha)}</span>
-                      <Badge bg="#E6F1FB" color="#0C447C">{c.abogada}</Badge>
+                      <Badge bg={socioColor(c.abogada).bg} color={socioColor(c.abogada).color}>{c.abogada}</Badge>
                     </div>
                     <div style={{fontSize:12,fontWeight:500,marginBottom:2}}>{c.motivo}</div>
                     {c.comentario && <div style={{fontSize:11,color:'#4a4a4a',fontStyle:'italic',lineHeight:1.5}}>{c.comentario}</div>}
