@@ -1472,6 +1472,51 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
   );
 }
 
+function CambiarPassword({ setVista }) {
+  const [actual, setActual] = useState('');
+  const [nueva, setNueva] = useState('');
+  const [confirmar, setConfirmar] = useState('');
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
+  async function guardar() {
+    setMsg(''); setError('');
+    if (!actual || !nueva || !confirmar) { setError('Completá todos los campos.'); return; }
+    if (nueva.length < 6) { setError('La nueva contraseña debe tener al menos 6 caracteres.'); return; }
+    if (nueva !== confirmar) { setError('Las contraseñas nuevas no coinciden.'); return; }
+    setGuardando(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.email, password: actual });
+    if (signInError) { setError('La contraseña actual es incorrecta.'); setGuardando(false); return; }
+    const { error: updateError } = await supabase.auth.updateUser({ password: nueva });
+    setGuardando(false);
+    if (updateError) { setError('Error al actualizar: ' + updateError.message); return; }
+    setMsg('Contraseña actualizada correctamente.');
+    setActual(''); setNueva(''); setConfirmar('');
+  }
+
+  return (
+    <Card title="Cambiar contraseña">
+      <div style={{maxWidth:400}}>
+        {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
+        {error && <div style={{background:'#FCEBEB',border:'1px solid #E8AAAA',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#791F1F',marginBottom:14}}>{error}</div>}
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Contraseña actual</label>
+        <input type="password" style={inputStyle} value={actual} onChange={e=>setActual(e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Nueva contraseña</label>
+        <input type="password" style={inputStyle} value={nueva} onChange={e=>setNueva(e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Confirmar nueva contraseña</label>
+        <input type="password" style={inputStyle} value={confirmar} onChange={e=>setConfirmar(e.target.value)}
+          onKeyDown={e=>e.key==='Enter'&&guardar()} />
+        <div style={{display:'flex',gap:8,marginTop:4}}>
+          <button onClick={guardar} disabled={guardando} style={btnPrimary}>{guardando?'Guardando...':'Actualizar contraseña'}</button>
+          <button onClick={()=>setVista('dashboard')} style={{padding:'8px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #e2e2e2',background:'#fff'}}>Cancelar</button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function NuevaTarea({ perfil, recargar }) {
   const [f, setF] = useState({ descripcion:'', responsable:'', deadline:'', comentario:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
