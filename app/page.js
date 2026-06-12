@@ -969,24 +969,36 @@ function Tareas({ tareas, recargar }) {
     setComentarioId(null);
     recargar();
   }
+  const [ordenTarea, setOrdenTarea] = useState('venc');
   const lista = tareas
     .map(t=>({...t, estado: normEstado(t.estado)}))
     .filter(t=> filtro==='todas' ? true : (filtro==='activas' ? t.estado!=='terminado' : t.estado===filtro))
     .sort((a,b)=>{
-      const orden = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
-      if(orden[a.estado]!==orden[b.estado]) return orden[a.estado]-orden[b.estado];
+      if (ordenTarea==='reciente') return (b.creado_en||'').localeCompare(a.creado_en||'');
+      if (ordenTarea==='antiguo') return (a.creado_en||'').localeCompare(b.creado_en||'');
+      if (ordenTarea==='nombre-az') return (a.descripcion||'').localeCompare(b.descripcion||'');
+      const ord = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
+      if(ord[a.estado]!==ord[b.estado]) return ord[a.estado]-ord[b.estado];
       if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1;
       return a.deadline.localeCompare(b.deadline);
     });
   return (
     <Card title="✅ Tareas">
-      <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
-        <option value="activas">Activas (pendiente + en proceso)</option>
-        <option value="pendiente">Solo pendientes</option>
-        <option value="en proceso">Solo en proceso</option>
-        <option value="terminado">Solo terminadas</option>
-        <option value="todas">Todas</option>
-      </select>
+      <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
+        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
+          <option value="activas">Activas (pendiente + en proceso)</option>
+          <option value="pendiente">Solo pendientes</option>
+          <option value="en proceso">Solo en proceso</option>
+          <option value="terminado">Solo terminadas</option>
+          <option value="todas">Todas</option>
+        </select>
+        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={ordenTarea} onChange={e=>setOrdenTarea(e.target.value)}>
+          <option value="venc">Vencimiento próximo primero</option>
+          <option value="reciente">Más reciente primero</option>
+          <option value="antiguo">Más antiguo primero</option>
+          <option value="nombre-az">Nombre A→Z</option>
+        </select>
+      </div>
       {lista.length ? lista.map(t=>{
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
