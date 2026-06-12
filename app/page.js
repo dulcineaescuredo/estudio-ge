@@ -430,8 +430,27 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           </div>
           <div style={{flex:1,minWidth:180}}>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo del vencimiento</label>
-            <input type="text" defaultValue={e.motivo_vencimiento||''} onBlur={ev=>actualizarVencimiento('motivo_vencimiento',ev.target.value)} placeholder="Ej: Contestar demanda"
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box'}} />
+            <select
+              value={etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) ? e.motivo_vencimiento : 'Otro'}
+              onChange={ev => {
+                if (ev.target.value !== 'Otro') {
+                  setMotivoOtro('');
+                  actualizarVencimiento('motivo_vencimiento', ev.target.value);
+                } else {
+                  actualizarVencimiento('motivo_vencimiento', '');
+                }
+              }}
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box'}}>
+              <option value="">— Sin motivo —</option>
+              {etapasVis.filter(et => et.id !== 'med').map(et => <option key={et.id} value={et.n}>{et.n}</option>)}
+              <option value="Otro">Otro</option>
+            </select>
+            {(etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) == null && e.motivo_vencimiento !== null && e.motivo_vencimiento !== '' || etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) == null) &&
+              <input type="text" value={motivoOtro} onChange={ev=>setMotivoOtro(ev.target.value)}
+                onBlur={ev=>actualizarVencimiento('motivo_vencimiento', ev.target.value)}
+                placeholder="Describí el motivo..."
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
+            }
           </div>
           {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
         </div>
