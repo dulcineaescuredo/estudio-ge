@@ -742,8 +742,12 @@ function Consultas({ consultas, recargar }) {
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
-        {[['Consultas este mes',mesA.length],['Primeras',mesA.filter(c=>c.tipo==='primera').length],['Seguimientos',mesA.filter(c=>c.tipo==='seguimiento').length],['Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([l,v])=>(
-          <div key={l} style={{background:'#F7F6F3',borderRadius:8,padding:'13px 15px'}}><div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div><div style={{fontSize:22,fontWeight:500}}>{v}</div></div>
+        {[['💬','Consultas este mes',mesA.length],['✨','Primeras',mesA.filter(c=>c.tipo==='primera').length],['🔄','Seguimientos',mesA.filter(c=>c.tipo==='seguimiento').length],['👤','Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([emoji,l,v])=>(
+          <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+            <span style={{fontSize:24,display:'block',marginBottom:6}}>{emoji}</span>
+            <div style={{fontSize:28,fontWeight:700,color:'#1A1A1A',lineHeight:1}}>{v}</div>
+            <div style={{fontSize:12,color:'#6B7280',marginTop:6}}>{l}</div>
+          </div>
         ))}
       </div>
       <Card title="💬 Registro de consultas">
