@@ -343,7 +343,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{mapa?mapa.nombre:'—'}</td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
                 <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
-                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge></td>
+                <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
               </tr>;
             })}
           </tbody>
@@ -1082,7 +1082,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
               </div>
               <div style={{display:'flex',gap:5,flexShrink:0}}>
                 <Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge>
-                <Badge bg="#E6F1FB" color="#0C447C">{e.responsable||'—'}</Badge>
+                <Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge>
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:6}}>
