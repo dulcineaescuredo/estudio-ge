@@ -819,7 +819,14 @@ function Consultas({ consultas, recargar }) {
         ))}
       </div>
       <Card title="💬 Registro de consultas">
-        <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          <input style={{...inputStyle,marginBottom:0,flex:1}} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
+          <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
+            <option value="reciente">Más reciente primero</option>
+            <option value="antiguo">Más antiguo primero</option>
+            <option value="cliente-az">Cliente A→Z</option>
+          </select>
+        </div>
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
           return <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
