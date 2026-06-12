@@ -1452,7 +1452,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
     const payload = { concepto:f.concepto, tipo_trabajo:f.tipo_trabajo, forma:f.forma, valor:Number(f.valor),
       expediente_id:f.expediente_id||null, cliente_id:f.cliente_id||null, en_cuotas:f.en_cuotas, notas:f.notas,
-      estado:'pendiente', estudio_id: perfil.estudio_id };
+      estado:'pendiente', estudio_id: perfil.estudio_id, periodo: HOY.substring(0,7) };
     const { error } = await supabase.from('honorarios').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
