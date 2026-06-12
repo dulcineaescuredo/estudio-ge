@@ -973,15 +973,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
   async function guardarUhon() {
-    // upsert config
-    const { data: existing } = await supabase.from('config').select('estudio_id').maybeSingle();
-    const perfil = await supabase.from('perfiles').select('estudio_id').single();
-    const eid = perfil.data?.estudio_id;
-    if (existing) {
-      await supabase.from('config').update({ valor_uhon: Number(uhonInput), actualizado_en: new Date().toISOString() }).eq('estudio_id', eid);
-    } else {
-      await supabase.from('config').insert({ estudio_id: eid, valor_uhon: Number(uhonInput) });
-    }
+    const perfilRes = await supabase.from('perfiles').select('estudio_id').single();
+    const eid = perfilRes.data?.estudio_id;
+    if (!eid) { alert('Error: no se pudo obtener el estudio.'); return; }
+    await supabase.from('config').upsert({ estudio_id: eid, valor_uhon: Number(uhonInput) }, { onConflict: 'estudio_id' });
     setEditUhon(false);
     recargar();
   }
