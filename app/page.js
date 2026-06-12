@@ -277,7 +277,7 @@ function Card({ children, title }) {
 const inputStyle = {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'};
 const btnPrimary = {padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #2B6CB0',background:'#2B6CB0',color:'#fff',fontFamily:'system-ui',fontWeight:500};
 
-function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrapperStyle, placeholder }) {
+function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrapperStyle, placeholder, recargar }) {
   const [texto, setTexto] = useState('');
   const [abierto, setAbierto] = useState(false);
   const containerRef = useRef(null);
@@ -303,6 +303,20 @@ function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrap
     ? (clientes||[]).filter(cl => (cl.nombre||'').toLowerCase().includes(texto.toLowerCase())).slice(0, 8)
     : [];
 
+  async function crearCliente() {
+    const nombre = texto.trim();
+    if (!nombre) return;
+    const { data, error } = await supabase.from('clientes').insert({
+      nombre,
+      estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'
+    }).select().single();
+    if (error || !data) { alert('Error al crear cliente: ' + (error?.message || 'desconocido')); return; }
+    setTexto(data.nombre);
+    setAbierto(false);
+    onSelect(data.id);
+    if (recargar) recargar();
+  }
+
   const estiloBase = estiloInput || {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',boxSizing:'border-box'};
 
   return (
@@ -320,7 +334,7 @@ function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrap
         placeholder={placeholder || 'Buscar cliente...'}
         style={{...estiloBase, marginBottom:0}}
       />
-      {abierto && filtrados.length > 0 && (
+      {abierto && texto.trim().length >= 1 && (
         <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:1000,maxHeight:240,overflowY:'auto',marginTop:2}}>
           {filtrados.map(cl => (
             <div key={cl.id}
@@ -332,6 +346,14 @@ function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrap
               {cl.nombre}
             </div>
           ))}
+          <div
+            onMouseDown={ev => { ev.preventDefault(); crearCliente(); }}
+            style={{padding:'9px 12px',cursor:'pointer',fontSize:13,fontFamily:'system-ui',color:'#2B6CB0',fontWeight:600,borderTop:filtrados.length>0?'1px solid #DDDCDA':'none'}}
+            onMouseEnter={ev => ev.currentTarget.style.background='#EBF2FA'}
+            onMouseLeave={ev => ev.currentTarget.style.background='#fff'}
+          >
+            + Crear cliente "{texto.trim()}"
+          </div>
         </div>
       )}
     </div>
