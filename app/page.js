@@ -277,6 +277,67 @@ function Card({ children, title }) {
 const inputStyle = {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'};
 const btnPrimary = {padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #2B6CB0',background:'#2B6CB0',color:'#fff',fontFamily:'system-ui',fontWeight:500};
 
+function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrapperStyle, placeholder }) {
+  const [texto, setTexto] = useState('');
+  const [abierto, setAbierto] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const cl = (clientes||[]).find(c => c.id === clienteId);
+    setTexto(cl?.nombre || '');
+  }, [clienteId, clientes]);
+
+  useEffect(() => {
+    function handleFuera(ev) {
+      if (containerRef.current && !containerRef.current.contains(ev.target)) {
+        setAbierto(false);
+        const cl = (clientes||[]).find(c => c.id === clienteId);
+        setTexto(cl?.nombre || '');
+      }
+    }
+    document.addEventListener('mousedown', handleFuera);
+    return () => document.removeEventListener('mousedown', handleFuera);
+  }, [clienteId, clientes]);
+
+  const filtrados = texto.trim().length >= 1
+    ? (clientes||[]).filter(cl => (cl.nombre||'').toLowerCase().includes(texto.toLowerCase())).slice(0, 8)
+    : [];
+
+  const estiloBase = estiloInput || {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',boxSizing:'border-box'};
+
+  return (
+    <div ref={containerRef} style={{position:'relative',...(wrapperStyle||{})}}>
+      <input
+        type="text"
+        value={texto}
+        onChange={ev => {
+          const v = ev.target.value;
+          setTexto(v);
+          setAbierto(v.trim().length >= 1);
+          if (!v.trim()) onSelect(null);
+        }}
+        onFocus={() => { if (texto.trim().length >= 1) setAbierto(true); }}
+        placeholder={placeholder || 'Buscar cliente...'}
+        style={{...estiloBase, marginBottom:0}}
+      />
+      {abierto && filtrados.length > 0 && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:1000,maxHeight:240,overflowY:'auto',marginTop:2}}>
+          {filtrados.map(cl => (
+            <div key={cl.id}
+              onMouseDown={ev => { ev.preventDefault(); setTexto(cl.nombre); setAbierto(false); onSelect(cl.id); }}
+              style={{padding:'9px 12px',cursor:'pointer',fontSize:13,fontFamily:'system-ui',borderBottom:'1px solid #F0EFED'}}
+              onMouseEnter={ev => ev.currentTarget.style.background='#F7F6F3'}
+              onMouseLeave={ev => ev.currentTarget.style.background='#fff'}
+            >
+              {cl.nombre}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Contenido(props) {
   const { vista } = props;
   if (vista === 'dashboard') return <Dashboard {...props} />;
