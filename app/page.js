@@ -1244,12 +1244,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
 
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:200}}>
-          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Valor actual del UHON</div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:12,flexWrap:'wrap'}}>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:200,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontSize:18,fontWeight:600}}>{valorUhon?fmtMoneda(valorUhon):'Sin cargar'}</span>
+              <span style={{fontSize:24,fontWeight:700}}>{valorUhon?fmtMoneda(valorUhon):'Sin cargar'}</span>
               <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>editar</button>
             </div>
           ) : (
@@ -1257,17 +1257,17 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
               <input type="number" value={uhonInput} onChange={e=>setUhonInput(e.target.value)} placeholder="Ej: 45000"
                 style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:120,fontFamily:'system-ui'}} />
               <button onClick={guardarUhon} style={{...btnPrimary,padding:'6px 12px'}}>OK</button>
-              <button onClick={()=>setEditUhon(false)} style={{fontSize:12,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
+              <button onClick={()=>setEditUhon(false)} style={{fontSize:12,color:'#6B7280',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
             </div>
           )}
         </div>
-        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
-          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Honorarios sin cobrar</div>
-          <div style={{fontSize:18,fontWeight:600}}>{totalPendiente}</div>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Honorarios sin cobrar</div>
+          <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
         </div>
-        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
-          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>UHON por cobrar</div>
-          <div style={{fontSize:18,fontWeight:600}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:12,color:'#8a8a8a'}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
+          <div style={{fontSize:28,fontWeight:700}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:14,color:'#6B7280',fontWeight:400}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
         </div>
       </div>
 
