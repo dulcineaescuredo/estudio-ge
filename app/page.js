@@ -489,7 +489,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
     const { error } = await supabase.from('expedientes').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Expediente ${f.numero} guardado.`);
-    setF({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'' });
+    setF({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'', rol:'actora' });
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
