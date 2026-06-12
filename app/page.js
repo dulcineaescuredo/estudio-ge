@@ -453,7 +453,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
         <div style={{fontSize:20,fontWeight:700,marginBottom:10,lineHeight:1.3}}>{e.caratula}</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
           <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="activo">Activo</option>
             <option value="espera">En espera</option>
             <option value="apelado">Apelado</option>
@@ -461,19 +461,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           </select>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="">Sin asignar</option>
             {ABOGADAS.map(a=><option key={a}>{a}</option>)}
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
           <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="actora">Actora</option>
             <option value="demandada">Demandada</option>
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
           <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
-            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui'}}>
+            style={{padding:'4px 8px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="">Sin vincular</option>
             {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
           </select>
@@ -482,7 +482,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Próximo vencimiento</label>
             <input type="date" value={e.proximo_vencimiento||''} onChange={ev=>actualizarVencimiento('proximo_vencimiento',ev.target.value)}
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui'}} />
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui'}} />
           </div>
           <div style={{flex:1,minWidth:180}}>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo del vencimiento</label>
@@ -496,7 +496,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                   actualizarVencimiento('motivo_vencimiento', '');
                 }
               }}
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box'}}>
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box'}}>
               <option value="">— Sin motivo —</option>
               {etapasVis.filter(et => et.id !== 'med').map(et => <option key={et.id} value={et.n}>{et.n}</option>)}
               <option value="Otro">Otro</option>
@@ -505,7 +505,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
               <input type="text" value={motivoOtro} onChange={ev=>setMotivoOtro(ev.target.value)}
                 onBlur={ev=>actualizarVencimiento('motivo_vencimiento', ev.target.value)}
                 placeholder="Describí el motivo..."
-                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
             }
           </div>
           {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
@@ -514,12 +514,12 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÁXIMA</label>
             <textarea defaultValue={e.hipotesis_maxima||''} onBlur={ev=>actualizarVencimiento('hipotesis_maxima',ev.target.value)} placeholder="El mejor resultado posible..."
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
           </div>
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>HIPÓTESIS DE MÍNIMA</label>
             <textarea defaultValue={e.hipotesis_minima||''} onBlur={ev=>actualizarVencimiento('hipotesis_minima',ev.target.value)} placeholder="El resultado aceptable mínimo..."
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#f9f8f5',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
+              style={{width:'100%',padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',minHeight:48,resize:'vertical'}} />
           </div>
         </div>
       </Card>
@@ -558,7 +558,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           <textarea style={{...inputStyle,minHeight:64,resize:'vertical'}} placeholder="Escribí una nota: lo que pasó en la audiencia, algo para el próximo escrito..." value={notaTexto} onChange={e=>setNotaTexto(e.target.value)} />
           <button onClick={agregarNota} disabled={guardando} style={{...btnPrimary,width:'100%',marginBottom:14}}>{guardando?'Guardando...':'+ Agregar nota'}</button>
           {notasExp.length ? notasExp.map(n=>(
-            <div key={n.id} style={{background:'#f9f8f5',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
+            <div key={n.id} style={{background:'#F7F6F3',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
               <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap'}}>
                 <Badge bg={socioColor(n.autora).bg} color={socioColor(n.autora).color}>{n.autora}</Badge>
                 <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(n.fecha)}</span>
@@ -690,7 +690,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
       {lista.length ? lista.map(n=>{
         const ex = expedientes.find(e=>e.id===n.expediente_id);
         const esEditando = editandoId===n.id;
-        return <div key={n.id} style={{background:'#f9f8f5',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
+        return <div key={n.id} style={{background:'#F7F6F3',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
           <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap',justifyContent:'space-between'}}>
             <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
               <span style={{fontSize:12,fontWeight:600}}>{ex?ex.caratula:'(expediente)'}</span>
@@ -743,7 +743,7 @@ function Consultas({ consultas, recargar }) {
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
         {[['Consultas este mes',mesA.length],['Primeras',mesA.filter(c=>c.tipo==='primera').length],['Seguimientos',mesA.filter(c=>c.tipo==='seguimiento').length],['Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([l,v])=>(
-          <div key={l} style={{background:'#f9f8f5',borderRadius:8,padding:'13px 15px'}}><div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div><div style={{fontSize:22,fontWeight:500}}>{v}</div></div>
+          <div key={l} style={{background:'#F7F6F3',borderRadius:8,padding:'13px 15px'}}><div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div><div style={{fontSize:22,fontWeight:500}}>{v}</div></div>
         ))}
       </div>
       <Card title="💬 Registro de consultas">
@@ -1241,7 +1241,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:200}}>
+        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:200}}>
           <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Valor actual del UHON</div>
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1257,11 +1257,11 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             </div>
           )}
         </div>
-        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
+        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
           <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Honorarios sin cobrar</div>
           <div style={{fontSize:18,fontWeight:600}}>{totalPendiente}</div>
         </div>
-        <div style={{background:'#f9f8f5',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
+        <div style={{background:'#F7F6F3',borderRadius:8,padding:'12px 15px',flex:1,minWidth:160}}>
           <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>UHON por cobrar</div>
           <div style={{fontSize:18,fontWeight:600}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:12,color:'#8a8a8a'}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
         </div>
@@ -1449,7 +1449,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
                 await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
                 recargar();
               }}
-              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#f9f8f5'}} />
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
             <span style={{fontSize:12,color:'#8a8a8a'}}>
               {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
             </span>
