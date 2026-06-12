@@ -85,10 +85,12 @@ function diasHasta(fecha) {
 function vencColor(fecha) {
   const d = diasHasta(fecha);
   if (d === null) return { bg:'#F1EFE8', color:'#444441', label:'sin fecha' };
-  if (d < 0) return { bg:'#FCEBEB', color:'#791F1F', label:`venció hace ${Math.abs(d)} día${Math.abs(d)===1?'':'s'}` };
-  if (d === 0) return { bg:'#FCEBEB', color:'#791F1F', label:'vence hoy' };
-  if (d <= 7) return { bg:'#FAEEDA', color:'#633806', label:`en ${d} día${d===1?'':'s'}` };
-  return { bg:'#EAF3DE', color:'#27500A', label:`en ${d} días` };
+  if (d < 0)  return { bg:'#FCEBEB', color:'#791F1F', label:`venció hace ${Math.abs(d)} día${Math.abs(d)===1?'':'s'}` };
+  if (d === 0) return { bg:'#FCEBEB', color:'#C53030', label:'vence hoy' };
+  if (d <= 2)  return { bg:'#FDECEA', color:'#C53030', label:`en ${d} día${d===1?'':'s'}` };
+  if (d <= 3)  return { bg:'#FEF0E6', color:'#9C4221', label:`en ${d} días` };
+  if (d <= 7)  return { bg:'#FAEEDA', color:'#633806', label:`en ${d} días` };
+  return { bg:'#EBF6E0', color:'#276027', label:`en ${d} días` };
 }
 
 function formatFecha(f) {
