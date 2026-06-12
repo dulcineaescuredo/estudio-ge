@@ -890,7 +890,7 @@ function Tareas({ tareas, recargar }) {
       return a.deadline.localeCompare(b.deadline);
     });
   return (
-    <Card title="Tareas">
+    <Card title="✅ Tareas">
       <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
         <option value="activas">Activas (pendiente + en proceso)</option>
         <option value="pendiente">Solo pendientes</option>
