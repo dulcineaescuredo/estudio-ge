@@ -1435,6 +1435,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const pendientesPeriodo = honPeriodo.filter(h=>h.estado!=='pagado');
   const uhonCobradosPeriodo = cobradosPeriodo.filter(h=>h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
 
+  const [ordenHon, setOrdenHon] = useState('reciente');
   const lista = honPeriodo
     .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
     .filter(h=>{
@@ -1443,6 +1444,16 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       const cli = clientes.find(c=>c.id===h.cliente_id);
       const blob = `${h.concepto} ${h.tipo_trabajo||''} ${exp?exp.caratula:''} ${cli?cli.nombre:''}`.toLowerCase();
       return blob.includes(q.toLowerCase());
+    })
+    .sort((a,b)=>{
+      if (ordenHon==='monto-desc') return (Number(b.valor)||0)-(Number(a.valor)||0);
+      if (ordenHon==='monto-asc') return (Number(a.valor)||0)-(Number(b.valor)||0);
+      if (ordenHon==='cliente-az') {
+        const expA=expedientes.find(e=>e.id===a.expediente_id); const cliA=clientes.find(c=>c.id===a.cliente_id);
+        const expB=expedientes.find(e=>e.id===b.expediente_id); const cliB=clientes.find(c=>c.id===b.cliente_id);
+        return (expA?expA.caratula:cliA?cliA.nombre:'').localeCompare(expB?expB.caratula:cliB?cliB.nombre:'');
+      }
+      return (b.creado_en||'').localeCompare(a.creado_en||'');
     });
 
   const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
