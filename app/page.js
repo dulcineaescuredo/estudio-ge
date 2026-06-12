@@ -356,6 +356,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
   const [q, setQ] = useState('');
   const [hoveredRow, setHoveredRow] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState('Todos');
+  const [orden, setOrden] = useState('num-desc');
 
   const lista = expedientes
     .filter(e => {
@@ -364,7 +365,14 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
       if (filtroEstado === 'Archivados') return e.estado === 'Finalizado (Archivado)';
       return true;
     })
-    .filter(e => !q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.numero||'').toLowerCase().includes(q.toLowerCase()));
+    .filter(e => !q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.numero||'').toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>{
+      if (orden==='num-desc') return (b.numero||'').localeCompare(a.numero||'',undefined,{numeric:true});
+      if (orden==='num-asc') return (a.numero||'').localeCompare(b.numero||'',undefined,{numeric:true});
+      if (orden==='car-az') return (a.caratula||'').localeCompare(b.caratula||'');
+      if (orden==='car-za') return (b.caratula||'').localeCompare(a.caratula||'');
+      return 0;
+    });
 
   return (
     <Card title="📁 Expedientes">
@@ -378,7 +386,15 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
           </button>
         ))}
       </div>
-      <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
+      <div style={{display:'flex',gap:8,marginBottom:12}}>
+        <input style={{...inputStyle,marginBottom:0,flex:1}} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
+        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
+          <option value="num-desc">Número mayor primero</option>
+          <option value="num-asc">Número menor primero</option>
+          <option value="car-az">Carátula A→Z</option>
+          <option value="car-za">Carátula Z→A</option>
+        </select>
+      </div>
       {lista.length ? (
         <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
           <thead><tr style={{background:'#F7F6F3'}}>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
