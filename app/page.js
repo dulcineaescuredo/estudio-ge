@@ -1182,6 +1182,34 @@ const HON_ESTADO_COLOR = {
   'pagado': { bg:'#EAF3DE', color:'#27500A' }
 };
 
+function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setHonActual, setVista }) {
+  const [hoveredRow, setHoveredRow] = useState(null);
+  return (
+    <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+      <thead><tr style={{background:'#F7F6F3'}}>{['Concepto','Vinculado a','Monto pactado','Cuotas','Estado'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
+      <tbody>
+        {lista.map(h=>{
+          const exp = expedientes.find(e=>e.id===h.expediente_id);
+          const cli = clientes.find(c=>c.id===h.cliente_id);
+          const vinc = exp?exp.caratula : (cli?cli.nombre : '—');
+          const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
+          const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
+          const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
+          return <tr key={h.id} style={{cursor:'pointer',background:hoveredRow===h.id?'#F7F6F3':'transparent'}}
+            onMouseEnter={()=>setHoveredRow(h.id)} onMouseLeave={()=>setHoveredRow(null)}
+            onClick={()=>{setHonActual(h);setVista('detalle-honorario');}}>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{vinc}</td>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{h.en_cuotas?`${pagadas}/${cuotasH.length}`:'—'}</td>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
+          </tr>;
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar, perfil }) {
   const [q, setQ] = useState('');
   const [editUhon, setEditUhon] = useState(false);
