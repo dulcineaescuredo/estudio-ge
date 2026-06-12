@@ -537,7 +537,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           {notasExp.length ? notasExp.map(n=>(
             <div key={n.id} style={{background:'#f9f8f5',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
               <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap'}}>
-                <Badge bg="#E6F1FB" color="#0C447C">{n.autora}</Badge>
+                <Badge bg={socioColor(n.autora).bg} color={socioColor(n.autora).color}>{n.autora}</Badge>
                 <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(n.fecha)}</span>
                 {n.etapa && <Badge>{n.etapa}</Badge>}
               </div>
@@ -671,7 +671,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
           <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:5,flexWrap:'wrap',justifyContent:'space-between'}}>
             <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
               <span style={{fontSize:12,fontWeight:600}}>{ex?ex.caratula:'(expediente)'}</span>
-              <Badge bg="#E6F1FB" color="#0C447C">{n.autora}</Badge>
+              <Badge bg={socioColor(n.autora).bg} color={socioColor(n.autora).color}>{n.autora}</Badge>
               <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(n.fecha)}</span>
               {n.etapa && <Badge>{n.etapa}</Badge>}
             </div>
