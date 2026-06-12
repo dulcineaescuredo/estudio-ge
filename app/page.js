@@ -1011,6 +1011,7 @@ function Vencimientos({ expedientes, setVista, setExpActual }) {
 
 function Clientes({ clientes, expedientes, setVista, setCliActual }) {
   const [q, setQ] = useState('');
+  const [hoveredRow, setHoveredRow] = useState(null);
   const lista = clientes.filter(cl=>!q || (cl.nombre||'').toLowerCase().includes(q.toLowerCase()) || (cl.dni||'').includes(q));
   return (
     <div>
@@ -1021,21 +1022,23 @@ function Clientes({ clientes, expedientes, setVista, setCliActual }) {
       <Card>
         {lista.length ? (
           <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-            <thead><tr>{['Nombre','DNI','Teléfono','Quién lo lleva','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 10px',fontSize:11,color:'#8a8a8a',borderBottom:'1px solid #e2e2e2'}}>{h}</th>)}</tr></thead>
+            <thead><tr style={{background:'#F7F6F3'}}>{['Nombre','DNI','Teléfono','Quién lo lleva','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
             <tbody>
               {lista.map(cl=>{
                 const exps = expedientes.filter(e=>e.cliente_id===cl.id && e.estado!=='archivado');
-                return <tr key={cl.id} style={{cursor:'pointer'}} onClick={()=>{setCliActual(cl);setVista('detalle-cliente');}}>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontWeight:500}}>{cl.nombre}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12,color:'#8a8a8a'}}>{cl.dni||'—'}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3',fontSize:12}}>{cl.telefono||'—'}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}>{cl.responsable?<Badge bg={socioColor(cl.responsable).bg} color={socioColor(cl.responsable).color}>{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#8a8a8a'}}>—</span>}</td>
-                  <td style={{padding:'10px',borderBottom:'1px solid #f5f5f3'}}><Badge bg="#EAF3DE" color="#27500A">{exps.length}</Badge></td>
+                return <tr key={cl.id} style={{cursor:'pointer',background:hoveredRow===cl.id?'#F7F6F3':'transparent'}}
+                  onMouseEnter={()=>setHoveredRow(cl.id)} onMouseLeave={()=>setHoveredRow(null)}
+                  onClick={()=>{setCliActual(cl);setVista('detalle-cliente');}}>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{cl.nombre}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{cl.dni||'—'}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{cl.telefono||'—'}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{cl.responsable?<Badge bg={socioColor(cl.responsable).bg} color={socioColor(cl.responsable).color}>{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#6B7280'}}>—</span>}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{exps.length}</Badge></td>
                 </tr>;
               })}
             </tbody>
           </table>
-        ) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin clientes todavía. Cargá el primero con "Nuevo cliente".</div>}
+        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin clientes todavía. Cargá el primero con "Nuevo cliente".</div>}
       </Card>
     </div>
   );
