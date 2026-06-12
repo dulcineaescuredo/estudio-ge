@@ -1184,6 +1184,26 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           {cli && <Badge bg="#FBEAF0" color="#72243E">Cliente: {cli.nombre}</Badge>}
           {h.en_cuotas && <Badge bg="#FAEEDA" color="#633806">En cuotas</Badge>}
         </div>
+        <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12,marginBottom:12}}>
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
+            {h.forma==='uhon'?'CANTIDAD DE UHON':h.forma==='porcentaje'?'PORCENTAJE (%)':'MONTO FIJO ($)'}
+          </label>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <input type="number"
+              defaultValue={h.valor}
+              onBlur={async ev => {
+                const nuevo = Number(ev.target.value);
+                if (!nuevo || nuevo === h.valor) return;
+                setHonActual({...h, valor: nuevo});
+                await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
+                recargar();
+              }}
+              style={{padding:'7px 10px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#f9f8f5'}} />
+            <span style={{fontSize:12,color:'#8a8a8a'}}>
+              {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
+            </span>
+          </div>
+        </div>
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>ESTADO {h.en_cuotas?'(sugerido por las cuotas, podés cambiarlo)':''}</label>
           <div style={{display:'flex',gap:6}}>
