@@ -208,13 +208,27 @@ export default function Home() {
           </div>
         </div>
         <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
-          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios']].map(([id,emoji,label])=>(
+          {[
+            ['dashboard','🏠','Inicio',false],
+            ['vencimientos','📅','Vencimientos',false],
+            ['clientes','👥','Clientes',false],
+            ['expedientes','📁','Expedientes',false],
+            ['nuevo-exp','➕','Nuevo expediente',true],
+            ['notas','📝','Anotaciones',false],
+            ['consultas','💬','Consultas',false],
+            ['nueva-consulta','➕','Nueva consulta',true],
+            ['tareas','✅','Tareas',false],
+            ['nueva-tarea','➕','Nueva tarea',true],
+            ['honorarios','💰','Honorarios',false]
+          ].map(([id,emoji,label,indented])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',
-                background:vista===id?'rgba(255,255,255,0.12)':'none',
-                color:vista===id?'#fff':'#D4A0B5',
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',
+                padding:'8px 10px',paddingLeft: indented ? 26 : 10,
+                borderRadius:8,fontSize: indented ? 12 : 13,border:'none',
+                background:vista===id?'rgba(255,255,255,0.15)':'none',
+                color:vista===id?'#fff': indented ? '#C9899F' : '#D4A0B5',
                 fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
-              <span style={{fontSize:14,flexShrink:0}}>{emoji}</span>{label}
+              <span style={{fontSize: indented ? 12 : 14,flexShrink:0}}>{emoji}</span>{label}
             </button>
           ))}
         </div>
