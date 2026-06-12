@@ -321,7 +321,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
-          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',background:vc.bg,borderRadius:8,marginBottom:4,cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
               <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'}</div>
