@@ -973,8 +973,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
   async function guardarUhon() {
-    const perfilRes = await supabase.from('perfiles').select('estudio_id').single();
-    const eid = perfilRes.data?.estudio_id;
+    const eid = perfil?.estudio_id;
     if (!eid) { alert('Error: no se pudo obtener el estudio.'); return; }
     await supabase.from('config').upsert({ estudio_id: eid, valor_uhon: Number(uhonInput) }, { onConflict: 'estudio_id' });
     setEditUhon(false);
