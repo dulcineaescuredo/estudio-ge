@@ -238,18 +238,18 @@ export default function Home() {
 }
 
 function Badge({ children, bg, color }) {
-  return <span style={{display:'inline-block',fontSize:10,padding:'2px 8px',borderRadius:20,fontWeight:600,background:bg||'#F1EFE8',color:color||'#444441',whiteSpace:'nowrap'}}>{children}</span>;
+  return <span style={{display:'inline-block',fontSize:11,padding:'3px 10px',borderRadius:20,fontWeight:600,background:bg||'#F1EFE8',color:color||'#444441',whiteSpace:'nowrap'}}>{children}</span>;
 }
 function Card({ children, title }) {
   return (
-    <div style={{background:'#fff',border:'1px solid #e2e2e2',borderRadius:12,padding:16,marginBottom:14}}>
-      {title && <div style={{fontSize:13,fontWeight:500,marginBottom:14}}>{title}</div>}
+    <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,padding:20,marginBottom:14,boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+      {title && <div style={{fontSize:15,fontWeight:600,marginBottom:16,color:'#1A1A1A'}}>{title}</div>}
       {children}
     </div>
   );
 }
-const inputStyle = {width:'100%',padding:'8px 11px',border:'1px solid #e2e2e2',borderRadius:8,fontSize:13,background:'#f9f8f5',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'};
-const btnPrimary = {padding:'8px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #185FA5',background:'#185FA5',color:'#fff',fontFamily:'system-ui'};
+const inputStyle = {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'};
+const btnPrimary = {padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #2B6CB0',background:'#2B6CB0',color:'#fff',fontFamily:'system-ui',fontWeight:500};
 
 function Contenido(props) {
   const { vista } = props;
