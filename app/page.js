@@ -1531,6 +1531,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <option value="en proceso">En proceso</option>
             <option value="pagado">Pagados</option>
           </select>
+          <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={ordenHon} onChange={e=>setOrdenHon(e.target.value)}>
+            <option value="reciente">Más reciente primero</option>
+            <option value="monto-desc">Monto mayor primero</option>
+            <option value="monto-asc">Monto menor primero</option>
+            <option value="cliente-az">Cliente A→Z</option>
+          </select>
         </div>
         {lista.length ? (
           <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
