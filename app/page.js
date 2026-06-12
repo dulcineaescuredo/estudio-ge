@@ -736,7 +736,7 @@ function Consultas({ consultas, recargar }) {
           <div key={l} style={{background:'#f9f8f5',borderRadius:8,padding:'13px 15px'}}><div style={{fontSize:11,color:'#8a8a8a',marginBottom:5}}>{l}</div><div style={{fontSize:22,fontWeight:500}}>{v}</div></div>
         ))}
       </div>
-      <Card title="Registro de consultas">
+      <Card title="💬 Registro de consultas">
         <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
