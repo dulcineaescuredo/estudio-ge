@@ -1508,7 +1508,7 @@ function CambiarPassword({ setVista }) {
   }
 
   return (
-    <Card title="Cambiar contraseña">
+    <Card title="🔑 Cambiar contraseña">
       <div style={{maxWidth:400}}>
         {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
         {error && <div style={{background:'#FCEBEB',border:'1px solid #E8AAAA',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#791F1F',marginBottom:14}}>{error}</div>}
