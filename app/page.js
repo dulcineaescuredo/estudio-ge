@@ -7,10 +7,10 @@ const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
 
 const SOCIO_COLORS = {
   'Dulcinea': { bg:'#FBEAF0', color:'#72243E' },
-  'Claudia':  { bg:'#EEEDFE', color:'#3C3489' },
-  'Sergio':   { bg:'#E6F1FB', color:'#0C447C' },
-  'Dolores':  { bg:'#EAF3DE', color:'#27500A' },
-  'Candela':  { bg:'#FAEEDA', color:'#633806' },
+  'Claudia':  { bg:'#F5E6E6', color:'#6B1414' },
+  'Candela':  { bg:'#E6F1FB', color:'#0C447C' },
+  'Dolores':  { bg:'#EEEDFE', color:'#3C3489' },
+  'Sergio':   { bg:'#FAEEDA', color:'#633806' },
 };
 function socioColor(nombre) {
   return SOCIO_COLORS[nombre] || { bg:'#F1EFE8', color:'#444441' };
