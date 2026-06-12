@@ -203,7 +203,7 @@ export default function Home() {
             <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
             <div>
               <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
-              <div style={{fontSize:11,color:'#8BABC7',marginTop:2}}>General Pico, LP</div>
+              <div style={{fontSize:11,color:'#D4A0B5',marginTop:2}}>General Pico, LP</div>
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function Home() {
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
               style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',
                 background:vista===id?'rgba(255,255,255,0.12)':'none',
-                color:vista===id?'#fff':'#8BABC7',
+                color:vista===id?'#fff':'#D4A0B5',
                 fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
               <span style={{fontSize:14,flexShrink:0}}>{emoji}</span>{label}
             </button>
@@ -225,8 +225,8 @@ export default function Home() {
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
             <div style={{display:'flex',gap:8,marginTop:1}}>
-              <button onClick={logout} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
-              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
+              <button onClick={logout} style={{fontSize:11,color:'#D4A0B5',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
+              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#D4A0B5',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
             </div>
           </div>
         </div>
