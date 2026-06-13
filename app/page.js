@@ -949,7 +949,8 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
           ) : (
             <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
               <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:6}}>{t.descripcion}</div>
+                <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:2}}>{t.descripcion}</div>
+                {(expVinc||cliVinc) && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:cliVinc.nombre}</div>}
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
                   <Badge bg={socioColor(t.responsable).bg} color={socioColor(t.responsable).color}>{t.responsable}</Badge>
                   {t.deadline && <Badge bg="#FAEEDA" color="#633806">{formatFecha(t.deadline)}</Badge>}
