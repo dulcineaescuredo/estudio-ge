@@ -740,7 +740,8 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
   async function guardar() {
     if (!f.numero||!f.caratula||!f.tipo_proceso||!f.responsable) { alert('Completá los campos obligatorios (*)'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
-    const payload = { ...f, estudio_id: perfil.estudio_id, progreso: {}, cliente_id: f.cliente_id||null };
+    const estadoFinal = f.rol === 'mediacion' ? 'finalizado' : f.estado;
+    const payload = { ...f, estado: estadoFinal, estudio_id: perfil.estudio_id, progreso: {}, cliente_id: f.cliente_id||null };
     const { error } = await supabase.from('expedientes').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Expediente ${f.numero} guardado.`);
