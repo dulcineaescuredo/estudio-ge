@@ -609,11 +609,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             {ABOGADAS.map(a=><option key={a}>{a}</option>)}
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
-          <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
+          <select value={e.rol||'actora'} onChange={ev=>{
+            const nuevoRol = ev.target.value;
+            actualizarVencimiento('rol', nuevoRol);
+            if (nuevoRol === 'mediacion') actualizarVencimiento('estado', 'finalizado');
+          }}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
             <option value="actora">Actora</option>
             <option value="demandada">Demandada</option>
+            <option value="mediacion">Mediación</option>
           </select>
+          {e.rol === 'mediacion' && (
+            <span style={{fontSize:12,background:'#FEF0E6',color:'#633806',padding:'3px 10px',borderRadius:20,fontWeight:600}}>⚖️ Mediación → Finalizado</span>
+          )}
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
           <ClienteAutocompletar
             clientes={clientes}
