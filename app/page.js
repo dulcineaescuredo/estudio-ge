@@ -1459,6 +1459,11 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
           {f.forma==='uhon'?'Cantidad de UHON *':f.forma==='porcentaje'?'Porcentaje *':'Monto en pesos *'}
         </label>
         <input type="number" style={inputStyle} placeholder={f.forma==='uhon'?'Ej: 10':f.forma==='porcentaje'?'Ej: 20':'Ej: 500000'} value={f.valor} onChange={e=>set('valor',e.target.value)} />
+        {f.forma==='porcentaje' && <>
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Monto base (sobre el cual se calcula el %)</label>
+          <input type="number" style={inputStyle} placeholder="Ej: 500000" value={f.monto_base} onChange={e=>set('monto_base',e.target.value)} />
+          {f.monto_base && f.valor && <div style={{fontSize:12,color:'#27500A',marginBottom:12,marginTop:-6}}>= {fmtMoneda(Number(f.valor)/100*Number(f.monto_base))}</div>}
+        </>}
 
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a expediente</label>
         <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
