@@ -1574,18 +1574,8 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         </div>
       </div>
 
-      {/* Navegador de período */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <button onClick={()=>navPeriodo(-1)} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
-          <span style={{fontWeight:600,fontSize:15,color:'#2c2c2c',minWidth:150,textAlign:'center'}}>{nombreMesPeriodo}</span>
-          <button onClick={()=>navPeriodo(1)} disabled={esMesActual}
-            style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:esMesActual?'default':'pointer',fontSize:16,color:esMesActual?'#c9c9c4':'#4a4a4a'}}>›</button>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          {!esMesActual && <span style={{fontSize:12,color:'#9C4221',background:'#FEF0E6',borderRadius:20,padding:'3px 10px',fontWeight:600}}>Solo lectura</span>}
-          {esMesActual && <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>}
-        </div>
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+        <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
       </div>
 
       <Card>
