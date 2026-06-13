@@ -18,7 +18,7 @@ function socioColor(nombre) {
 
 const PROCESOS = {
   ordinario: { nombre: 'Ordinario (conocimiento)', etapas: [
-    { id:'med', n:'Mediación' }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
+    { id:'med', n:'Mediación', op:['Acuerdo (cierra acá)','Sin acuerdo (sigue)'] }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
     { id:'con', n:'Contestación de demanda' }, { id:'trd', n:'Traslado documental' }, { id:'aup', n:'Audiencia preliminar' },
     { id:'apr', n:'Apertura a prueba' },
     { id:'pru', n:'Producción de prueba', sub:['Informativa (oficios)','Testimonial (notificar)','Declaración de parte','Pericial (notificar)','Documental'] },
