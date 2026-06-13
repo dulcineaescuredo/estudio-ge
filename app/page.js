@@ -1516,16 +1516,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     recargar();
   }
 
-  const honPeriodo = honorarios.filter(h =>
-    esMesActual ? (!h.periodo || h.periodo === mesActual) : h.periodo === periodoVista
-  );
-
-  const cobradosPeriodo = honPeriodo.filter(h=>h.estado==='pagado');
-  const pendientesPeriodo = honPeriodo.filter(h=>h.estado!=='pagado');
-  const uhonCobradosPeriodo = cobradosPeriodo.filter(h=>h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
+  const cobrados = honorarios.filter(h=>h.estado==='pagado');
+  const pendientes = honorarios.filter(h=>h.estado!=='pagado');
+  const uhonCobrados = cobrados.filter(h=>h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
 
   const [ordenHon, setOrdenHon] = useState('reciente');
-  const lista = honPeriodo
+  const lista = honorarios
     .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
     .filter(h=>{
       if (!q) return true;
