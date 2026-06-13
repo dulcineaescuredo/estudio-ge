@@ -1587,7 +1587,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           </div>
           <div style={{background:'#FAEEDA',borderRadius:10,padding:'12px 14px',border:'1px solid #F0CFAB'}}>
             <div style={{fontSize:11,color:'#633806',fontWeight:600,marginBottom:4}}>⏳ PENDIENTES</div>
-            <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{pendientesPeriodo.length}</div>
+            <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{pendientes.length}</div>
           </div>
           <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 14px',border:'1px solid #DDDCDA'}}>
             <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>📊 UHON COBRADOS</div>
