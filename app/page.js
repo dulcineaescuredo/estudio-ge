@@ -926,6 +926,8 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
         const verComentario = comentarioId===t.id;
+        const expVinc = t.expediente_id ? expedientes.find(e=>e.id===t.expediente_id) : null;
+        const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
         return <div key={t.id} style={{padding:'12px 0',borderBottom:'1px solid #F0EFED'}}>
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
