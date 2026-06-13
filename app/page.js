@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
@@ -18,7 +18,7 @@ function socioColor(nombre) {
 
 const PROCESOS = {
   ordinario: { nombre: 'Ordinario (conocimiento)', etapas: [
-    { id:'med', n:'Mediación', op:['Acuerdo (cierra acá)','Sin acuerdo (sigue)'] }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
+    { id:'med', n:'Mediación' }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
     { id:'con', n:'Contestación de demanda' }, { id:'trd', n:'Traslado documental' }, { id:'aup', n:'Audiencia preliminar' },
     { id:'apr', n:'Apertura a prueba' },
     { id:'pru', n:'Producción de prueba', sub:['Informativa (oficios)','Testimonial (notificar)','Declaración de parte','Pericial (notificar)','Documental'] },
@@ -203,32 +203,18 @@ export default function Home() {
             <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
             <div>
               <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
-              <div style={{fontSize:11,color:'#D4A0B5',marginTop:2}}>General Pico, LP</div>
+              <div style={{fontSize:11,color:'#8BABC7',marginTop:2}}>General Pico, LP</div>
             </div>
           </div>
         </div>
         <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
-          {[
-            ['dashboard','🏠','Inicio',false],
-            ['vencimientos','📅','Vencimientos',false],
-            ['clientes','👥','Clientes',false],
-            ['expedientes','📁','Expedientes',false],
-            ['nuevo-exp','➕','Nuevo expediente',true],
-            ['notas','📝','Anotaciones',false],
-            ['consultas','💬','Consultas',false],
-            ['nueva-consulta','➕','Nueva consulta',true],
-            ['tareas','✅','Tareas',false],
-            ['nueva-tarea','➕','Nueva tarea',true],
-            ['honorarios','💰','Honorarios',false]
-          ].map(([id,emoji,label,indented])=>(
+          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios']].map(([id,emoji,label])=>(
             <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',
-                padding:'8px 10px',paddingLeft: indented ? 26 : 10,
-                borderRadius:8,fontSize: indented ? 12 : 13,border:'none',
-                background:vista===id?'rgba(255,255,255,0.15)':'none',
-                color: vista===id ? '#fff' : indented ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.92)',
-                fontWeight: vista===id ? 700 : indented ? 400 : 500,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
-              <span style={{fontSize: indented ? 12 : 14,flexShrink:0}}>{emoji}</span>{label}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:8,fontSize:13,border:'none',
+                background:vista===id?'rgba(255,255,255,0.12)':'none',
+                color:vista===id?'#fff':'#8BABC7',
+                fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
+              <span style={{fontSize:14,flexShrink:0}}>{emoji}</span>{label}
             </button>
           ))}
         </div>
@@ -239,8 +225,8 @@ export default function Home() {
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
             <div style={{display:'flex',gap:8,marginTop:1}}>
-              <button onClick={logout} style={{fontSize:11,color:'#D4A0B5',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
-              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#D4A0B5',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
+              <button onClick={logout} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
+              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
             </div>
           </div>
         </div>
@@ -277,89 +263,6 @@ function Card({ children, title }) {
 const inputStyle = {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'};
 const btnPrimary = {padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #2B6CB0',background:'#2B6CB0',color:'#fff',fontFamily:'system-ui',fontWeight:500};
 
-function ClienteAutocompletar({ clientes, clienteId, onSelect, estiloInput, wrapperStyle, placeholder, recargar }) {
-  const [texto, setTexto] = useState('');
-  const [abierto, setAbierto] = useState(false);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    const cl = (clientes||[]).find(c => c.id === clienteId);
-    setTexto(cl?.nombre || '');
-  }, [clienteId, clientes]);
-
-  useEffect(() => {
-    function handleFuera(ev) {
-      if (containerRef.current && !containerRef.current.contains(ev.target)) {
-        setAbierto(false);
-        const cl = (clientes||[]).find(c => c.id === clienteId);
-        setTexto(cl?.nombre || '');
-      }
-    }
-    document.addEventListener('mousedown', handleFuera);
-    return () => document.removeEventListener('mousedown', handleFuera);
-  }, [clienteId, clientes]);
-
-  const filtrados = texto.trim().length >= 1
-    ? (clientes||[]).filter(cl => (cl.nombre||'').toLowerCase().includes(texto.toLowerCase())).slice(0, 8)
-    : [];
-
-  async function crearCliente() {
-    const nombre = texto.trim();
-    if (!nombre) return;
-    const { data, error } = await supabase.from('clientes').insert({
-      nombre,
-      estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'
-    }).select().single();
-    if (error || !data) { alert('Error al crear cliente: ' + (error?.message || 'desconocido')); return; }
-    setTexto(data.nombre);
-    setAbierto(false);
-    onSelect(data.id);
-    if (recargar) recargar();
-  }
-
-  const estiloBase = estiloInput || {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',boxSizing:'border-box'};
-
-  return (
-    <div ref={containerRef} style={{position:'relative',...(wrapperStyle||{})}}>
-      <input
-        type="text"
-        value={texto}
-        onChange={ev => {
-          const v = ev.target.value;
-          setTexto(v);
-          setAbierto(v.trim().length >= 1);
-          if (!v.trim()) onSelect(null);
-        }}
-        onFocus={() => { if (texto.trim().length >= 1) setAbierto(true); }}
-        placeholder={placeholder || 'Buscar cliente...'}
-        style={{...estiloBase, marginBottom:0}}
-      />
-      {abierto && texto.trim().length >= 1 && (
-        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:1000,maxHeight:240,overflowY:'auto',marginTop:2}}>
-          {filtrados.map(cl => (
-            <div key={cl.id}
-              onMouseDown={ev => { ev.preventDefault(); setTexto(cl.nombre); setAbierto(false); onSelect(cl.id); }}
-              style={{padding:'9px 12px',cursor:'pointer',fontSize:13,fontFamily:'system-ui',borderBottom:'1px solid #F0EFED'}}
-              onMouseEnter={ev => ev.currentTarget.style.background='#F7F6F3'}
-              onMouseLeave={ev => ev.currentTarget.style.background='#fff'}
-            >
-              {cl.nombre}
-            </div>
-          ))}
-          <div
-            onMouseDown={ev => { ev.preventDefault(); crearCliente(); }}
-            style={{padding:'9px 12px',cursor:'pointer',fontSize:13,fontFamily:'system-ui',color:'#2B6CB0',fontWeight:600,borderTop:filtrados.length>0?'1px solid #DDDCDA':'none'}}
-            onMouseEnter={ev => ev.currentTarget.style.background='#EBF2FA'}
-            onMouseLeave={ev => ev.currentTarget.style.background='#fff'}
-          >
-            + Crear cliente "{texto.trim()}"
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function Contenido(props) {
   const { vista } = props;
   if (vista === 'dashboard') return <Dashboard {...props} />;
@@ -382,7 +285,7 @@ function Contenido(props) {
   return null;
 }
 
-function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActual }) {
+function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual }) {
   const mes = HOY.substring(0,7);
   const activos = expedientes.filter(e=>e.estado==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
@@ -390,6 +293,9 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
   const vencSemana = expedientes.filter(e=>{ const d=diasHasta(e.proximo_vencimiento); return d!==null && d<=7; });
   const vencProximos = expedientes.filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
     .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento)).slice(0,6);
+  const misTareas = tareas
+    .filter(t => t.estudio_id === '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b' && t.responsable === perfil?.nombre && normEstado(t.estado) !== 'terminado')
+    .sort((a,b) => { if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1; return a.deadline.localeCompare(b.deadline); });
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
@@ -404,7 +310,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
-          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',background:vc.bg,borderRadius:8,marginBottom:4,cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
+          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
               <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'}</div>
@@ -426,58 +332,15 @@ function Dashboard({ expedientes, consultas, tareas, notas, setVista, setExpActu
   );
 }
 
-function estadoColor(estado) {
-  if (estado === 'Activo') return { bg:'#E6F4EA', color:'#27500A' };
-  if (estado === 'Activo en Cámara') return { bg:'#E8F0FE', color:'#0C447C' };
-  if (estado === 'Finalizado - Debe Mediar') return { bg:'#FEF9E7', color:'#7D6608' };
-  if (estado === 'No Presentada en Juzgado') return { bg:'#FEF0E6', color:'#633806' };
-  if (estado === 'Rechazado') return { bg:'#FDECEA', color:'#7B1F1A' };
-  return { bg:'#F1F3F4', color:'#5F6368' };
-}
+const ESTADO_DOT = { activo:'#27500A', espera:'#633806', apelado:'#0C447C', archivado:'#8a8a8a' };
 
 function Expedientes({ expedientes, setVista, setExpActual }) {
   const [q, setQ] = useState('');
   const [hoveredRow, setHoveredRow] = useState(null);
-  const [filtroEstado, setFiltroEstado] = useState('Todos');
-  const [orden, setOrden] = useState('num-desc');
-
-  const lista = expedientes
-    .filter(e => {
-      if (filtroEstado === 'Activos') return e.estado === 'Activo' || e.estado === 'Activo en Cámara';
-      if (filtroEstado === 'Finalizados') return (e.estado||'').startsWith('Finalizado') && e.estado !== 'Finalizado (Archivado)';
-      if (filtroEstado === 'Archivados') return e.estado === 'Finalizado (Archivado)';
-      return true;
-    })
-    .filter(e => !q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.numero||'').toLowerCase().includes(q.toLowerCase()))
-    .sort((a,b)=>{
-      if (orden==='num-desc') return (b.numero||'').localeCompare(a.numero||'',undefined,{numeric:true});
-      if (orden==='num-asc') return (a.numero||'').localeCompare(b.numero||'',undefined,{numeric:true});
-      if (orden==='car-az') return (a.caratula||'').localeCompare(b.caratula||'');
-      if (orden==='car-za') return (b.caratula||'').localeCompare(a.caratula||'');
-      return 0;
-    });
-
+  const lista = expedientes.filter(e=>!q||(e.caratula||'').toLowerCase().includes(q.toLowerCase())||(e.numero||'').toLowerCase().includes(q.toLowerCase()));
   return (
     <Card title="📁 Expedientes">
-      <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
-        {['Todos','Activos','Finalizados','Archivados'].map(f=>(
-          <button key={f} onClick={()=>setFiltroEstado(f)}
-            style={{padding:'5px 14px',borderRadius:20,fontSize:12,fontWeight:filtroEstado===f?600:400,cursor:'pointer',border:'none',
-              background:filtroEstado===f?'#9B4F6A':'#F1F3F4',
-              color:filtroEstado===f?'#fff':'#5F6368',fontFamily:'system-ui'}}>
-            {f}
-          </button>
-        ))}
-      </div>
-      <div style={{display:'flex',gap:8,marginBottom:12}}>
-        <input style={{...inputStyle,marginBottom:0,flex:1}} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
-        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
-          <option value="num-desc">Número mayor primero</option>
-          <option value="num-asc">Número menor primero</option>
-          <option value="car-az">Carátula A→Z</option>
-          <option value="car-za">Carátula Z→A</option>
-        </select>
-      </div>
+      <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
       {lista.length ? (
         <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
           <thead><tr style={{background:'#F7F6F3'}}>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
@@ -495,32 +358,25 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
               const etapaActual = !mapa || !etapasVis.length ? '—'
                 : etapasVis.every(et => prog.hechas[et.id]) ? 'Finalizado'
                 : (etapasVis.find(et => !prog.hechas[et.id])?.n || '—');
-              const ec = estadoColor(e.estado);
               return <tr key={e.id} style={{cursor:'pointer',background:hoveredRow===e.id?'#F7F6F3':'transparent'}}
                 onMouseEnter={()=>setHoveredRow(e.id)} onMouseLeave={()=>setHoveredRow(null)}
                 onClick={()=>{setExpActual(e);setVista('detalle');}}>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:11,color:'#6B7280'}}>{e.numero}</td>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
                   <div style={{display:'flex',alignItems:'center',gap:7}}>
-                    <span style={{width:8,height:8,borderRadius:'50%',background:ec.color,display:'inline-block',flexShrink:0}}></span>
+                    <span style={{width:8,height:8,borderRadius:'50%',background:ESTADO_DOT[e.estado]||'#8a8a8a',display:'inline-block',flexShrink:0}}></span>
                     <span style={{fontWeight:500}}>{e.caratula}</span>
                   </div>
                 </td>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{mapa?mapa.nombre:'—'}</td>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{e.estado}</Badge></td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
-                  <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                    {e.responsable ? e.responsable.split(',').map(r=>r.trim()).filter(Boolean).map(r=>(
-                      <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
-                    )) : <span style={{fontSize:12,color:'#6B7280'}}>—</span>}
-                  </div>
-                </td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
               </tr>;
             })}
           </tbody>
         </table>
-      ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin expedientes{filtroEstado!=='Todos'?` con estado "${filtroEstado.toLowerCase()}"`:' todavía. Cargá el primero desde "Nuevo expediente"'}.</div>}
+      ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin expedientes todavía. Cargá el primero desde "Nuevo expediente".</div>}
     </Card>
   );
 }
@@ -573,9 +429,6 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     const np = JSON.parse(JSON.stringify(prog));
     if (np.dec[etId]===op) delete np.dec[etId]; else { np.dec[etId]=op; if(!np.hechas[etId]) np.hechas[etId]=HOY; }
     guardarProg(np);
-    if (etId === 'med' && op === 'Acuerdo (cierra acá)') {
-      supabase.from('expedientes').update({ estado: 'finalizado' }).eq('id', e.id).then(() => recargar());
-    }
   }
   async function actualizarVencimiento(campo, valor) {
     setExpActual({...e, [campo]: valor});
@@ -612,20 +465,11 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="archivado">Archivado</option>
           </select>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-            {ABOGADAS.map(a => {
-              const responsables = e.responsable ? e.responsable.split(',').map(r=>r.trim()) : [];
-              const sel = responsables.includes(a);
-              return <button key={a} onClick={()=>{
-                const actual = e.responsable ? e.responsable.split(',').map(r=>r.trim()) : [];
-                const nuevo = sel ? actual.filter(r=>r!==a) : [...actual, a];
-                actualizarVencimiento('responsable', nuevo.join(', '));
-              }}
-              style={{padding:'4px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:sel?`1px solid ${socioColor(a).color}`:'1px solid #e2e2e2',background:sel?socioColor(a).bg:'#fff',color:sel?socioColor(a).color:'#8a8a8a',fontFamily:'system-ui'}}>
-                {a}
-              </button>;
-            })}
-          </div>
+          <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
+            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            <option value="">Sin asignar</option>
+            {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+          </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
           <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
@@ -633,26 +477,10 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="demandada">Demandada</option>
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
-          <ClienteAutocompletar
-            clientes={clientes}
-            clienteId={e.cliente_id||null}
-            onSelect={id=>actualizarVencimiento('cliente_id',id)}
-            estiloInput={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',outline:'none',boxSizing:'border-box',minWidth:150}}
-            placeholder="Sin vincular"
-            recargar={recargar}
-          />
-          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Tipo:</span>
-          <select value={e.tipo_proceso||''} onChange={ev=>actualizarVencimiento('tipo_proceso', ev.target.value)}
+          <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Sin asignar</option>
-            <option value="ordinario">Ordinario (conocimiento)</option>
-            <option value="ejecutivo">Ejecutivo (monitorio)</option>
-            <option value="ejecucion">Ejecución de sentencia</option>
-            <option value="sucesorio">Sucesorio</option>
-            <option value="alimentos">Alimentos</option>
-            <option value="regimen">Régimen comunicacional</option>
-            <option value="divorcio">Divorcio</option>
-            <option value="otro">Otro / sin mapa</option>
+            <option value="">Sin vincular</option>
+            {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
           </select>
         </div>
         <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
@@ -819,31 +647,16 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
             }
           </>;
         })()}
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable * (podés elegir más de uno)</label>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
-          {ABOGADAS.map(a => {
-            const responsables = f.responsable ? f.responsable.split(',').map(r=>r.trim()) : [];
-            const sel = responsables.includes(a);
-            return <button key={a} type="button" onClick={()=>{
-              const actual = f.responsable ? f.responsable.split(',').map(r=>r.trim()) : [];
-              const nuevo = sel ? actual.filter(r=>r!==a) : [...actual, a];
-              set('responsable', nuevo.join(', '));
-            }}
-            style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:sel?`1px solid ${socioColor(a).color}`:'1px solid #e2e2e2',background:sel?socioColor(a).bg:'#fff',color:sel?socioColor(a).color:'#8a8a8a',fontFamily:'system-ui'}}>
-              {a}
-            </button>;
-          })}
-        </div>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
+        <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
+          <option value="">Seleccioná</option>
+          {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+        </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
-        <ClienteAutocompletar
-          clientes={clientes}
-          clienteId={f.cliente_id||null}
-          onSelect={id=>set('cliente_id',id||'')}
-          estiloInput={inputStyle}
-          wrapperStyle={{marginBottom:12}}
-          placeholder="Sin vincular"
-          recargar={recargar}
-        />
+        <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
+          <option value="">Sin vincular</option>
+          {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+        </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de máxima</label>
         <textarea style={{...inputStyle,minHeight:52,resize:'vertical'}} placeholder="El mejor resultado posible para el cliente..." value={f.hipotesis_maxima} onChange={e=>set('hipotesis_maxima',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de mínima</label>
@@ -916,17 +729,9 @@ function Consultas({ consultas, recargar }) {
   const [q, setQ] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
-  const [orden, setOrden] = useState('reciente');
   const mes = HOY.substring(0,7);
   const mesA = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes));
-  const lista = consultas
-    .filter(c=>!q||(c.cliente||'').toLowerCase().includes(q.toLowerCase())||(c.motivo||'').toLowerCase().includes(q.toLowerCase()))
-    .sort((a,b)=>{
-      if (orden==='reciente') return (b.fecha||'').localeCompare(a.fecha||'');
-      if (orden==='antiguo') return (a.fecha||'').localeCompare(b.fecha||'');
-      if (orden==='cliente-az') return (a.cliente||'').localeCompare(b.cliente||'');
-      return 0;
-    });
+  const lista = consultas.filter(c=>!q||(c.cliente||'').toLowerCase().includes(q.toLowerCase())||(c.motivo||'').toLowerCase().includes(q.toLowerCase()));
 
   async function eliminarConsulta(c) {
     if (!confirm(`¿Eliminar la consulta de ${c.cliente}?`)) return;
@@ -951,14 +756,7 @@ function Consultas({ consultas, recargar }) {
         ))}
       </div>
       <Card title="💬 Registro de consultas">
-        <div style={{display:'flex',gap:8,marginBottom:12}}>
-          <input style={{...inputStyle,marginBottom:0,flex:1}} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
-          <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
-            <option value="reciente">Más reciente primero</option>
-            <option value="antiguo">Más antiguo primero</option>
-            <option value="cliente-az">Cliente A→Z</option>
-          </select>
-        </div>
+        <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
           return <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
@@ -1101,36 +899,24 @@ function Tareas({ tareas, recargar }) {
     setComentarioId(null);
     recargar();
   }
-  const [ordenTarea, setOrdenTarea] = useState('venc');
   const lista = tareas
     .map(t=>({...t, estado: normEstado(t.estado)}))
     .filter(t=> filtro==='todas' ? true : (filtro==='activas' ? t.estado!=='terminado' : t.estado===filtro))
     .sort((a,b)=>{
-      if (ordenTarea==='reciente') return (b.creado_en||'').localeCompare(a.creado_en||'');
-      if (ordenTarea==='antiguo') return (a.creado_en||'').localeCompare(b.creado_en||'');
-      if (ordenTarea==='nombre-az') return (a.descripcion||'').localeCompare(b.descripcion||'');
-      const ord = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
-      if(ord[a.estado]!==ord[b.estado]) return ord[a.estado]-ord[b.estado];
+      const orden = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
+      if(orden[a.estado]!==orden[b.estado]) return orden[a.estado]-orden[b.estado];
       if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1;
       return a.deadline.localeCompare(b.deadline);
     });
   return (
     <Card title="✅ Tareas">
-      <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
-          <option value="activas">Activas (pendiente + en proceso)</option>
-          <option value="pendiente">Solo pendientes</option>
-          <option value="en proceso">Solo en proceso</option>
-          <option value="terminado">Solo terminadas</option>
-          <option value="todas">Todas</option>
-        </select>
-        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={ordenTarea} onChange={e=>setOrdenTarea(e.target.value)}>
-          <option value="venc">Vencimiento próximo primero</option>
-          <option value="reciente">Más reciente primero</option>
-          <option value="antiguo">Más antiguo primero</option>
-          <option value="nombre-az">Nombre A→Z</option>
-        </select>
-      </div>
+      <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
+        <option value="activas">Activas (pendiente + en proceso)</option>
+        <option value="pendiente">Solo pendientes</option>
+        <option value="en proceso">Solo en proceso</option>
+        <option value="terminado">Solo terminadas</option>
+        <option value="todas">Todas</option>
+      </select>
       {lista.length ? lista.map(t=>{
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
@@ -1276,72 +1062,8 @@ function Vencimientos({ expedientes, recargar }) {
                       • {e.caratula?.split(' ')[0]}
                     </div>
                   ))}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* SEPARADOR */}
-        <div style={{borderTop:'1px solid #EEEDEA',marginBottom:16}} />
-
-        {/* LISTA */}
-        <div style={{fontSize:11,fontWeight:600,color:'#6B7280',marginBottom:10,letterSpacing:'0.04em',textTransform:'uppercase'}}>Todos los vencimientos</div>
-        {ordenados.length === 0
-          ? <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin vencimientos cargados.</div>
-          : ordenados.map(e => {
-              const col = vencColor(e.proximo_vencimiento);
-              return (
-                <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:col.color,flexShrink:0}} />
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:600,fontSize:13,color:'#2c2c2c'}}>{e.caratula}</div>
-                    {e.motivo_vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{e.motivo_vencimiento}</div>}
-                  </div>
-                  <div style={{fontSize:12,color:col.color,fontWeight:600,textAlign:'right',flexShrink:0}}>
-                    {formatFecha(e.proximo_vencimiento)}<br/>
-                    <span style={{fontSize:11,fontWeight:400}}>{col.label}</span>
-                  </div>
-                </div>
-              );
-            })
-        }
-      </Card>
-    </div>
-  );
-}
-
-function Clientes({ clientes, expedientes, setVista, setCliActual }) {
-  const [q, setQ] = useState('');
-  const [hoveredRow, setHoveredRow] = useState(null);
-  const [orden, setOrden] = useState('nombre-az');
-  const lista = clientes
-    .filter(cl=>!q || (cl.nombre||'').toLowerCase().includes(q.toLowerCase()) || (cl.dni||'').includes(q))
-    .sort((a,b)=>{
-      if (orden==='nombre-az') return (a.nombre||'').localeCompare(b.nombre||'');
-      if (orden==='nombre-za') return (b.nombre||'').localeCompare(a.nombre||'');
-      if (orden==='reciente') return (b.creado_en||'').localeCompare(a.creado_en||'');
-      if (orden==='antiguo') return (a.creado_en||'').localeCompare(b.creado_en||'');
-      return 0;
-    });
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,gap:8,flexWrap:'wrap'}}>
-        <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:180}} placeholder="Buscar cliente por nombre o DNI..." value={q} onChange={e=>setQ(e.target.value)} />
-        <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={orden} onChange={e=>setOrden(e.target.value)}>
-          <option value="nombre-az">Nombre A→Z</option>
-          <option value="nombre-za">Nombre Z→A</option>
-          <option value="reciente">Más reciente primero</option>
-          <option value="antiguo">Más antiguo primero</option>
-        </select>
-        <button onClick={()=>setVista('nuevo-cliente')} style={btnPrimary}>+ Nuevo cliente</button>
-      </div>
-      <Card>
-        {lista.length ? (
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-            <thead><tr style={{background:'#F7F6F3'}}>{['Nombre','DNI','Teléfono','Quién lo lleva','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
-            <tbody>
-              {lista.map(cl=>{
+                
+                
                 const exps = expedientes.filter(e=>e.cliente_id===cl.id && e.estado!=='archivado');
                 return <tr key={cl.id} style={{cursor:'pointer',background:hoveredRow===cl.id?'#F7F6F3':'transparent'}}
                   onMouseEnter={()=>setHoveredRow(cl.id)} onMouseLeave={()=>setHoveredRow(null)}
@@ -1490,11 +1212,7 @@ function formaLabel(h, valorUhon) {
     if (valorUhon) s += ` (${fmtMoneda(h.valor * valorUhon)})`;
     return s;
   }
-  if (h.forma === 'porcentaje') {
-    let s = `${h.valor}%`;
-    if (h.monto_base) s += ` = ${fmtMoneda(Number(h.valor)/100*Number(h.monto_base))}`;
-    return s;
-  }
+  if (h.forma === 'porcentaje') return `${h.valor}%`;
   return fmtMoneda(h.valor);
 }
 const HON_ESTADO_COLOR = {
@@ -1545,11 +1263,6 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     recargar();
   }
 
-  const cobrados = honorarios.filter(h=>h.estado==='pagado');
-  const pendientes = honorarios.filter(h=>h.estado!=='pagado');
-  const uhonCobrados = cobrados.filter(h=>h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
-
-  const [ordenHon, setOrdenHon] = useState('reciente');
   const lista = honorarios
     .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
     .filter(h=>{
@@ -1558,53 +1271,16 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       const cli = clientes.find(c=>c.id===h.cliente_id);
       const blob = `${h.concepto} ${h.tipo_trabajo||''} ${exp?exp.caratula:''} ${cli?cli.nombre:''}`.toLowerCase();
       return blob.includes(q.toLowerCase());
-    })
-    .sort((a,b)=>{
-      if (ordenHon==='monto-desc') return (Number(b.valor)||0)-(Number(a.valor)||0);
-      if (ordenHon==='monto-asc') return (Number(a.valor)||0)-(Number(b.valor)||0);
-      if (ordenHon==='cliente-az') {
-        const expA=expedientes.find(e=>e.id===a.expediente_id); const cliA=clientes.find(c=>c.id===a.cliente_id);
-        const expB=expedientes.find(e=>e.id===b.expediente_id); const cliB=clientes.find(c=>c.id===b.cliente_id);
-        return (expA?expA.caratula:cliA?cliA.nombre:'').localeCompare(expB?expB.caratula:cliB?cliB.nombre:'');
-      }
-      return (b.creado_en||'').localeCompare(a.creado_en||'');
     });
 
-  const mes = HOY.substring(0,7);
-
-  const totalCobradoMes = cuotas
-    .filter(cu => cu.estado === 'pagada' && cu.vencimiento && cu.vencimiento.startsWith(mes))
-    .reduce((s, cu) => s + Number(cu.monto||0), 0)
-    +
-    honorarios
-      .filter(h => h.estado === 'pagado' && !h.en_cuotas && h.creado_en && h.creado_en.startsWith(mes))
-      .reduce((s, h) => {
-        if (h.forma === 'uhon') return s + (Number(h.valor) * (valorUhon||0));
-        if (h.forma === 'porcentaje') return s + (Number(h.valor)/100 * Number(h.monto_base||0));
-        return s + Number(h.valor||0);
-      }, 0);
-
-  const totalSaldoPendiente = honorarios
-    .filter(h => h.estado !== 'pagado')
-    .reduce((s, h) => {
-      let montoTotal = 0;
-      if (h.forma === 'uhon') montoTotal = Number(h.valor) * (valorUhon||0);
-      else if (h.forma === 'porcentaje') montoTotal = Number(h.valor)/100 * Number(h.monto_base||0);
-      else montoTotal = Number(h.valor||0);
-
-      if (h.en_cuotas) {
-        const cuotasH = cuotas.filter(cu => cu.honorario_id === h.id);
-        const pagado = cuotasH.filter(cu => cu.estado === 'pagada').reduce((a, cu) => a + Number(cu.monto||0), 0);
-        return s + (montoTotal - pagado);
-      }
-      return s + montoTotal;
-    }, 0);
+  // Totales
+  const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
+  const totalUhonPendiente = honorarios.filter(h=>h.estado!=='pagado' && h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
 
   return (
     <div>
-      {/* Tarjetas globales */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:200,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1620,40 +1296,17 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             </div>
           )}
         </div>
-        <div style={{background:'#EAF3DE',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #C0DD97',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#27500A',marginBottom:6}}>✅ Cobrado este mes</div>
-          <div style={{fontSize:24,fontWeight:700,color:'#27500A'}}>{fmtMoneda(totalCobradoMes)}</div>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Honorarios sin cobrar</div>
+          <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
         </div>
-        <div style={{background:'#FAEEDA',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EF9F27',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#633806',marginBottom:6}}>⏳ Saldo pendiente</div>
-          <div style={{fontSize:24,fontWeight:700,color:'#633806'}}>{fmtMoneda(totalSaldoPendiente)}</div>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
+          <div style={{fontSize:28,fontWeight:700}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:14,color:'#6B7280',fontWeight:400}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
         </div>
-      </div>
-
-      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
-        <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
       </div>
 
       <Card>
-        {/* Tarjetas resumen del período */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
-          <div style={{background:'#EBF6E0',borderRadius:10,padding:'12px 14px',border:'1px solid #C0DD97'}}>
-            <div style={{fontSize:11,color:'#27500A',fontWeight:600,marginBottom:4}}>💰 COBRADOS</div>
-            <div style={{fontSize:22,fontWeight:700,color:'#27500A'}}>{cobrados.length}</div>
-          </div>
-          <div style={{background:'#FAEEDA',borderRadius:10,padding:'12px 14px',border:'1px solid #F0CFAB'}}>
-            <div style={{fontSize:11,color:'#633806',fontWeight:600,marginBottom:4}}>⏳ PENDIENTES</div>
-            <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{pendientes.length}</div>
-          </div>
-          <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 14px',border:'1px solid #DDDCDA'}}>
-            <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>📊 UHON COBRADOS</div>
-            <div style={{fontSize:22,fontWeight:700,color:'#444441'}}>
-              {uhonCobrados}
-              {valorUhon && uhonCobrados > 0 && <span style={{fontSize:12,fontWeight:400,color:'#6B7280',marginLeft:6}}>({fmtMoneda(uhonCobrados*valorUhon)})</span>}
-            </div>
-          </div>
-        </div>
-
         <div style={{display:'flex',gap:10,marginBottom:14,flexWrap:'wrap'}}>
           <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
           <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={filtroEstado} onChange={e=>setFiltroEstado(e.target.value)}>
@@ -1662,23 +1315,18 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <option value="en proceso">En proceso</option>
             <option value="pagado">Pagados</option>
           </select>
-          <select style={{...inputStyle,marginBottom:0,width:'auto'}} value={ordenHon} onChange={e=>setOrdenHon(e.target.value)}>
-            <option value="reciente">Más reciente primero</option>
-            <option value="monto-desc">Monto mayor primero</option>
-            <option value="monto-asc">Monto menor primero</option>
-            <option value="cliente-az">Cliente A→Z</option>
-          </select>
+          <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
         </div>
         {lista.length ? (
           <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
-        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios todavía.</div>}
+        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
       </Card>
     </div>
   );
 }
 
 function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
-  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'', fecha: HOY });
+  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'' });
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
@@ -1715,17 +1363,6 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
           {f.forma==='uhon'?'Cantidad de UHON *':f.forma==='porcentaje'?'Porcentaje *':'Monto en pesos *'}
         </label>
         <input type="number" style={inputStyle} placeholder={f.forma==='uhon'?'Ej: 10':f.forma==='porcentaje'?'Ej: 20':'Ej: 500000'} value={f.valor} onChange={e=>set('valor',e.target.value)} />
-        {f.forma==='porcentaje' && (
-          <div>
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Monto base ($) — sobre el que se calcula el porcentaje</label>
-            <input type="number" style={inputStyle} placeholder="Ej: 2500000" value={f.monto_base||''} onChange={e=>set('monto_base',e.target.value)} />
-            {f.valor && f.monto_base && (
-              <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:12}}>
-                💵 Honorario calculado: <strong>${(Number(f.valor)/100*Number(f.monto_base)).toLocaleString('es-AR',{maximumFractionDigits:0})}</strong>
-              </div>
-            )}
-          </div>
-        )}
 
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a expediente</label>
         <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
@@ -1745,8 +1382,6 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
         </label>
         {f.en_cuotas && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:12,marginTop:-4,fontStyle:'italic'}}>Después de guardar, vas a poder cargar las cuotas (monto, vencimiento y estado) desde el detalle del honorario.</div>}
 
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha</label>
-        <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
         <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas} onChange={e=>set('notas',e.target.value)} />
 
@@ -1805,16 +1440,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
 
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-        <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>← Volver a honorarios</button>
-        <button onClick={async ()=>{
-          if(!confirm('¿Eliminar este honorario? También se eliminarán sus cuotas.')) return;
-          await supabase.from('cuotas').delete().eq('honorario_id', h.id);
-          await supabase.from('honorarios').delete().eq('id', h.id);
-          recargar();
-          setVista('honorarios');
-        }} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D'}}>Eliminar honorario</button>
-      </div>
+      <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{fontSize:18,fontWeight:600}}>{h.concepto}</div>
@@ -1849,63 +1475,24 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           </div>
         )}
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12,marginBottom:12}}>
-          {h.forma === 'porcentaje' ? (
-            <div>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>PORCENTAJE Y MONTO BASE</label>
-              <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
-                <input type="number"
-                  value={editForm.valor}
-                  onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
-                  onBlur={async ev=>{
-                    const nuevo = Number(ev.target.value);
-                    if (!nuevo) return;
-                    setHonActual({...h, valor: nuevo});
-                    await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
-                    recargar();
-                  }}
-                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:100,fontFamily:'system-ui',background:'#F7F6F3'}} />
-                <span style={{fontSize:13,color:'#8a8a8a'}}>%</span>
-                <span style={{fontSize:13,color:'#8a8a8a',marginLeft:8}}>sobre</span>
-                <input type="number"
-                  placeholder="Monto base $"
-                  defaultValue={h.monto_base||''}
-                  onBlur={async ev=>{
-                    const nuevo = Number(ev.target.value);
-                    if (!nuevo) return;
-                    await supabase.from('honorarios').update({ monto_base: nuevo }).eq('id', h.id);
-                    recargar();
-                  }}
-                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:150,fontFamily:'system-ui',background:'#F7F6F3'}} />
-              </div>
-              {h.monto_base && h.valor && (
-                <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A'}}>
-                  💵 Total: <strong>${(Number(h.valor)/100*Number(h.monto_base)).toLocaleString('es-AR',{maximumFractionDigits:0})}</strong>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
-                {h.forma==='uhon'?'CANTIDAD DE UHON':'MONTO FIJO ($)'}
-              </label>
-              <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                <input type="number"
-                  value={editForm.valor}
-                  onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
-                  onBlur={async ev=>{
-                    const nuevo = Number(ev.target.value);
-                    if (!nuevo) return;
-                    setHonActual({...h, valor: nuevo});
-                    await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
-                    recargar();
-                  }}
-                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
-                <span style={{fontSize:12,color:'#8a8a8a'}}>
-                  {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : ''}
-                </span>
-              </div>
-            </div>
-          )}
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
+            {h.forma==='uhon'?'CANTIDAD DE UHON':h.forma==='porcentaje'?'PORCENTAJE (%)':'MONTO FIJO ($)'}
+          </label>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <input type="number"
+              defaultValue={h.valor}
+              onBlur={async ev => {
+                const nuevo = Number(ev.target.value);
+                if (!nuevo || nuevo === h.valor) return;
+                setHonActual({...h, valor: nuevo});
+                await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
+                recargar();
+              }}
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
+            <span style={{fontSize:12,color:'#8a8a8a'}}>
+              {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
+            </span>
+          </div>
         </div>
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>ESTADO {h.en_cuotas?'(sugerido por las cuotas, podés cambiarlo)':''}</label>
