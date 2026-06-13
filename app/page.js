@@ -1691,6 +1691,17 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
           {f.forma==='uhon'?'Cantidad de UHON *':f.forma==='porcentaje'?'Porcentaje *':'Monto en pesos *'}
         </label>
         <input type="number" style={inputStyle} placeholder={f.forma==='uhon'?'Ej: 10':f.forma==='porcentaje'?'Ej: 20':'Ej: 500000'} value={f.valor} onChange={e=>set('valor',e.target.value)} />
+        {f.forma==='porcentaje' && (
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Monto base ($) — sobre el que se calcula el porcentaje</label>
+            <input type="number" style={inputStyle} placeholder="Ej: 2500000" value={f.monto_base||''} onChange={e=>set('monto_base',e.target.value)} />
+            {f.valor && f.monto_base && (
+              <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:12}}>
+                💵 Honorario calculado: <strong>${(Number(f.valor)/100*Number(f.monto_base)).toLocaleString('es-AR',{maximumFractionDigits:0})}</strong>
+              </div>
+            )}
+          </div>
+        )}
 
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a expediente</label>
         <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
