@@ -875,7 +875,7 @@ const ESTADO_COLOR = {
 // compatibilidad con tareas viejas que tenían 'completada'
 function normEstado(e) { return e==='completada' ? 'terminado' : (e||'pendiente'); }
 
-function Tareas({ tareas, recargar }) {
+function Tareas({ tareas, recargar, expedientes, clientes }) {
   const [filtro, setFiltro] = useState('activas');
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
