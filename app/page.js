@@ -1592,8 +1592,8 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 14px',border:'1px solid #DDDCDA'}}>
             <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>📊 UHON COBRADOS</div>
             <div style={{fontSize:22,fontWeight:700,color:'#444441'}}>
-              {uhonCobradosPeriodo}
-              {valorUhon && uhonCobradosPeriodo > 0 && <span style={{fontSize:12,fontWeight:400,color:'#6B7280',marginLeft:6}}>({fmtMoneda(uhonCobradosPeriodo*valorUhon)})</span>}
+              {uhonCobrados}
+              {valorUhon && uhonCobrados > 0 && <span style={{fontSize:12,fontWeight:400,color:'#6B7280',marginLeft:6}}>({fmtMoneda(uhonCobrados*valorUhon)})</span>}
             </div>
           </div>
         </div>
