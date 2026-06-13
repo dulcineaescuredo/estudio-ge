@@ -1567,7 +1567,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     <div>
       {/* Tarjetas globales */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:200,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1583,13 +1583,13 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             </div>
           )}
         </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Sin cobrar (total)</div>
-          <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
+        <div style={{background:'#EAF3DE',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #C0DD97',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#27500A',marginBottom:6}}>✅ Cobrado este mes</div>
+          <div style={{fontSize:24,fontWeight:700,color:'#27500A'}}>{fmtMoneda(totalCobradoMes)}</div>
         </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
-          <div style={{fontSize:28,fontWeight:700}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:14,color:'#6B7280',fontWeight:400}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
+        <div style={{background:'#FAEEDA',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EF9F27',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#633806',marginBottom:6}}>⏳ Saldo pendiente</div>
+          <div style={{fontSize:24,fontWeight:700,color:'#633806'}}>{fmtMoneda(totalSaldoPendiente)}</div>
         </div>
       </div>
 
