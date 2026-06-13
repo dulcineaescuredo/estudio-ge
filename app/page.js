@@ -606,11 +606,20 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="archivado">Archivado</option>
           </select>
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
-          <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Sin asignar</option>
-            {ABOGADAS.map(a=><option key={a}>{a}</option>)}
-          </select>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+            {ABOGADAS.map(a => {
+              const responsables = e.responsable ? e.responsable.split(',').map(r=>r.trim()) : [];
+              const sel = responsables.includes(a);
+              return <button key={a} onClick={()=>{
+                const actual = e.responsable ? e.responsable.split(',').map(r=>r.trim()) : [];
+                const nuevo = sel ? actual.filter(r=>r!==a) : [...actual, a];
+                actualizarVencimiento('responsable', nuevo.join(', '));
+              }}
+              style={{padding:'4px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:sel?`1px solid ${socioColor(a).color}`:'1px solid #e2e2e2',background:sel?socioColor(a).bg:'#fff',color:sel?socioColor(a).color:'#8a8a8a',fontFamily:'system-ui'}}>
+                {a}
+              </button>;
+            })}
+          </div>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
           <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
