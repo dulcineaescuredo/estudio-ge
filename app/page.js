@@ -1291,6 +1291,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [editUhon, setEditUhon] = useState(false);
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [mesHist, setMesHist] = useState(()=>new Date(Number(HOY.substring(0,4)), Number(HOY.substring(5,7))-1, 1));
 
   async function guardarUhon() {
     const eid = perfil?.estudio_id;
@@ -1310,14 +1311,23 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       return blob.includes(q.toLowerCase());
     });
 
-  // Totales
+  const mesActual = HOY.substring(0,7);
   const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
   const totalUhonPendiente = honorarios.filter(h=>h.estado!=='pagado' && h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
+  const cobradoMes = cuotas.filter(cu=>cu.estado==='pagada' && (cu.vencimiento||'').startsWith(mesActual)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+  const saldoPendiente = cuotas.filter(cu=>cu.estado!=='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+
+  const mesHistStr = `${mesHist.getFullYear()}-${String(mesHist.getMonth()+1).padStart(2,'0')}`;
+  const esMesActualHist = mesHistStr === mesActual;
+  const cuotasMesHist = cuotas.filter(cu=>(cu.vencimiento||'').startsWith(mesHistStr));
+  const pagadasMesHist = cuotasMesHist.filter(cu=>cu.estado==='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+  const pendientesMesHist = cuotasMesHist.filter(cu=>cu.estado!=='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:200,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12,gap:12,flexWrap:'wrap'}}>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'2 1 200px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
           {!editUhon ? (
             <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1333,13 +1343,24 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             </div>
           )}
         </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Honorarios sin cobrar</div>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Sin cobrar</div>
           <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
+          <div style={{fontSize:11,color:'#8a8a8a',marginTop:4}}>honorarios</div>
         </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:1,minWidth:160,border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
-          <div style={{fontSize:28,fontWeight:700}}>{totalUhonPendiente} {valorUhon?<span style={{fontSize:14,color:'#6B7280',fontWeight:400}}>({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
+          <div style={{fontSize:22,fontWeight:700}}>{totalUhonPendiente}{valorUhon?<span style={{fontSize:13,color:'#6B7280',fontWeight:400}}> ({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
+        </div>
+        <div style={{background:'#EAF3DE',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #C0DD97',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#27500A',marginBottom:6}}>✅ Cobrado este mes</div>
+          <div style={{fontSize:22,fontWeight:700,color:'#27500A'}}>{fmtMoneda(cobradoMes)}</div>
+          <div style={{fontSize:11,color:'#639922',marginTop:4}}>en cuotas pagadas</div>
+        </div>
+        <div style={{background:'#FAEEDA',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #F5D59A',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#633806',marginBottom:6}}>💳 Saldo pendiente</div>
+          <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{fmtMoneda(saldoPendiente)}</div>
+          <div style={{fontSize:11,color:'#9C6018',marginTop:4}}>en cuotas sin pagar</div>
         </div>
       </div>
 
@@ -1357,6 +1378,43 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         {lista.length ? (
           <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
         ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
+      </Card>
+
+      <Card title="📆 Historial mensual">
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+          <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()-1,1))}
+            style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
+          <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:160,textAlign:'center'}}>{MESES[mesHist.getMonth()]} {mesHist.getFullYear()}</span>
+          {!esMesActualHist
+            ? <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
+                style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
+            : <span style={{fontSize:11,color:'#8a8a8a'}}>mes actual</span>}
+        </div>
+        <div style={{display:'flex',gap:10,marginBottom:cuotasMesHist.length?14:0,flexWrap:'wrap'}}>
+          <div style={{background:'#EAF3DE',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
+            <div style={{fontSize:11,color:'#27500A',fontWeight:600,marginBottom:4}}>COBRADO</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#27500A'}}>{fmtMoneda(pagadasMesHist)}</div>
+          </div>
+          <div style={{background:'#FAEEDA',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
+            <div style={{fontSize:11,color:'#633806',fontWeight:600,marginBottom:4}}>PENDIENTE</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#633806'}}>{fmtMoneda(pendientesMesHist)}</div>
+          </div>
+          <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 16px',flex:'1 1 80px'}}>
+            <div style={{fontSize:11,color:'#4a4a4a',fontWeight:600,marginBottom:4}}>CUOTAS</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#1a1a1a'}}>{cuotasMesHist.length}</div>
+          </div>
+        </div>
+        {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
+          const hon = honorarios.find(h=>h.id===cu.honorario_id);
+          return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+              {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
+            </div>
+            <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
+            <Badge bg={cu.estado==='pagada'?'#EAF3DE':'#FAEEDA'} color={cu.estado==='pagada'?'#27500A':'#633806'}>{cu.estado}</Badge>
+          </div>;
+        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
       </Card>
     </div>
   );
