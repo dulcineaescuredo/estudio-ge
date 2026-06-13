@@ -1508,24 +1508,6 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
-  const mesActual = HOY.substring(0,7);
-  const [periodoVista, setPeriodoVista] = useState(mesActual);
-  const esMesActual = periodoVista === mesActual;
-
-  function navPeriodo(dir) {
-    const [y, m] = periodoVista.split('-').map(Number);
-    const d = new Date(y, m - 1 + dir, 1);
-    const nuevo = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    if (dir > 0 && nuevo > mesActual) return;
-    setPeriodoVista(nuevo);
-  }
-
-  const nombreMesPeriodo = (()=>{
-    const [y, m] = periodoVista.split('-').map(Number);
-    const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    return `${nombres[m-1]} ${y}`;
-  })();
-
   async function guardarUhon() {
     const eid = perfil?.estudio_id;
     if (!eid) { alert('Error: no se pudo obtener el estudio.'); return; }
