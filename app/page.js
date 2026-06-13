@@ -772,7 +772,13 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
         <select style={inputStyle} value={f.rol} onChange={e=>set('rol',e.target.value)}>
           <option value="actora">Actora</option>
           <option value="demandada">Demandada</option>
+          <option value="mediacion">Mediación</option>
         </select>
+        {f.rol === 'mediacion' && (
+          <div style={{background:'#FEF0E6',border:'1px solid #EF9F27',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#633806',marginBottom:12}}>
+            ⚖️ Al guardar, el estado quedará como <strong>Finalizado</strong> automáticamente.
+          </div>
+        )}
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Juzgado</label>
         <input style={inputStyle} placeholder="Civil N°1 - Gral. Pico" value={f.juzgado} onChange={e=>set('juzgado',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado *</label>
