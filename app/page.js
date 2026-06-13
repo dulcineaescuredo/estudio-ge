@@ -1793,18 +1793,63 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           </div>
         )}
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12,marginBottom:12}}>
-          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
-            {h.forma==='uhon'?'CANTIDAD DE UHON':h.forma==='porcentaje'?'PORCENTAJE (%)':'MONTO FIJO ($)'}
-          </label>
-          <div style={{display:'flex',gap:8,alignItems:'center'}}>
-            <input type="number"
-              value={editForm.valor}
-              onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
-              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
-            <span style={{fontSize:12,color:'#8a8a8a'}}>
-              {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
-            </span>
-          </div>
+          {h.forma === 'porcentaje' ? (
+            <div>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>PORCENTAJE Y MONTO BASE</label>
+              <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
+                <input type="number"
+                  value={editForm.valor}
+                  onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
+                  onBlur={async ev=>{
+                    const nuevo = Number(ev.target.value);
+                    if (!nuevo) return;
+                    setHonActual({...h, valor: nuevo});
+                    await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
+                    recargar();
+                  }}
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:100,fontFamily:'system-ui',background:'#F7F6F3'}} />
+                <span style={{fontSize:13,color:'#8a8a8a'}}>%</span>
+                <span style={{fontSize:13,color:'#8a8a8a',marginLeft:8}}>sobre</span>
+                <input type="number"
+                  placeholder="Monto base $"
+                  defaultValue={h.monto_base||''}
+                  onBlur={async ev=>{
+                    const nuevo = Number(ev.target.value);
+                    if (!nuevo) return;
+                    await supabase.from('honorarios').update({ monto_base: nuevo }).eq('id', h.id);
+                    recargar();
+                  }}
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:150,fontFamily:'system-ui',background:'#F7F6F3'}} />
+              </div>
+              {h.monto_base && h.valor && (
+                <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A'}}>
+                  💵 Total: <strong>${(Number(h.valor)/100*Number(h.monto_base)).toLocaleString('es-AR',{maximumFractionDigits:0})}</strong>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>
+                {h.forma==='uhon'?'CANTIDAD DE UHON':'MONTO FIJO ($)'}
+              </label>
+              <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <input type="number"
+                  value={editForm.valor}
+                  onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
+                  onBlur={async ev=>{
+                    const nuevo = Number(ev.target.value);
+                    if (!nuevo) return;
+                    setHonActual({...h, valor: nuevo});
+                    await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
+                    recargar();
+                  }}
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
+                <span style={{fontSize:12,color:'#8a8a8a'}}>
+                  {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : ''}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>ESTADO {h.en_cuotas?'(sugerido por las cuotas, podés cambiarlo)':''}</label>
