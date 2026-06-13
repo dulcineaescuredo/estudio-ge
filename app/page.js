@@ -509,7 +509,13 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{mapa?mapa.nombre:'—'}</td>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
                 <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{e.estado}</Badge></td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
+                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                    {e.responsable ? e.responsable.split(',').map(r=>r.trim()).filter(Boolean).map(r=>(
+                      <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                    )) : <span style={{fontSize:12,color:'#6B7280'}}>—</span>}
+                  </div>
+                </td>
               </tr>;
             })}
           </tbody>
