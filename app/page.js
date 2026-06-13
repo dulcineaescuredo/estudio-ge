@@ -1562,9 +1562,17 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const totalSaldoPendiente = honorarios
     .filter(h => h.estado !== 'pagado')
     .reduce((s, h) => {
-      if (h.forma === 'uhon') return s + (Number(h.valor) * (valorUhon||0));
-      if (h.forma === 'porcentaje') return s + (Number(h.valor)/100 * Number(h.monto_base||0));
-      return s + Number(h.valor||0);
+      let montoTotal = 0;
+      if (h.forma === 'uhon') montoTotal = Number(h.valor) * (valorUhon||0);
+      else if (h.forma === 'porcentaje') montoTotal = Number(h.valor)/100 * Number(h.monto_base||0);
+      else montoTotal = Number(h.valor||0);
+
+      if (h.en_cuotas) {
+        const cuotasH = cuotas.filter(cu => cu.honorario_id === h.id);
+        const pagado = cuotasH.filter(cu => cu.estado === 'pagada').reduce((a, cu) => a + Number(cu.monto||0), 0);
+        return s + (montoTotal - pagado);
+      }
+      return s + montoTotal;
     }, 0);
 
   return (
