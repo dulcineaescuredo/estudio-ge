@@ -1789,14 +1789,8 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           </label>
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
             <input type="number"
-              defaultValue={h.valor}
-              onBlur={async ev => {
-                const nuevo = Number(ev.target.value);
-                if (!nuevo || nuevo === h.valor) return;
-                setHonActual({...h, valor: nuevo});
-                await supabase.from('honorarios').update({ valor: nuevo }).eq('id', h.id);
-                recargar();
-              }}
+              value={editForm.valor}
+              onChange={ev=>setEditForm({...editForm,valor:ev.target.value})}
               style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:140,fontFamily:'system-ui',background:'#F7F6F3'}} />
             <span style={{fontSize:12,color:'#8a8a8a'}}>
               {h.forma==='uhon' && valorUhon ? `= ${fmtMoneda(h.valor * valorUhon)}` : h.forma==='porcentaje' ? '%' : ''}
