@@ -814,6 +814,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
           estiloInput={inputStyle}
           wrapperStyle={{marginBottom:12}}
           placeholder="Sin vincular"
+          recargar={recargar}
         />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de máxima</label>
         <textarea style={{...inputStyle,minHeight:52,resize:'vertical'}} placeholder="El mejor resultado posible para el cliente..." value={f.hipotesis_maxima} onChange={e=>set('hipotesis_maxima',e.target.value)} />
