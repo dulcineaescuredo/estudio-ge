@@ -621,6 +621,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             onSelect={id=>actualizarVencimiento('cliente_id',id)}
             estiloInput={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui',outline:'none',boxSizing:'border-box',minWidth:150}}
             placeholder="Sin vincular"
+            recargar={recargar}
           />
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Tipo:</span>
           <select value={e.tipo_proceso||''} onChange={ev=>actualizarVencimiento('tipo_proceso', ev.target.value)}
