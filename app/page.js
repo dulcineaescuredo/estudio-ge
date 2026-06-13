@@ -819,11 +819,21 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
             }
           </>;
         })()}
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
-        <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
-          <option value="">Seleccioná</option>
-          {ABOGADAS.map(a=><option key={a}>{a}</option>)}
-        </select>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable * (podés elegir más de uno)</label>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+          {ABOGADAS.map(a => {
+            const responsables = f.responsable ? f.responsable.split(',').map(r=>r.trim()) : [];
+            const sel = responsables.includes(a);
+            return <button key={a} type="button" onClick={()=>{
+              const actual = f.responsable ? f.responsable.split(',').map(r=>r.trim()) : [];
+              const nuevo = sel ? actual.filter(r=>r!==a) : [...actual, a];
+              set('responsable', nuevo.join(', '));
+            }}
+            style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:sel?`1px solid ${socioColor(a).color}`:'1px solid #e2e2e2',background:sel?socioColor(a).bg:'#fff',color:sel?socioColor(a).color:'#8a8a8a',fontFamily:'system-ui'}}>
+              {a}
+            </button>;
+          })}
+        </div>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
         <ClienteAutocompletar
           clientes={clientes}
