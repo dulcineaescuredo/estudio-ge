@@ -1067,8 +1067,32 @@ function Vencimientos({ expedientes, recargar }) {
                       • {e.caratula?.split(' ')[0]}
                     </div>
                   ))}
-                
-                
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function Clientes({ clientes, setVista, setCliActual, expedientes }) {
+  const [q, setQ] = useState('');
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const lista = clientes.filter(cl=>!q||(cl.nombre||'').toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div>
+      <Card title="👥 Clientes">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+          <input style={{...inputStyle,marginBottom:0,flex:1,maxWidth:320}} placeholder="Buscar cliente..." value={q} onChange={e=>setQ(e.target.value)} />
+          <button onClick={()=>setVista('nuevo-cliente')} style={{...btnPrimary,marginLeft:10,flexShrink:0}}>+ Nuevo cliente</button>
+        </div>
+        {lista.length ? (
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+            <thead><tr style={{background:'#F7F6F3'}}>{['Nombre','DNI','Teléfono','Responsable','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {lista.map(cl=>{
                 const exps = expedientes.filter(e=>e.cliente_id===cl.id && e.estado!=='archivado');
                 return <tr key={cl.id} style={{cursor:'pointer',background:hoveredRow===cl.id?'#F7F6F3':'transparent'}}
                   onMouseEnter={()=>setHoveredRow(cl.id)} onMouseLeave={()=>setHoveredRow(null)}
