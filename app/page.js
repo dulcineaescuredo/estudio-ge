@@ -319,14 +319,19 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No hay vencimientos cargados. Cargá las fechas al crear o editar un expediente.</div>}
       </Card>
-      <Card title="📝 Últimas anotaciones">
-        {notas.length ? notas.slice(0,5).map(n=>{
-          const ex = expedientes.find(e=>e.id===n.expediente_id);
-          return <div key={n.id} style={{padding:'9px 0',borderBottom:'1px solid #F0EFED',cursor:ex?'pointer':'default'}} onClick={()=>{if(ex){setExpActual(ex);setVista('detalle');}}}>
-            <div style={{fontSize:11,color:'#8a8a8a',marginBottom:2}}>{ex?ex.caratula:''} · {formatFecha(n.fecha)} · {n.autora}</div>
-            <div style={{fontSize:12}}>{n.texto.length>100?n.texto.slice(0,100)+'…':n.texto}</div>
+      <Card title="✅ Mis tareas pendientes">
+        {misTareas.length ? misTareas.map(t=>{
+          const ec = ESTADO_COLOR[normEstado(t.estado)] || ESTADO_COLOR['pendiente'];
+          const dp = t.deadline ? t.deadline.split('-') : null;
+          const deadlineStr = dp ? `${dp[2]}/${dp[1]}/${dp[0]}` : null;
+          return <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:4}}>{t.descripcion}</div>
+              {deadlineStr && <div style={{fontSize:11,color:'#8a8a8a'}}>Vence: {deadlineStr}</div>}
+            </div>
+            <Badge bg={ec.bg} color={ec.color}>{normEstado(t.estado)}</Badge>
           </div>;
-        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin anotaciones aún</div>}
+        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No tenés tareas pendientes 🎉</div>}
       </Card>
     </div>
   );
