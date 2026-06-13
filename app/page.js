@@ -1654,7 +1654,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
 }
 
 function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
-  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'' });
+  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'' });
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
