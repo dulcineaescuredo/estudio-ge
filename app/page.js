@@ -1749,7 +1749,16 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
 
   return (
     <div>
-      <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a honorarios</button>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+        <button onClick={()=>setVista('honorarios')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>← Volver a honorarios</button>
+        <button onClick={async ()=>{
+          if(!confirm('¿Eliminar este honorario? También se eliminarán sus cuotas.')) return;
+          await supabase.from('cuotas').delete().eq('honorario_id', h.id);
+          await supabase.from('honorarios').delete().eq('id', h.id);
+          recargar();
+          setVista('honorarios');
+        }} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D'}}>Eliminar honorario</button>
+      </div>
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{fontSize:18,fontWeight:600}}>{h.concepto}</div>
