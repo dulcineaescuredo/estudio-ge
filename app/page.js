@@ -1465,7 +1465,11 @@ function formaLabel(h, valorUhon) {
     if (valorUhon) s += ` (${fmtMoneda(h.valor * valorUhon)})`;
     return s;
   }
-  if (h.forma === 'porcentaje') return `${h.valor}%`;
+  if (h.forma === 'porcentaje') {
+    let s = `${h.valor}%`;
+    if (h.monto_base) s += ` = ${fmtMoneda(Number(h.valor)/100*Number(h.monto_base))}`;
+    return s;
+  }
   return fmtMoneda(h.valor);
 }
 const HON_ESTADO_COLOR = {
