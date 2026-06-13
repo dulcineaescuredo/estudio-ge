@@ -567,6 +567,9 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     const np = JSON.parse(JSON.stringify(prog));
     if (np.dec[etId]===op) delete np.dec[etId]; else { np.dec[etId]=op; if(!np.hechas[etId]) np.hechas[etId]=HOY; }
     guardarProg(np);
+    if (etId === 'med' && op === 'Acuerdo (cierra acá)') {
+      supabase.from('expedientes').update({ estado: 'finalizado' }).eq('id', e.id).then(() => recargar());
+    }
   }
   async function actualizarVencimiento(campo, valor) {
     setExpActual({...e, [campo]: valor});
