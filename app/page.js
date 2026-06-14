@@ -1539,6 +1539,13 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     setEditando(false);
     recargar();
   }
+  async function eliminarHonorario() {
+    if (!confirm(`¿Eliminar el honorario "${h.concepto}"? Esta acción no se puede deshacer.`)) return;
+    await supabase.from('cuotas').delete().eq('honorario_id', h.id);
+    await supabase.from('honorarios').delete().eq('id', h.id);
+    recargar();
+    setVista('honorarios');
+  }
 
   const estadosDisp = h.en_cuotas ? ['pendiente','en proceso','pagado'] : ['pendiente','pagado'];
 
