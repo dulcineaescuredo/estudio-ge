@@ -1557,6 +1557,25 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas</label>
         <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas} onChange={e=>set('notas',e.target.value)} />
 
+        {perfilesEstudio.length > 0 && (
+          <div style={{marginBottom:14,background:'#F7F6F3',borderRadius:10,padding:'12px 14px'}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#4a4a4a',display:'block',marginBottom:8}}>Distribución entre socios</label>
+            {distribSocios.map((ds,i)=>(
+              <div key={ds.perfil_id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                <span style={{fontSize:13,color:'#4a4a4a',flex:1}}>{ds.nombre}</span>
+                <input type="number" min="0" max="100" value={ds.porcentaje}
+                  onChange={ev=>{ const n=[...distribSocios]; n[i]={...n[i],porcentaje:ev.target.value}; setDistribSocios(n); }}
+                  style={{width:70,padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:13,fontFamily:'system-ui',textAlign:'right'}} />
+                <span style={{fontSize:13,color:'#4a4a4a'}}>%</span>
+              </div>
+            ))}
+            {(()=>{ const s=distribSocios.reduce((a,ds)=>a+Number(ds.porcentaje||0),0);
+              return <div style={{fontSize:11,marginTop:4,color:s===100?'#27500A':s===0?'#8a8a8a':'#A32D2D'}}>
+                {s===0?'Sin distribución configurada (se guardará sin reparto)':s===100?'✓ Suma 100%':`Suma ${s}% — debe ser 100%`}
+              </div>; })()}
+          </div>
+        )}
+
         <button onClick={guardar} style={btnPrimary}>Guardar honorario</button>
       </div>
     </Card>
