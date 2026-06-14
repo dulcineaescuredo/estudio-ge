@@ -1475,9 +1475,13 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         </div>
       </div>
 
+      {vistaHon==='estadisticas' ? (
+        <EstadisticasHon cuotas={cuotas} honorarios={honorarios} expedientes={expedientes} clientes={clientes} onVolver={()=>setVistaHon('normal')} />
+      ) : (<>
       <Card>
         <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap',alignItems:'center'}}>
           <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
+          <button onClick={()=>setVistaHon('estadisticas')} style={{...btnPrimary,background:'#fff',color:'#4a4a4a',border:'1px solid #DDDCDA'}}>📊 Estadísticas</button>
           <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
         </div>
         <div style={{display:'flex',gap:14,marginBottom:14,flexWrap:'wrap',alignItems:'center'}}>
