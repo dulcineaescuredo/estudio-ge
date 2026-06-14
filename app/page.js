@@ -1798,16 +1798,21 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
       estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null };
     const { data: honData, error } = await supabase.from('honorarios').insert(payload).select('id').single();
     if (error) { alert('Error: '+error.message); return; }
-    if (somaDistrib === 100 && honData?.id) {
-      await supabase.from('honorarios_socios').insert(
-        distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).map(ds=>({
-          honorario_id: honData.id, perfil_id: ds.perfil_id, porcentaje: Number(ds.porcentaje), estudio_id: perfil.estudio_id
-        }))
-      );
+    if (honData?.id) {
+      const gp=Number(gastosPorc||0);
+      const rows=[];
+      if (gp>0) rows.push({ honorario_id:honData.id, perfil_id:null, porcentaje:gp, estudio_id:perfil.estudio_id, es_gasto:true });
+      if (somaDistrib===100) {
+        const factor=(100-gp)/100;
+        distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).forEach(ds=>{
+          rows.push({ honorario_id:honData.id, perfil_id:ds.perfil_id, porcentaje:Number(ds.porcentaje)*factor, estudio_id:perfil.estudio_id, es_gasto:false });
+        });
+      }
+      if (rows.length) await supabase.from('honorarios_socios').insert(rows);
     }
     setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
     setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
-    setDistribSocios(defaultDistrib(perfilesEstudio));
+    setDistribSocios(distribSocios.map(ds=>({...ds,porcentaje:0})));
     recargar();
     setTimeout(()=>setMsg(''),4000);
   }
