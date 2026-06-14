@@ -1467,10 +1467,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           )}
         </div>
         <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Sin cobrar</div>
-          <div style={{fontSize:28,fontWeight:700}}>{totalPendiente}</div>
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Por cobrar</div>
+          <div style={{fontSize:28,fontWeight:700}}>{totalPorCobrar}</div>
           <div style={{fontSize:11,color:'#8a8a8a',marginTop:4}}>honorarios</div>
-          {montoSinCobrar > 0 && <div style={{fontSize:12,fontWeight:600,color:'#4a4a4a',marginTop:6}}>{fmtMoneda(montoSinCobrar)}</div>}
+          {montoPorCobrar > 0 && <div style={{fontSize:12,fontWeight:600,color:'#4a4a4a',marginTop:6}}>{fmtMoneda(montoPorCobrar)}</div>}
         </div>
         <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
