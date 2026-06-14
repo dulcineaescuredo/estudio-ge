@@ -295,7 +295,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
   const vencProximos = expedientes.filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
     .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento)).slice(0,6);
   const misTareas = tareas
-    .filter(t => t.estudio_id === '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b' && t.responsable === perfil?.nombre && normEstado(t.estado) !== 'terminado')
+    .filter(t => t.estudio_id === '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b' && (t.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre) && normEstado(t.estado) !== 'terminado')
     .sort((a,b) => { if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1; return a.deadline.localeCompare(b.deadline); });
   const cuotasACobrar = (cuotas||[])
     .filter(cu=>cu.estado==='pendiente' && cu.vencimiento && cu.vencimiento<=HOY)
