@@ -2366,3 +2366,370 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
     </Card>
   );
 }
+
+const TIPOS_AUDIENCIA = ['Audiencia preliminar','Vista de causa','Audiencia de prueba','Alegatos','Sentencia','Conciliación','Otra'];
+const TIPOS_TURNO = ['Consulta inicial','Firma de documentos','Reunión interna','Asesoramiento','Entrega de documentos','Otro'];
+const DIAS_SEM_AG = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MESES_AG = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function AgendaModule({ tabla, titulo, emoji, expedientes, clientes, perfil }) {
+  const tipos = tabla==='audiencias' ? TIPOS_AUDIENCIA : TIPOS_TURNO;
+  const [eventos, setEventos] = useState([]);
+  const [vistaAg, setVistaAg] = useState('mes');
+  const [navDate, setNavDate] = useState(new Date(HOY+'T00:00:00'));
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [eventoEdit, setEventoEdit] = useState(null);
+  const [fechaPres, setFechaPres] = useState(HOY);
+  const [detalleEv, setDetalleEv] = useState(null);
+
+  useEffect(()=>{ cargar(); },[]);
+
+  async function cargar() {
+    const { data } = await supabase.from(tabla).select('*')
+      .eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b')
+      .order('fecha').order('hora',{nullsFirst:false});
+    setEventos(data||[]);
+  }
+
+  function dateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function evsDia(fs) {
+    return eventos.filter(e=>e.fecha===fs).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  }
+  function fmtH(h) { return h?h.substring(0,5):''; }
+
+  function abrirNuevo(fecha) {
+    setEventoEdit(null); setFechaPres(fecha||HOY); setDetalleEv(null); setMostrarForm(true);
+  }
+  function abrirEditar(ev) {
+    setEventoEdit(ev); setFechaPres(ev.fecha); setDetalleEv(null); setMostrarForm(true);
+  }
+  function abrirDetalle(ev) { setDetalleEv(ev); setMostrarForm(false); }
+  function cerrar() { setMostrarForm(false); setDetalleEv(null); }
+
+  async function guardar(datos) {
+    if (eventoEdit) {
+      await supabase.from(tabla).update(datos).eq('id',eventoEdit.id);
+    } else {
+      await supabase.from(tabla).insert({...datos,estudio_id:'51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'});
+    }
+    cerrar(); cargar();
+  }
+  async function eliminar(id) {
+    if (!confirm('¿Eliminar este evento?')) return;
+    await supabase.from(tabla).delete().eq('id',id);
+    cerrar(); cargar();
+  }
+
+  const año = navDate.getFullYear();
+  const mes = navDate.getMonth();
+
+  function navAnt() {
+    if (vistaAg==='mes') setNavDate(new Date(año,mes-1,1));
+    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()-7*864e5));
+    else setNavDate(new Date(navDate.getTime()-864e5));
+  }
+  function navSig() {
+    if (vistaAg==='mes') setNavDate(new Date(año,mes+1,1));
+    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()+7*864e5));
+    else setNavDate(new Date(navDate.getTime()+864e5));
+  }
+
+  const lunSem = new Date(navDate);
+  lunSem.setDate(navDate.getDate()-((navDate.getDay()+6)%7));
+
+  let navTit = '';
+  if (vistaAg==='mes') navTit = `${MESES_AG[mes]} ${año}`;
+  else if (vistaAg==='semana') {
+    const domSem = new Date(lunSem); domSem.setDate(lunSem.getDate()+6);
+    navTit = `${lunSem.getDate()} ${MESES_AG[lunSem.getMonth()].substring(0,3)} — ${domSem.getDate()} ${MESES_AG[domSem.getMonth()].substring(0,3)} ${domSem.getFullYear()}`;
+  } else {
+    navTit = `${navDate.getDate()} de ${MESES_AG[mes]} ${año}`;
+  }
+
+  const chipBg = tabla==='audiencias'?'#9B4F6A':'#2B6CB0';
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
+        <div style={{fontSize:22,fontWeight:700,color:'#1A1A1A'}}>{emoji} {titulo}</div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <div style={{display:'flex',border:'1px solid #DDDCDA',borderRadius:8,overflow:'hidden'}}>
+            {[['mes','Mes'],['semana','Semana'],['dia','Día']].map(([v,l])=>(
+              <button key={v} onClick={()=>setVistaAg(v)}
+                style={{padding:'6px 14px',fontSize:12,fontWeight:vistaAg===v?600:400,cursor:'pointer',border:'none',
+                  background:vistaAg===v?'#9B4F6A':'#fff',color:vistaAg===v?'#fff':'#6B7280',fontFamily:'system-ui'}}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <button onClick={()=>abrirNuevo(HOY)} style={btnPrimary}>+ Nuevo</button>
+        </div>
+      </div>
+
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+        <button onClick={navAnt} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
+        <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:220,textAlign:'center'}}>{navTit}</span>
+        <button onClick={navSig} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>›</button>
+        <button onClick={()=>setNavDate(new Date(HOY+'T00:00:00'))} style={{fontSize:11,color:'#6B7280',background:'none',border:'1px solid #DDDCDA',borderRadius:6,padding:'3px 8px',cursor:'pointer',fontFamily:'system-ui'}}>Hoy</button>
+      </div>
+
+      {vistaAg==='mes' && (()=>{
+        const primer = new Date(año,mes,1).getDay();
+        const offset = (primer+6)%7;
+        const ultDia = new Date(año,mes+1,0).getDate();
+        const celdas = [];
+        for (let i=0;i<offset;i++) celdas.push(null);
+        for (let d=1;d<=ultDia;d++) celdas.push(d);
+        return (
+          <Card>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
+              {DIAS_SEM_AG.map(d=><div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#8a8a8a',padding:'4px 0'}}>{d}</div>)}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+              {celdas.map((d,i)=>{
+                if (!d) return <div key={`b${i}`} style={{minHeight:72}} />;
+                const fs = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const evs = evsDia(fs);
+                const esHoy = fs===HOY;
+                return (
+                  <div key={d} onClick={()=>abrirNuevo(fs)}
+                    style={{minHeight:72,borderRadius:8,padding:'5px 4px',cursor:'pointer',
+                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}
+                    onMouseEnter={e=>{if(!esHoy)e.currentTarget.style.background='#F0EEE8';}}
+                    onMouseLeave={e=>{if(!esHoy)e.currentTarget.style.background='#F7F6F3';}}>
+                    <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:2}}>{d}</div>
+                    {evs.slice(0,2).map(ev=>(
+                      <div key={ev.id} onClick={e=>{e.stopPropagation();abrirDetalle(ev);}}
+                        style={{fontSize:10,background:chipBg,color:'#fff',borderRadius:4,padding:'1px 4px',
+                          marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',cursor:'pointer'}}>
+                        {fmtH(ev.hora)&&`${fmtH(ev.hora)} `}{(ev.tipo||'').substring(0,18)}
+                      </div>
+                    ))}
+                    {evs.length>2 && <div style={{fontSize:9,color:'#8a8a8a'}}>+{evs.length-2} más</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        );
+      })()}
+
+      {vistaAg==='semana' && (()=>{
+        const dias = Array.from({length:7},(_,i)=>{const d=new Date(lunSem);d.setDate(lunSem.getDate()+i);return d;});
+        return (
+          <Card>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:6}}>
+              {dias.map(d=>{
+                const fs = dateStr(d);
+                const evs = evsDia(fs);
+                const esHoy = fs===HOY;
+                return (
+                  <div key={fs} onClick={()=>abrirNuevo(fs)}
+                    style={{minHeight:120,borderRadius:10,padding:'8px 6px',cursor:'pointer',
+                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}>
+                    <div style={{fontSize:11,fontWeight:600,color:esHoy?'#2B6CB0':'#4a4a4a'}}>{DIAS_SEM_AG[(d.getDay()+6)%7]}</div>
+                    <div style={{fontSize:18,fontWeight:700,color:esHoy?'#2B6CB0':'#1a1a1a',marginBottom:6}}>{d.getDate()}</div>
+                    {evs.map(ev=>(
+                      <div key={ev.id} onClick={e=>{e.stopPropagation();abrirDetalle(ev);}}
+                        style={{fontSize:10,background:chipBg,color:'#fff',borderRadius:4,padding:'2px 5px',
+                          marginBottom:3,cursor:'pointer',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                        {fmtH(ev.hora)&&`${fmtH(ev.hora)} `}{(ev.tipo||'').substring(0,20)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        );
+      })()}
+
+      {vistaAg==='dia' && (()=>{
+        const fs = dateStr(navDate);
+        const evs = evsDia(fs);
+        return (
+          <Card>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>Eventos del día</span>
+              <button onClick={()=>abrirNuevo(fs)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>+ Agregar</button>
+            </div>
+            {evs.length===0 && <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin eventos para este día.</div>}
+            {evs.map(ev=>{
+              const exp=(expedientes||[]).find(e=>e.id===ev.expediente_id);
+              const cli=(clientes||[]).find(c=>c.id===ev.cliente_id);
+              const vinc=exp?exp.caratula:cli?cli.nombre:null;
+              return (
+                <div key={ev.id} onClick={()=>abrirDetalle(ev)}
+                  style={{display:'flex',gap:14,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}}>
+                  <div style={{width:48,flexShrink:0,textAlign:'right'}}>
+                    <div style={{fontSize:15,fontWeight:700,color:chipBg}}>{fmtH(ev.hora)||'—'}</div>
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500,marginBottom:3}}>{ev.tipo||'Evento'}</div>
+                    {ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:4}}>{ev.descripcion}</div>}
+                    {vinc&&<div style={{fontSize:11,color:'#8a8a8a',marginBottom:3}}>📁 {vinc}</div>}
+                    {ev.responsable&&(
+                      <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                        {ev.responsable.split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+                          <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        );
+      })()}
+
+      {detalleEv&&!mostrarForm&&(
+        <AgendaDetalle ev={detalleEv} expedientes={expedientes||[]} clientes={clientes||[]}
+          onEditar={()=>abrirEditar(detalleEv)} onEliminar={()=>eliminar(detalleEv.id)} onCerrar={cerrar} />
+      )}
+
+      {mostrarForm&&(
+        <AgendaForm tipos={tipos} fechaPres={fechaPres} eventoEdit={eventoEdit}
+          expedientes={expedientes||[]} clientes={clientes||[]} perfil={perfil}
+          onGuardar={guardar} onCancelar={cerrar} />
+      )}
+    </div>
+  );
+}
+
+function AgendaDetalle({ ev, expedientes, clientes, onEditar, onEliminar, onCerrar }) {
+  const exp = expedientes.find(e=>e.id===ev.expediente_id);
+  const cli = clientes.find(c=>c.id===ev.cliente_id);
+  const vinc = exp?exp.caratula:cli?cli.nombre:null;
+  return (
+    <Card>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}}>
+        <div style={{fontSize:16,fontWeight:600,color:'#1a1a1a'}}>{ev.tipo||'Evento'}</div>
+        <button onClick={onCerrar} style={{fontSize:12,color:'#6B7280',background:'none',border:'none',cursor:'pointer',padding:'2px 6px'}}>✕ Cerrar</button>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px',fontSize:13,marginBottom:16}}>
+        <div><span style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:2}}>Fecha</span>{formatFecha(ev.fecha)||ev.fecha}</div>
+        <div><span style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:2}}>Hora</span>{ev.hora?ev.hora.substring(0,5):'—'}</div>
+        {vinc&&<div style={{gridColumn:'1/3'}}><span style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:2}}>Vinculado a</span>{vinc}</div>}
+        {ev.descripcion&&<div style={{gridColumn:'1/3'}}><span style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:2}}>Descripción</span><span style={{lineHeight:1.5}}>{ev.descripcion}</span></div>}
+        {ev.responsable&&(
+          <div style={{gridColumn:'1/3'}}>
+            <span style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Responsable</span>
+            <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+              {ev.responsable.split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+                <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={onEditar} style={btnPrimary}>Editar</button>
+        <button onClick={onEliminar} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>Eliminar</button>
+      </div>
+    </Card>
+  );
+}
+
+function AgendaForm({ tipos, fechaPres, eventoEdit, expedientes, clientes, perfil, onGuardar, onCancelar }) {
+  const [f, setF] = useState({
+    fecha: eventoEdit?.fecha||fechaPres||HOY,
+    hora: eventoEdit?.hora||'',
+    tipo: eventoEdit?.tipo||tipos[0]||'',
+    descripcion: eventoEdit?.descripcion||'',
+    responsable: eventoEdit?.responsable||perfil?.nombre||'',
+  });
+  const [vinculo, setVinculo] = useState(
+    eventoEdit?.expediente_id?'expediente':eventoEdit?.cliente_id?'cliente':'ninguno'
+  );
+  const [vincQ, setVincQ] = useState('');
+  const [vincId, setVincId] = useState(eventoEdit?.expediente_id||eventoEdit?.cliente_id||'');
+  const [vincNombre, setVincNombre] = useState(()=>{
+    if (eventoEdit?.expediente_id) return expedientes.find(e=>e.id===eventoEdit.expediente_id)?.caratula||'';
+    if (eventoEdit?.cliente_id) return clientes.find(c=>c.id===eventoEdit.cliente_id)?.nombre||'';
+    return '';
+  });
+  const [vincAbierto, setVincAbierto] = useState(false);
+  const set = (k,v)=>setF(p=>({...p,[k]:v}));
+
+  const sugsExp = vinculo==='expediente'&&vincQ ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(vincQ.toLowerCase())||(e.numero||'').includes(vincQ)).slice(0,8) : [];
+  const sugsCli = vinculo==='cliente'&&vincQ ? clientes.filter(c=>(c.nombre||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8) : [];
+
+  async function guardar() {
+    if (!f.fecha) { alert('La fecha es obligatoria.'); return; }
+    onGuardar({
+      fecha: f.fecha,
+      hora: f.hora||null,
+      tipo: f.tipo||null,
+      descripcion: f.descripcion||null,
+      responsable: f.responsable||null,
+      expediente_id: vinculo==='expediente'?vincId||null:null,
+      cliente_id: vinculo==='cliente'?vincId||null:null,
+    });
+  }
+
+  return (
+    <Card title={eventoEdit?'Editar evento':'Nuevo evento'}>
+      <div style={{maxWidth:520}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
+            <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
+          </div>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hora</label>
+            <input type="time" style={inputStyle} value={f.hora} onChange={e=>set('hora',e.target.value)} />
+          </div>
+        </div>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo</label>
+        <select style={inputStyle} value={f.tipo} onChange={e=>set('tipo',e.target.value)}>
+          {tipos.map(t=><option key={t} value={t}>{t}</option>)}
+        </select>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a</label>
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente']].map(([v,l])=>(
+            <button key={v} type="button" onClick={()=>{setVinculo(v);setVincQ('');setVincId('');setVincNombre('');}}
+              style={{flex:1,padding:'7px 6px',border:vinculo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,
+                fontSize:12,fontWeight:500,cursor:'pointer',background:vinculo===v?'#E6F1FB':'#f9f8f5',
+                color:vinculo===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
+          ))}
+        </div>
+        {(vinculo==='expediente'||vinculo==='cliente')&&(
+          <div style={{position:'relative',marginBottom:12}}>
+            <input style={{...inputStyle,marginBottom:0}}
+              placeholder={vinculo==='expediente'?'N° o carátula...':'Nombre del cliente...'}
+              value={vincNombre||vincQ}
+              onChange={ev=>{setVincQ(ev.target.value);setVincId('');setVincNombre('');setVincAbierto(true);}}
+              onFocus={()=>setVincAbierto(true)}
+              onBlur={()=>setTimeout(()=>setVincAbierto(false),150)} />
+            {vincId&&<div style={{fontSize:11,color:'#27500A',marginTop:4}}>✓ {vincNombre}</div>}
+            {vincAbierto&&(vinculo==='expediente'?sugsExp:sugsCli).length>0&&(
+              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',
+                borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
+                {(vinculo==='expediente'?sugsExp:sugsCli).map(item=>(
+                  <div key={item.id} onMouseDown={e=>e.preventDefault()}
+                    onClick={()=>{setVincId(item.id);setVincNombre(vinculo==='expediente'?item.caratula:item.nombre);setVincQ('');setVincAbierto(false);}}
+                    style={{padding:'9px 12px',cursor:'pointer',fontSize:12,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
+                    {vinculo==='expediente'
+                      ?<><span style={{color:'#6B7280',fontSize:11}}>{item.numero} — </span>{item.caratula}</>
+                      :item.nombre}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción</label>
+        <textarea style={{...inputStyle,minHeight:64,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable</label>
+        <SocioChips value={f.responsable} onChange={v=>set('responsable',v)} />
+        <div style={{display:'flex',gap:8,marginTop:4}}>
+          <button onClick={guardar} style={btnPrimary}>Guardar</button>
+          <button onClick={onCancelar} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+        </div>
+      </div>
+    </Card>
+  );
+}
