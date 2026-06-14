@@ -611,7 +611,24 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
   const [f, setF] = useState({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'', rol:'actora' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
+  const [responsableSugerido, setResponsableSugerido] = useState(false);
   const set = (k,v) => setF({...f,[k]:v});
+  async function onClienteChange(clienteId) {
+    setF(prev=>({...prev, cliente_id: clienteId}));
+    setResponsableSugerido(false);
+    if (!clienteId) return;
+    const { data } = await supabase.from('expedientes')
+      .select('responsable')
+      .eq('cliente_id', clienteId)
+      .eq('estudio_id', '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data?.responsable) {
+      setF(prev=>({...prev, responsable: data.responsable}));
+      setResponsableSugerido(true);
+    }
+  }
   async function guardar() {
     if (!f.numero||!f.caratula||!f.tipo_proceso||!f.responsable) { alert('Completá los campos obligatorios (*)'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
@@ -620,6 +637,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Expediente ${f.numero} guardado.`);
     setF({ numero:'', caratula:'', juzgado:'', tipo_proceso:'', estado:'activo', proximo_vencimiento:'', motivo_vencimiento:'', responsable:'', notas:'', cliente_id:'', hipotesis_maxima:'', hipotesis_minima:'', rol:'actora' });
+    setResponsableSugerido(false);
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
