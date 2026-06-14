@@ -899,6 +899,30 @@ const ESTADO_COLOR = {
 // compatibilidad con tareas viejas que tenían 'completada'
 function normEstado(e) { return e==='completada' ? 'terminado' : (e||'pendiente'); }
 
+function SocioChips({ value, onChange }) {
+  const sel = (value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  function toggle(nombre) {
+    const s = new Set(sel);
+    if (s.has(nombre)) s.delete(nombre); else s.add(nombre);
+    onChange([...s].join(', '));
+  }
+  return (
+    <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+      {ABOGADAS.map(a=>{
+        const active = sel.includes(a);
+        const col = socioColor(a);
+        return <button key={a} type="button" onClick={()=>toggle(a)}
+          style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+            border:active?`1.5px solid ${col.color}`:'1.5px solid #e2e2e2',
+            background:active?col.bg:'#fff',
+            color:active?col.color:'#8a8a8a'}}>
+          {a}
+        </button>;
+      })}
+    </div>
+  );
+}
+
 function Tareas({ tareas, recargar, expedientes, clientes }) {
   const [filtro, setFiltro] = useState('activas');
   const [editandoId, setEditandoId] = useState(null);
