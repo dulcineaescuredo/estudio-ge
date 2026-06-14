@@ -1526,7 +1526,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       </Card>
 
       <Card title="📆 Historial mensual">
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14,flexWrap:'wrap'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
           <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()-1,1))}
             style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
           <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:160,textAlign:'center'}}>{MESES[mesHist.getMonth()]} {mesHist.getFullYear()}</span>
@@ -1534,17 +1534,8 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             ? <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
                 style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
             : <span style={{fontSize:11,color:'#8a8a8a'}}>mes actual</span>}
-          <div style={{marginLeft:'auto',display:'flex',gap:4}}>
-            {[['tabla','📋 Tabla'],['grafico','📊 Gráfico']].map(([v,l])=>(
-              <button key={v} onClick={()=>setVistaHist(v)}
-                style={{padding:'4px 10px',borderRadius:8,fontSize:12,cursor:'pointer',fontFamily:'system-ui',
-                  border:vistaHist===v?'1px solid #9B4F6A':'1px solid #DDDCDA',
-                  background:vistaHist===v?'#FBEAF0':'#fff',
-                  color:vistaHist===v?'#72243E':'#6B7280'}}>{l}</button>
-            ))}
-          </div>
         </div>
-        <div style={{display:'flex',gap:10,marginBottom:14,flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:10,marginBottom:cuotasMesHist.length?14:0,flexWrap:'wrap'}}>
           <div style={{background:'#F0FBF0',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
             <div style={{fontSize:11,color:'#15803D',fontWeight:600,marginBottom:4}}>COBRADO</div>
             <div style={{fontSize:20,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(pagadasMesHist)}</div>
@@ -1562,112 +1553,26 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <div style={{fontSize:20,fontWeight:700,color:'#2563EB'}}>{fmtMoneda(miGanancia)}</div>
           </div>
         </div>
-        <div style={{marginBottom:16}} onMouseLeave={()=>setHoveredBar8(null)}>
-          <div style={{fontSize:11,color:'#8a8a8a',marginBottom:6}}>Evolución últimos 6 meses</div>
-          <svg viewBox="0 0 540 170" style={{width:'100%',height:'auto',display:'block',overflow:'visible'}}>
-            {[0.33,0.66,1].map(f=>(
-              <line key={f} x1="10" y1={24+118*(1-f)} x2="530" y2={24+118*(1-f)} stroke="#F0EFED" strokeWidth="1"/>
-            ))}
-            {seisMeses.map((m,i)=>{
-              const gW=520/6, gX=10+i*gW, bW=20, gap=4;
-              const offset=(gW-bW*2-gap)/2;
-              const cX=gX+offset, pX=cX+bW+gap;
-              const cH=Math.max(0,(m.cobrado/max8)*110), pH=Math.max(0,(m.pendiente/max8)*110);
-              const base=142;
-              const yr=m.year!==Number(HOY.substring(0,4))?` ${String(m.year).slice(-2)}`:'';
-              return (
-                <g key={m.str}>
-                  <rect x={cX} y={base-cH} width={bW} height={Math.max(cH,1)} rx={2}
-                    fill={hoveredBar8&&hoveredBar8.str===m.str&&hoveredBar8.tipo==='cobrado'?'#15803D':'#16A34A'}
-                    onMouseEnter={()=>setHoveredBar8({str:m.str,tipo:'cobrado',tx:Math.min(Math.max(cX+bW/2,60),480),ty:Math.max(base-cH-8,14),text:`${MESES_CORTOS[m.mes]}${yr}: ${fmtMoneda(m.cobrado)}`})}
-                  />
-                  <rect x={pX} y={base-pH} width={bW} height={Math.max(pH,1)} rx={2}
-                    fill={hoveredBar8&&hoveredBar8.str===m.str&&hoveredBar8.tipo==='pendiente'?'#92400E':'#B45309'}
-                    onMouseEnter={()=>setHoveredBar8({str:m.str,tipo:'pendiente',tx:Math.min(Math.max(pX+bW/2,60),480),ty:Math.max(base-pH-8,14),text:`${MESES_CORTOS[m.mes]}${yr}: ${fmtMoneda(m.pendiente)}`})}
-                  />
-                  <text x={gX+gW/2} y={158} textAnchor="middle" fontSize={9} fill="#8a8a8a" fontFamily="system-ui">{MESES_CORTOS[m.mes]+yr}</text>
-                </g>
-              );
-            })}
-            {hoveredBar8 && (
-              <g>
-                <rect x={hoveredBar8.tx-55} y={hoveredBar8.ty-18} width={110} height={18} rx={4} fill="#1a1a1a" opacity={0.85}/>
-                <text x={hoveredBar8.tx} y={hoveredBar8.ty-5} textAnchor="middle" fontSize={10} fill="#fff" fontFamily="system-ui">{hoveredBar8.text}</text>
-              </g>
-            )}
-          </svg>
-          <div style={{display:'flex',gap:14,fontSize:11,color:'#6B7280',marginTop:2}}>
-            <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#16A34A',display:'inline-block'}}></span>Cobrado</span>
-            <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#B45309',display:'inline-block'}}></span>Pendiente</span>
-          </div>
-        </div>
-        {vistaHist==='tabla' ? (
-          cuotasMesHist.length ? cuotasMesHist.map(cu=>{
-            const hon = honorarios.find(h=>h.id===cu.honorario_id);
-            const exp = hon?.expediente_id ? expedientes.find(e=>e.id===hon.expediente_id) : null;
-            const cli = hon?.cliente_id ? clientes.find(c=>c.id===hon.cliente_id) : null;
-            const vincLabel = hon?.vinculo_tipo==='contraparte' ? (hon.contraparte_nombre||null) : (exp?exp.caratula:(cli?cli.nombre:null));
-            return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
-                {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
-                {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
-              </div>
-              <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
-              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
-                <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
-                {cu.estado==='pagada' && cu.fecha_pago && <span style={{fontSize:10,color:'#8a8a8a'}}>{formatFecha(cu.fecha_pago)}</span>}
-              </div>
-            </div>;
-          }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>
-        ) : (
-          <div onMouseLeave={()=>setHoveredBar9(null)}>
-            <svg viewBox="0 0 540 190" style={{width:'100%',height:'auto',display:'block',overflow:'visible'}}>
-              {[0.33,0.66,1].map(f=>(
-                <line key={f} x1="10" y1={20+130*(1-f)} x2="530" y2={20+130*(1-f)} stroke="#F0EFED" strokeWidth="1"/>
-              ))}
-              {seisMeses.map((m,i)=>{
-                const gW=520/6, gX=10+i*gW, bW=42;
-                const bX=gX+(gW-bW)/2;
-                const bH=Math.max(0,(m.cobrado/max9)*120);
-                const base=155;
-                const isActive=m.str===mesHistStr;
-                const isHov=hoveredBar9===m.str;
-                const yr=m.year!==Number(HOY.substring(0,4))?` ${String(m.year).slice(-2)}`:'';
-                return (
-                  <g key={m.str} style={{cursor:'pointer'}}
-                    onClick={()=>setMesHist(new Date(m.year,m.mes,1))}
-                    onMouseEnter={()=>setHoveredBar9(m.str)}>
-                    <rect x={bX} y={base-bH} width={bW} height={Math.max(bH,2)} rx={4}
-                      fill={isActive?'#15803D':isHov?'#4ADE80':'#16A34A'}/>
-                    {isActive && <rect x={bX-2} y={base-bH-2} width={bW+4} height={Math.max(bH,2)+4} rx={6} fill="none" stroke="#15803D" strokeWidth={2}/>}
-                    <text x={bX+bW/2} y={base+14} textAnchor="middle" fontSize={9} fill={isActive?'#15803D':'#8a8a8a'} fontFamily="system-ui" fontWeight={isActive?700:400}>
-                      {MESES_CORTOS[m.mes]+yr}
-                    </text>
-                  </g>
-                );
-              })}
-              {hoveredBar9 && (()=>{
-                const m=seisMeses.find(x=>x.str===hoveredBar9);
-                if (!m) return null;
-                const i=seisMeses.findIndex(x=>x.str===hoveredBar9);
-                const gW=520/6, gX=10+i*gW;
-                const tx=Math.min(Math.max(gX+gW/2,60),480);
-                const bH=Math.max(0,(m.cobrado/max9)*120);
-                const ty=Math.max(155-bH-8,14);
-                const yr=m.year!==Number(HOY.substring(0,4))?` ${String(m.year).slice(-2)}`:'';
-                return (
-                  <g>
-                    <rect x={tx-55} y={ty-18} width={110} height={18} rx={4} fill="#1a1a1a" opacity={0.85}/>
-                    <text x={tx} y={ty-5} textAnchor="middle" fontSize={10} fill="#fff" fontFamily="system-ui">{MESES_CORTOS[m.mes]+yr}: {fmtMoneda(m.cobrado)}</text>
-                  </g>
-                );
-              })()}
-            </svg>
-            <div style={{fontSize:11,color:'#8a8a8a',textAlign:'center',marginTop:4}}>Clic en una barra para navegar al mes</div>
-          </div>
-        )}
+        {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
+          const hon = honorarios.find(h=>h.id===cu.honorario_id);
+          const exp = hon?.expediente_id ? expedientes.find(e=>e.id===hon.expediente_id) : null;
+          const cli = hon?.cliente_id ? clientes.find(c=>c.id===hon.cliente_id) : null;
+          const vincLabel = hon?.vinculo_tipo==='contraparte' ? (hon.contraparte_nombre||null) : (exp?exp.caratula:(cli?cli.nombre:null));
+          return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+              {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
+              {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
+            </div>
+            <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
+              <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
+              {cu.estado==='pagada' && cu.fecha_pago && <span style={{fontSize:10,color:'#8a8a8a'}}>{formatFecha(cu.fecha_pago)}</span>}
+            </div>
+          </div>;
+        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
       </Card>
+      </>)}
     </div>
   );
 }
