@@ -1660,6 +1660,19 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     recargar();
     setVista('honorarios');
   }
+  async function guardarDistrib() {
+    const soma=distribSocios.reduce((s,ds)=>s+Number(ds.porcentaje||0),0);
+    if (soma!==100) { alert(`La distribución debe sumar 100% (ahora suma ${soma}%).`); return; }
+    setGuardandoDistrib(true);
+    await supabase.from('honorarios_socios').delete().eq('honorario_id', h.id);
+    await supabase.from('honorarios_socios').insert(
+      distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).map(ds=>({
+        honorario_id:h.id, perfil_id:ds.perfil_id, porcentaje:Number(ds.porcentaje), estudio_id:perfil.estudio_id
+      }))
+    );
+    setGuardandoDistrib('ok');
+    setTimeout(()=>setGuardandoDistrib(false),2000);
+  }
 
   const estadosDisp = h.en_cuotas ? ['pendiente','en proceso','pagado'] : ['pendiente','pagado'];
 
