@@ -1754,6 +1754,30 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
         {h.notas && <div style={{marginTop:12,fontSize:13,color:'#4a4a4a',fontStyle:'italic'}}>{h.notas}</div>}
       </Card>
 
+      {perfilesEstudio.length > 0 && (
+        <Card title="👥 Distribución entre socios">
+          {distribSocios.map((ds,i)=>(
+            <div key={ds.perfil_id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+              <span style={{fontSize:13,color:'#4a4a4a',flex:1}}>{ds.nombre}</span>
+              <input type="number" min="0" max="100" value={ds.porcentaje}
+                onChange={ev=>{ const n=[...distribSocios]; n[i]={...n[i],porcentaje:ev.target.value}; setDistribSocios(n); }}
+                style={{width:70,padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:13,fontFamily:'system-ui',textAlign:'right'}} />
+              <span style={{fontSize:13,color:'#4a4a4a'}}>%</span>
+            </div>
+          ))}
+          {(()=>{ const s=distribSocios.reduce((a,ds)=>a+Number(ds.porcentaje||0),0);
+            return <div style={{fontSize:11,marginBottom:10,marginTop:2,color:s===100?'#27500A':s===0?'#8a8a8a':'#A32D2D'}}>
+              {s===100?'✓ Suma 100%':`Suma ${s}% — debe ser 100%`}
+            </div>; })()}
+          <button onClick={guardarDistrib}
+            style={{...btnPrimary,padding:'7px 14px',
+              background:guardandoDistrib==='ok'?'#27500A':btnPrimary.background,
+              borderColor:guardandoDistrib==='ok'?'#27500A':btnPrimary.borderColor}}>
+            {guardandoDistrib==='ok'?'✓ Guardado':'Guardar distribución'}
+          </button>
+        </Card>
+      )}
+
       {h.en_cuotas && (
         <Card title="🧾 Cuotas">
           {cuotasH.length ? cuotasH.map(cu=>(
