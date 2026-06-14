@@ -1300,7 +1300,18 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
             <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
             <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{vinc}</td>
             <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{h.en_cuotas?`${pagadas}/${cuotasH.length}`:'—'}</td>
+            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>
+              {h.en_cuotas ? (
+                <div>
+                  <span>{pagadas}/{cuotasH.length}</span>
+                  {cuotasH.length > 0 && (
+                    <div style={{marginTop:4,height:4,borderRadius:2,background:'#E5E7EB',minWidth:44}}>
+                      <div style={{height:'100%',borderRadius:2,background:'#16A34A',width:`${Math.round(pagadas/cuotasH.length*100)}%`}}></div>
+                    </div>
+                  )}
+                </div>
+              ) : '—'}
+            </td>
             <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
           </tr>;
         })}
