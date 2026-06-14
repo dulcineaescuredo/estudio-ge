@@ -695,12 +695,10 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
           </>;
         })()}
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
-        <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
-          <option value="">Seleccioná</option>
-          {ABOGADAS.map(a=><option key={a}>{a}</option>)}
-        </select>
+        <SocioChips value={f.responsable} onChange={v=>{set('responsable',v);setResponsableSugerido(false);}} />
+        {responsableSugerido && <div style={{fontSize:11,color:'#8a8a8a',marginTop:-8,marginBottom:12}}>Sugerido según expedientes anteriores de este cliente</div>}
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
-        <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
+        <select style={inputStyle} value={f.cliente_id} onChange={e=>onClienteChange(e.target.value)}>
           <option value="">Sin vincular</option>
           {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
         </select>
