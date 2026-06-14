@@ -1589,6 +1589,25 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
   const [editForm, setEditForm] = useState({ concepto: h?.concepto||'', tipo_trabajo: h?.tipo_trabajo||'', forma: h?.forma||'uhon', valor: h?.valor||0 });
   const [confirmandoPagoId, setConfirmandoPagoId] = useState(null);
   const [fechaPago, setFechaPago] = useState(HOY);
+  const [perfilesEstudio, setPerfilesEstudio] = useState([]);
+  const [distribSocios, setDistribSocios] = useState([]);
+  const [guardandoDistrib, setGuardandoDistrib] = useState(false);
+  useEffect(()=>{
+    if (!h?.id || !perfil?.estudio_id) return;
+    Promise.all([
+      supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre'),
+      supabase.from('honorarios_socios').select('*').eq('honorario_id', h.id)
+    ]).then(([{data:pfs},{data:hs}])=>{
+      const perfiles=pfs||[], socios=hs||[];
+      const n=perfiles.length, base=n?Math.floor(100/n):0;
+      const tieneRegistros=socios.length>0;
+      setPerfilesEstudio(perfiles);
+      setDistribSocios(perfiles.map((p,i)=>{
+        const ex=socios.find(s=>s.perfil_id===p.id);
+        return { perfil_id:p.id, nombre:p.nombre, porcentaje:tieneRegistros?(ex?Number(ex.porcentaje):0):(i===n-1?100-base*(n-1):base) };
+      }));
+    });
+  }, [h?.id, perfil?.estudio_id]);
   if (!h) return null;
   const exp = expedientes.find(e=>e.id===h.expediente_id);
   const cli = clientes.find(c=>c.id===h.cliente_id);
