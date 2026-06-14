@@ -1778,7 +1778,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
       setPerfilesEstudio(perfiles);
       setGastosPorc(gPorc);
       setDistribSocios(perfiles.map(p=>{
-        const cfgEntry=distCfg.find(d=>d.nombre===p.nombre);
+        const cfgEntry=distCfg.find(d=>d.nombre.trim().toLowerCase()===p.nombre.trim().toLowerCase());
         return { perfil_id:p.id, nombre:p.nombre, porcentaje:cfgEntry?cfgEntry.porcentaje:0 };
       }));
     });
@@ -1951,7 +1951,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           }
           return { perfil_id:p.id, nombre:p.nombre, porcentaje:0 };
         }
-        const cfgEntry=distCfg.find(d=>d.nombre===p.nombre);
+        const cfgEntry=distCfg.find(d=>d.nombre.trim().toLowerCase()===p.nombre.trim().toLowerCase());
         return { perfil_id:p.id, nombre:p.nombre, porcentaje:cfgEntry?cfgEntry.porcentaje:0 };
       }));
     });
