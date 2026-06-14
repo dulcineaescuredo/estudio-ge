@@ -981,14 +981,9 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
               <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
                 style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
-              <div style={{display:'flex',gap:8}}>
-                <select value={editForm.responsable} onChange={ev=>setEditForm({...editForm,responsable:ev.target.value})}
-                  style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}}>
-                  {ABOGADAS.map(a=><option key={a}>{a}</option>)}
-                </select>
-                <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
-                  style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
-              </div>
+              <SocioChips value={editForm.responsable} onChange={v=>setEditForm({...editForm,responsable:v})} />
+              <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
+                style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>guardarEdicion(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
                 <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
