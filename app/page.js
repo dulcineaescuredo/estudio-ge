@@ -1343,6 +1343,11 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const mesActual = HOY.substring(0,7);
   const totalPendiente = honorarios.filter(h=>h.estado!=='pagado').length;
   const totalUhonPendiente = honorarios.filter(h=>h.estado!=='pagado' && h.forma==='uhon').reduce((s,h)=>s+(Number(h.valor)||0),0);
+  const montoSinCobrar = honorarios.filter(h=>h.estado!=='pagado').reduce((s,h)=>{
+    if (h.forma==='uhon') return s+(Number(h.valor)||0)*(valorUhon||0);
+    if (h.forma==='porcentaje') return s+(Number(h.valor)||0)/100*(Number(h.monto_base)||0);
+    return s+(Number(h.valor)||0);
+  },0);
   const cobradoMes = cuotas.filter(cu=>cu.estado==='pagada' && (cu.fecha_pago||cu.vencimiento||'').startsWith(mesActual)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
   const saldoPendiente = cuotas.filter(cu=>cu.estado!=='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
 
