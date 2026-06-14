@@ -1436,6 +1436,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <div style={{fontSize:11,color:'#4a4a4a',fontWeight:600,marginBottom:4}}>CUOTAS</div>
             <div style={{fontSize:20,fontWeight:700,color:'#1a1a1a'}}>{cuotasMesHist.length}</div>
           </div>
+          <div style={{background:'#EBF0FA',borderRadius:10,padding:'12px 16px',flex:'1 1 110px',border:'1px solid #BFDBFE'}}>
+            <div style={{fontSize:11,color:'#2563EB',fontWeight:600,marginBottom:4}}>TU GANANCIA EST.</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#2563EB'}}>{fmtMoneda(miGanancia)}</div>
+          </div>
         </div>
         {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
           const hon = honorarios.find(h=>h.id===cu.honorario_id);
