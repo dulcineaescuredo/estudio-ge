@@ -1647,15 +1647,29 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
       {h.en_cuotas && (
         <Card title="🧾 Cuotas">
           {cuotasH.length ? cuotasH.map(cu=>(
-            <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
-              <div onClick={()=>toggleCuota(cu)} style={{width:16,height:16,borderRadius:4,border:cu.estado==='pagada'?'none':'1.5px solid #c9c9c4',background:cu.estado==='pagada'?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{cu.estado==='pagada'?'✓':''}</div>
-              <div style={{flex:1}}>
-                <span style={{fontSize:13,fontWeight:500}}>Cuota {cu.numero}</span>
-                <span style={{fontSize:13,marginLeft:10}}>{fmtMoneda(cu.monto)}</span>
-                {cu.vencimiento && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:10}}>vence {formatFecha(cu.vencimiento)}</span>}
+            <div key={cu.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <div
+                  onClick={()=>{ if(cu.estado==='pagada'){ toggleCuota(cu); } else { setConfirmandoPagoId(cu.id); setFechaPago(HOY); } }}
+                  style={{width:16,height:16,borderRadius:4,border:cu.estado==='pagada'?'none':'1.5px solid #c9c9c4',background:cu.estado==='pagada'?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{cu.estado==='pagada'?'✓':''}</div>
+                <div style={{flex:1}}>
+                  <span style={{fontSize:13,fontWeight:500}}>Cuota {cu.numero}</span>
+                  <span style={{fontSize:13,marginLeft:10}}>{fmtMoneda(cu.monto)}</span>
+                  {cu.vencimiento && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:10}}>vence {formatFecha(cu.vencimiento)}</span>}
+                  {cu.fecha_pago && <span style={{fontSize:11,color:'#27500A',marginLeft:10}}>pagada {formatFecha(cu.fecha_pago)}</span>}
+                </div>
+                <Badge bg={cu.estado==='pagada'?'#EAF3DE':'#FAEEDA'} color={cu.estado==='pagada'?'#27500A':'#633806'}>{cu.estado}</Badge>
+                <button onClick={()=>borrarCuota(cu)} style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>borrar</button>
               </div>
-              <Badge bg={cu.estado==='pagada'?'#EAF3DE':'#FAEEDA'} color={cu.estado==='pagada'?'#27500A':'#633806'}>{cu.estado}</Badge>
-              <button onClick={()=>borrarCuota(cu)} style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>borrar</button>
+              {confirmandoPagoId===cu.id && (
+                <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8,paddingLeft:24,flexWrap:'wrap',background:'#F7F6F3',borderRadius:8,padding:'8px 12px 8px 24px'}}>
+                  <span style={{fontSize:12,color:'#4a4a4a',fontWeight:500}}>Fecha de pago:</span>
+                  <input type="date" value={fechaPago} onChange={e=>setFechaPago(e.target.value)}
+                    style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:12,fontFamily:'system-ui'}} />
+                  <button onClick={()=>confirmarPago(cu)} style={{...btnPrimary,padding:'4px 10px',fontSize:12}}>Confirmar pago</button>
+                  <button onClick={()=>setConfirmandoPagoId(null)} style={{fontSize:11,color:'#6B7280',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
+                </div>
+              )}
             </div>
           )) : <div style={{color:'#8a8a8a',fontSize:12,textAlign:'center',padding:14}}>Sin cuotas cargadas todavía.</div>}
           <div style={{display:'flex',gap:8,marginTop:12,alignItems:'flex-end',flexWrap:'wrap'}}>
