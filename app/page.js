@@ -1351,6 +1351,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const cuotasMesHist = cuotas.filter(cu=>(cu.vencimiento||'').startsWith(mesHistStr));
   const pagadasMesHist = cuotasMesHist.filter(cu=>cu.estado==='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
   const pendientesMesHist = cuotasMesHist.filter(cu=>cu.estado!=='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+  const miGanancia = cuotasMesHist.filter(cu=>cu.estado==='pagada').reduce((s,cu)=>{
+    const hs=honSocios.find(x=>x.honorario_id===cu.honorario_id && x.perfil_id===perfil?.id);
+    return s+(hs ? Number(cu.monto)*Number(hs.porcentaje)/100 : 0);
+  },0);
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   return (
