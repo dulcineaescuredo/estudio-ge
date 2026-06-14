@@ -1283,11 +1283,61 @@ const HON_ESTADO_COLOR = {
 
 function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setHonActual, setVista }) {
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [orden, setOrden] = useState({ col: null, dir: null });
+
+  function toggleOrden(col) {
+    setOrden(prev => {
+      if (prev.col !== col) return { col, dir: 'asc' };
+      if (prev.dir === 'asc') return { col, dir: 'desc' };
+      return { col: null, dir: null };
+    });
+  }
+  function montoNum(h) {
+    if (h.forma==='uhon') return (Number(h.valor)||0)*(valorUhon||0);
+    if (h.forma==='porcentaje') return (Number(h.valor)||0)/100*(Number(h.monto_base)||0);
+    return Number(h.valor)||0;
+  }
+  function resolveVinc(h) {
+    const exp=expedientes.find(e=>e.id===h.expediente_id);
+    const cli=clientes.find(c=>c.id===h.cliente_id);
+    return h.vinculo_tipo==='contraparte'?(h.contraparte_nombre||''):(exp?exp.caratula:(cli?cli.nombre:''));
+  }
+  function cuotaRatio(h) {
+    const ch=cuotas.filter(cu=>cu.honorario_id===h.id);
+    if (!ch.length) return -1;
+    return ch.filter(cu=>cu.estado==='pagada').length/ch.length;
+  }
+
+  const sorted = orden.col ? [...lista].sort((a,b)=>{
+    const d = orden.dir==='asc' ? 1 : -1;
+    if (orden.col==='concepto') return (a.concepto||'').localeCompare(b.concepto||'')*d;
+    if (orden.col==='vinc') return resolveVinc(a).localeCompare(resolveVinc(b))*d;
+    if (orden.col==='monto') return (montoNum(a)-montoNum(b))*d;
+    if (orden.col==='cuotas') return (cuotaRatio(a)-cuotaRatio(b))*d;
+    if (orden.col==='estado') return (a.estado||'').localeCompare(b.estado||'')*d;
+    return 0;
+  }) : lista;
+
+  const COLS = [
+    {key:'concepto',label:'Concepto'},{key:'vinc',label:'Vinculado a'},
+    {key:'monto',label:'Monto pactado'},{key:'cuotas',label:'Cuotas'},{key:'estado',label:'Estado'},
+  ];
+
   return (
     <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-      <thead><tr style={{background:'#F7F6F3'}}>{['Concepto','Vinculado a','Monto pactado','Cuotas','Estado'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
+      <thead>
+        <tr style={{background:'#F7F6F3'}}>
+          {COLS.map(col=>{
+            const active=orden.col===col.key;
+            return <th key={col.key} onClick={()=>toggleOrden(col.key)}
+              style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:active?'#1a1a1a':'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em',cursor:'pointer',userSelect:'none',whiteSpace:'nowrap'}}>
+              {col.label}{active?(orden.dir==='asc'?' ↑':' ↓'):''}
+            </th>;
+          })}
+        </tr>
+      </thead>
       <tbody>
-        {lista.map(h=>{
+        {sorted.map(h=>{
           const exp = expedientes.find(e=>e.id===h.expediente_id);
           const cli = clientes.find(c=>c.id===h.cliente_id);
           const vinc = h.vinculo_tipo==='contraparte' ? (h.contraparte_nombre||'—') : (exp?exp.caratula : (cli?cli.nombre : '—'));
