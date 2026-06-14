@@ -1000,7 +1000,9 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
                 <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:2}}>{t.descripcion}</div>
                 {(expVinc||cliVinc) && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:cliVinc.nombre}</div>}
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
-                  <Badge bg={socioColor(t.responsable).bg} color={socioColor(t.responsable).color}>{t.responsable}</Badge>
+                  {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+                    <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                  ))}
                   {t.deadline && <Badge bg="#FAEEDA" color="#633806">{formatFecha(t.deadline)}</Badge>}
                 </div>
                 {t.comentario && <div style={{fontSize:11,color:'#4a4a4a',marginTop:5,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
