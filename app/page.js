@@ -286,7 +286,7 @@ function Contenido(props) {
   return null;
 }
 
-function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual }) {
+function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, cuotas, honorarios, clientes }) {
   const mes = HOY.substring(0,7);
   const activos = expedientes.filter(e=>e.estado==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
@@ -297,6 +297,9 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
   const misTareas = tareas
     .filter(t => t.estudio_id === '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b' && t.responsable === perfil?.nombre && normEstado(t.estado) !== 'terminado')
     .sort((a,b) => { if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1; return a.deadline.localeCompare(b.deadline); });
+  const cuotasACobrar = (cuotas||[])
+    .filter(cu=>cu.estado==='pendiente' && cu.vencimiento && cu.vencimiento<=HOY)
+    .sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
@@ -334,6 +337,26 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No tenés tareas pendientes 🎉</div>}
       </Card>
+      {cuotasACobrar.length > 0 && (
+        <Card title="💰 Cuotas a cobrar">
+          {cuotasACobrar.map(cu=>{
+            const hon=(honorarios||[]).find(h=>h.id===cu.honorario_id);
+            const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
+            const cli=hon?.cliente_id?(clientes||[]).find(c=>c.id===hon.cliente_id):null;
+            const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||'—'):(exp?exp.caratula:(cli?cli.nombre:'—'));
+            const esHoy=cu.vencimiento===HOY;
+            const badge=esHoy?{bg:'#FDECEA',color:'#C53030',label:'vence hoy'}:{bg:'#FCEBEB',color:'#791F1F',label:'vencida'};
+            return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+                <div style={{fontSize:11,color:'#8a8a8a'}}>{vincLabel} · vence {formatFecha(cu.vencimiento)}</div>
+              </div>
+              <span style={{fontSize:13,fontWeight:600,marginRight:4}}>{fmtMoneda(cu.monto)}</span>
+              <Badge bg={badge.bg} color={badge.color}>{badge.label}</Badge>
+            </div>;
+          })}
+        </Card>
+      )}
     </div>
   );
 }
