@@ -1599,7 +1599,7 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
   const datosDiarios = Array.from({length:diasEnMes},(_,i)=>{
     const dia = String(i+1).padStart(2,'0');
     const dateStr = `${mesStatStr}-${dia}`;
-    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&cu.fecha_pago===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento)===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&cu.vencimiento===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     return { dateStr, dia:i+1, cobrado, pendiente };
   }).filter(d=>d.cobrado>0||d.pendiente>0);
