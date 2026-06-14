@@ -1432,6 +1432,17 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     return s+(hs ? Number(cu.monto)*Number(hs.porcentaje)/100 : 0);
   },0);
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const hoyDate = new Date(Number(HOY.substring(0,4)), Number(HOY.substring(5,7))-1, 1);
+  const seisMeses = Array.from({length:6},(_,i)=>{
+    const d = new Date(hoyDate.getFullYear(), hoyDate.getMonth()-5+i, 1);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const pendiente = cuotas.filter(cu=>cu.estado!=='pagada'&&(cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    return { str, mes:d.getMonth(), year:d.getFullYear(), cobrado, pendiente };
+  });
+  const max8 = Math.max(...seisMeses.map(m=>Math.max(m.cobrado,m.pendiente)),1);
+  const max9 = Math.max(...seisMeses.map(m=>m.cobrado),1);
 
   return (
     <div>
