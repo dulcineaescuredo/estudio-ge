@@ -1476,6 +1476,8 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
   async function guardar() {
     if (!f.concepto || !f.valor) { alert('Completá al menos el concepto y el valor.'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
+    const somaDistrib = distribSocios.reduce((s,ds)=>s+Number(ds.porcentaje||0),0);
+    if (somaDistrib > 0 && somaDistrib !== 100) { alert(`La distribución entre socios debe sumar 100% (ahora suma ${somaDistrib}%).`); return; }
     const payload = { concepto:f.concepto, tipo_trabajo:f.tipo_trabajo, forma:f.forma, valor:Number(f.valor),
       monto_base: f.monto_base ? Number(f.monto_base) : null,
       expediente_id: f.vinculo_tipo==='expediente' ? f.expediente_id||null : null,
@@ -1484,10 +1486,18 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
       vinculo_tipo: f.vinculo_tipo==='ninguno' ? null : f.vinculo_tipo,
       en_cuotas:f.en_cuotas, notas:f.notas,
       estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null };
-    const { error } = await supabase.from('honorarios').insert(payload);
+    const { data: honData, error } = await supabase.from('honorarios').insert(payload).select('id').single();
     if (error) { alert('Error: '+error.message); return; }
+    if (somaDistrib === 100 && honData?.id) {
+      await supabase.from('honorarios_socios').insert(
+        distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).map(ds=>({
+          honorario_id: honData.id, perfil_id: ds.perfil_id, porcentaje: Number(ds.porcentaje), estudio_id: perfil.estudio_id
+        }))
+      );
+    }
     setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
     setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
+    setDistribSocios(defaultDistrib(perfilesEstudio));
     recargar();
     setTimeout(()=>setMsg(''),4000);
   }
