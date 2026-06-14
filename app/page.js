@@ -1458,9 +1458,21 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
 }
 
 function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
+  function defaultDistrib(pfs) {
+    if (!pfs.length) return [];
+    const n=pfs.length, base=Math.floor(100/n);
+    return pfs.map((p,i)=>({ perfil_id:p.id, nombre:p.nombre, porcentaje: i===n-1 ? 100-base*(n-1) : base }));
+  }
   const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
+  const [perfilesEstudio, setPerfilesEstudio] = useState([]);
+  const [distribSocios, setDistribSocios] = useState([]);
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
+  useEffect(()=>{
+    if (!perfil?.estudio_id) return;
+    supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre')
+      .then(({data})=>{ const pfs=data||[]; setPerfilesEstudio(pfs); setDistribSocios(defaultDistrib(pfs)); });
+  }, [perfil?.estudio_id]);
   async function guardar() {
     if (!f.concepto || !f.valor) { alert('Completá al menos el concepto y el valor.'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
