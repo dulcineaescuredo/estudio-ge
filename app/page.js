@@ -208,7 +208,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
-          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios'],['audiencias','📅','Audiencias'],['turnos','🕐','Turnos']].map(([id,emoji,label])=>{
+          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios'],['audiencias','📅','Audiencias'],['turnos','🕐','Turnos'],['agenda','🗓️','Agenda']].map(([id,emoji,label])=>{
             const sub = ['nuevo-exp','nueva-consulta','nueva-tarea'].includes(id);
             return <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
               style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:sub?'6px 10px 6px 32px':'8px 10px',borderRadius:8,fontSize:13,border:'none',
