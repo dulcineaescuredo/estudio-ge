@@ -1379,9 +1379,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [filtroSocio, setFiltroSocio] = useState('');
   const [perfilesFiltro, setPerfilesFiltro] = useState([]);
   const [mesHist, setMesHist] = useState(()=>new Date(Number(HOY.substring(0,4)), Number(HOY.substring(5,7))-1, 1));
-  const [vistaHist, setVistaHist] = useState('tabla');
-  const [hoveredBar8, setHoveredBar8] = useState(null);
-  const [hoveredBar9, setHoveredBar9] = useState(null);
+  const [vistaHon, setVistaHon] = useState('normal');
   const [honSocios, setHonSocios] = useState([]);
   useEffect(()=>{
     if (!perfil?.estudio_id) return;
