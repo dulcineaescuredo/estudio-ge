@@ -1760,20 +1760,28 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
 }
 
 function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
-  function defaultDistrib(pfs) {
-    if (!pfs.length) return [];
-    const n=pfs.length, base=Math.floor(100/n);
-    return pfs.map((p,i)=>({ perfil_id:p.id, nombre:p.nombre, porcentaje: i===n-1 ? 100-base*(n-1) : base }));
-  }
   const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [distribSocios, setDistribSocios] = useState([]);
+  const [gastosPorc, setGastosPorc] = useState(3);
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   useEffect(()=>{
     if (!perfil?.estudio_id) return;
-    supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre')
-      .then(({data})=>{ const pfs=data||[]; setPerfilesEstudio(pfs); setDistribSocios(defaultDistrib(pfs)); });
+    Promise.all([
+      supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre'),
+      supabase.from('config').select('*').eq('estudio_id', perfil.estudio_id).maybeSingle()
+    ]).then(([{data:pfs},{data:cfg}])=>{
+      const perfiles=pfs||[];
+      const gPorc=cfg?.gastos_porcentaje??3;
+      const distCfg=Array.isArray(cfg?.distribucion_socios)?cfg.distribucion_socios:[];
+      setPerfilesEstudio(perfiles);
+      setGastosPorc(gPorc);
+      setDistribSocios(perfiles.map(p=>{
+        const cfgEntry=distCfg.find(d=>d.nombre===p.nombre);
+        return { perfil_id:p.id, nombre:p.nombre, porcentaje:cfgEntry?cfgEntry.porcentaje:0 };
+      }));
+    });
   }, [perfil?.estudio_id]);
   async function guardar() {
     if (!f.concepto || !f.valor) { alert('Completá al menos el concepto y el valor.'); return; }
