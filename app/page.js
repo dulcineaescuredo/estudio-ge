@@ -1315,6 +1315,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [mesHist, setMesHist] = useState(()=>new Date(Number(HOY.substring(0,4)), Number(HOY.substring(5,7))-1, 1));
+  const [honSocios, setHonSocios] = useState([]);
+  useEffect(()=>{
+    if (!perfil?.estudio_id) return;
+    supabase.from('honorarios_socios').select('*').eq('estudio_id', perfil.estudio_id)
+      .then(({data})=>setHonSocios(data||[]));
+  }, [perfil?.estudio_id]);
 
   async function guardarUhon() {
     const eid = perfil?.estudio_id;
