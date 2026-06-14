@@ -1469,17 +1469,22 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
           {f.monto_base && f.valor && <div style={{fontSize:12,color:'#27500A',marginBottom:12,marginTop:-6}}>= {fmtMoneda(Number(f.valor)/100*Number(f.monto_base))}</div>}
         </>}
 
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a expediente</label>
-        <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
-          <option value="">Sin vincular</option>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a</label>
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente'],['contraparte','Contraparte']].map(([v,l])=>(
+            <button key={v} onClick={()=>setF(prev=>({...prev,vinculo_tipo:v,expediente_id:'',cliente_id:'',contraparte_nombre:''}))}
+              style={{flex:1,padding:'7px 4px',border:f.vinculo_tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:11,fontWeight:500,cursor:'pointer',background:f.vinculo_tipo===v?'#E6F1FB':'#f9f8f5',color:f.vinculo_tipo===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
+          ))}
+        </div>
+        {f.vinculo_tipo==='expediente' && <select style={inputStyle} value={f.expediente_id} onChange={e=>set('expediente_id',e.target.value)}>
+          <option value="">Seleccioná expediente</option>
           {expedientes.map(ex=><option key={ex.id} value={ex.id}>{ex.caratula}</option>)}
-        </select>
-
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a cliente</label>
-        <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
-          <option value="">Sin vincular</option>
+        </select>}
+        {f.vinculo_tipo==='cliente' && <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
+          <option value="">Seleccioná cliente</option>
           {clientes.map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
-        </select>
+        </select>}
+        {f.vinculo_tipo==='contraparte' && <input style={inputStyle} placeholder="Nombre de la contraparte" value={f.contraparte_nombre||''} onChange={e=>set('contraparte_nombre',e.target.value)} />}
 
         <label style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,cursor:'pointer',fontSize:13}}>
           <input type="checkbox" checked={f.en_cuotas} onChange={e=>set('en_cuotas',e.target.checked)} style={{width:16,height:16,cursor:'pointer'}} />
