@@ -2591,7 +2591,7 @@ function AgendaModule({ tabla, titulo, emoji, expedientes, clientes, perfil }) {
       )}
 
       {mostrarForm&&(
-        <AgendaForm tipos={tipos} fechaPres={fechaPres} eventoEdit={eventoEdit}
+        <AgendaForm tabla={tabla} tipos={tipos} fechaPres={fechaPres} eventoEdit={eventoEdit}
           expedientes={expedientes||[]} clientes={clientes||[]} perfil={perfil}
           onGuardar={guardar} onCancelar={cerrar} />
       )}
