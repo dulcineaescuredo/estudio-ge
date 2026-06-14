@@ -2633,7 +2633,7 @@ function AgendaDetalle({ ev, expedientes, clientes, onEditar, onEliminar, onCerr
   );
 }
 
-function AgendaForm({ tipos, fechaPres, eventoEdit, expedientes, clientes, perfil, onGuardar, onCancelar }) {
+function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes, perfil, onGuardar, onCancelar }) {
   const [f, setF] = useState({
     fecha: eventoEdit?.fecha||fechaPres||HOY,
     hora: eventoEdit?.hora||'',
@@ -2641,6 +2641,8 @@ function AgendaForm({ tipos, fechaPres, eventoEdit, expedientes, clientes, perfi
     descripcion: eventoEdit?.descripcion||'',
     responsable: eventoEdit?.responsable||perfil?.nombre||'',
   });
+  const [tiposCustom, setTiposCustom] = useState([]);
+  const [tipoAbierto, setTipoAbierto] = useState(false);
   const [vinculo, setVinculo] = useState(
     eventoEdit?.expediente_id?'expediente':eventoEdit?.cliente_id?'cliente':'ninguno'
   );
@@ -2654,11 +2656,30 @@ function AgendaForm({ tipos, fechaPres, eventoEdit, expedientes, clientes, perfi
   const [vincAbierto, setVincAbierto] = useState(false);
   const set = (k,v)=>setF(p=>({...p,[k]:v}));
 
+  useEffect(()=>{
+    supabase.from('agenda_tipos').select('nombre')
+      .eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b')
+      .eq('modulo',tabla)
+      .order('nombre')
+      .then(({data})=>setTiposCustom((data||[]).map(r=>r.nombre)));
+  },[]);
+
+  const allTipos = [...new Set([...tipos,...tiposCustom])];
+  const tiposSugs = f.tipo
+    ? allTipos.filter(t=>t.toLowerCase().includes(f.tipo.toLowerCase()))
+    : allTipos;
+  const esNuevoTipo = f.tipo && !allTipos.map(t=>t.toLowerCase()).includes(f.tipo.toLowerCase());
+
   const sugsExp = vinculo==='expediente'&&vincQ ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(vincQ.toLowerCase())||(e.numero||'').includes(vincQ)).slice(0,8) : [];
   const sugsCli = vinculo==='cliente'&&vincQ ? clientes.filter(c=>(c.nombre||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8) : [];
 
   async function guardar() {
     if (!f.fecha) { alert('La fecha es obligatoria.'); return; }
+    if (f.tipo && esNuevoTipo) {
+      await supabase.from('agenda_tipos').insert({
+        estudio_id:'51cc9627-71d2-4cab-a3d5-c5490b3b3e4b', modulo:tabla, nombre:f.tipo
+      });
+    }
     onGuardar({
       fecha: f.fecha,
       hora: f.hora||null,
@@ -2684,9 +2705,29 @@ function AgendaForm({ tipos, fechaPres, eventoEdit, expedientes, clientes, perfi
           </div>
         </div>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo</label>
-        <select style={inputStyle} value={f.tipo} onChange={e=>set('tipo',e.target.value)}>
-          {tipos.map(t=><option key={t} value={t}>{t}</option>)}
-        </select>
+        <div style={{position:'relative',marginBottom:12}}>
+          <input style={{...inputStyle,marginBottom:0}}
+            placeholder="Escribí o elegí un tipo..."
+            value={f.tipo}
+            onChange={e=>{set('tipo',e.target.value);setTipoAbierto(true);}}
+            onFocus={()=>setTipoAbierto(true)}
+            onBlur={()=>setTimeout(()=>setTipoAbierto(false),150)} />
+          {tipoAbierto&&tiposSugs.length>0&&(
+            <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',
+              borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
+              {tiposSugs.map(t=>(
+                <div key={t} onMouseDown={e=>e.preventDefault()}
+                  onClick={()=>{set('tipo',t);setTipoAbierto(false);}}
+                  style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a',
+                    display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span>{t}</span>
+                  {!tipos.includes(t)&&<span style={{fontSize:10,color:'#9B4F6A',background:'#FBEAF0',borderRadius:4,padding:'1px 5px',flexShrink:0,marginLeft:8}}>personalizado</span>}
+                </div>
+              ))}
+            </div>
+          )}
+          {esNuevoTipo&&<div style={{fontSize:11,color:'#9B4F6A',marginTop:4}}>Se guardará como tipo personalizado</div>}
+        </div>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a</label>
         <div style={{display:'flex',gap:8,marginBottom:12}}>
           {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente']].map(([v,l])=>(
