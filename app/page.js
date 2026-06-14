@@ -1449,13 +1449,20 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         </div>
         {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
           const hon = honorarios.find(h=>h.id===cu.honorario_id);
+          const exp = hon?.expediente_id ? expedientes.find(e=>e.id===hon.expediente_id) : null;
+          const cli = hon?.cliente_id ? clientes.find(c=>c.id===hon.cliente_id) : null;
+          const vincLabel = hon?.vinculo_tipo==='contraparte' ? (hon.contraparte_nombre||null) : (exp?exp.caratula:(cli?cli.nombre:null));
           return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+              {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
               {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
             </div>
             <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
-            <Badge bg={cu.estado==='pagada'?'#EAF3DE':'#FAEEDA'} color={cu.estado==='pagada'?'#27500A':'#633806'}>{cu.estado}</Badge>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
+              <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
+              {cu.estado==='pagada' && cu.fecha_pago && <span style={{fontSize:10,color:'#8a8a8a'}}>{formatFecha(cu.fecha_pago)}</span>}
+            </div>
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
       </Card>
