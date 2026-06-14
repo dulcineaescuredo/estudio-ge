@@ -1430,16 +1430,16 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             : <span style={{fontSize:11,color:'#8a8a8a'}}>mes actual</span>}
         </div>
         <div style={{display:'flex',gap:10,marginBottom:cuotasMesHist.length?14:0,flexWrap:'wrap'}}>
-          <div style={{background:'#EAF3DE',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
-            <div style={{fontSize:11,color:'#27500A',fontWeight:600,marginBottom:4}}>COBRADO</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#27500A'}}>{fmtMoneda(pagadasMesHist)}</div>
+          <div style={{background:'#F0FBF0',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
+            <div style={{fontSize:11,color:'#15803D',fontWeight:600,marginBottom:4}}>COBRADO</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(pagadasMesHist)}</div>
           </div>
-          <div style={{background:'#FAEEDA',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
-            <div style={{fontSize:11,color:'#633806',fontWeight:600,marginBottom:4}}>PENDIENTE</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#633806'}}>{fmtMoneda(pendientesMesHist)}</div>
+          <div style={{background:'#FEF9EE',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
+            <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>PENDIENTE</div>
+            <div style={{fontSize:20,fontWeight:700,color:'#B45309'}}>{fmtMoneda(pendientesMesHist)}</div>
           </div>
-          <div style={{background:'#F7F6F3',borderRadius:10,padding:'12px 16px',flex:'1 1 80px'}}>
-            <div style={{fontSize:11,color:'#4a4a4a',fontWeight:600,marginBottom:4}}>CUOTAS</div>
+          <div style={{background:'#F9FAFB',borderRadius:10,padding:'12px 16px',flex:'1 1 80px'}}>
+            <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>CUOTAS</div>
             <div style={{fontSize:20,fontWeight:700,color:'#1a1a1a'}}>{cuotasMesHist.length}</div>
           </div>
           <div style={{background:'#EBF0FA',borderRadius:10,padding:'12px 16px',flex:'1 1 110px',border:'1px solid #BFDBFE'}}>
