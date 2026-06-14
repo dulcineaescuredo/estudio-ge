@@ -1397,7 +1397,9 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   }
 
   const lista = honorarios
-    .filter(h=> filtroEstado==='todos' || h.estado===filtroEstado)
+    .filter(h=> filtroEstados.length===0 || filtroEstados.includes(h.estado))
+    .filter(h=> filtroFormas.length===0 || filtroFormas.includes(h.forma))
+    .filter(h=> !filtroSocio || honSocios.some(hs=>hs.honorario_id===h.id && hs.perfil_id===filtroSocio))
     .filter(h=>{
       if (!q) return true;
       const exp = expedientes.find(e=>e.id===h.expediente_id);
