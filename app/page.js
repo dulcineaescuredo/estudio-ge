@@ -1385,15 +1385,15 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
           <div style={{fontSize:22,fontWeight:700}}>{totalUhonPendiente}{valorUhon?<span style={{fontSize:13,color:'#6B7280',fontWeight:400}}> ({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
         </div>
-        <div style={{background:'#EAF3DE',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #C0DD97',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#27500A',marginBottom:6}}>✅ Cobrado este mes</div>
-          <div style={{fontSize:22,fontWeight:700,color:'#27500A'}}>{fmtMoneda(cobradoMes)}</div>
-          <div style={{fontSize:11,color:'#639922',marginTop:4}}>en cuotas pagadas</div>
+        <div style={{background:'#F0FBF0',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #BBF7D0',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#15803D',marginBottom:6}}>✅ Cobrado este mes</div>
+          <div style={{fontSize:22,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(cobradoMes)}</div>
+          <div style={{fontSize:11,color:'#15803D',marginTop:4}}>en cuotas pagadas</div>
         </div>
-        <div style={{background:'#FAEEDA',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #F5D59A',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#633806',marginBottom:6}}>💳 Saldo pendiente</div>
-          <div style={{fontSize:22,fontWeight:700,color:'#633806'}}>{fmtMoneda(saldoPendiente)}</div>
-          <div style={{fontSize:11,color:'#9C6018',marginTop:4}}>en cuotas sin pagar</div>
+        <div style={{background:'#FEF9EE',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #FDE68A',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+          <div style={{fontSize:12,color:'#92400E',marginBottom:6}}>💳 Saldo pendiente</div>
+          <div style={{fontSize:22,fontWeight:700,color:'#B45309'}}>{fmtMoneda(saldoPendiente)}</div>
+          <div style={{fontSize:11,color:'#92400E',marginTop:4}}>en cuotas sin pagar</div>
         </div>
       </div>
 
