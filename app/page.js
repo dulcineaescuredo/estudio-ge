@@ -1529,14 +1529,20 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     recargar();
   }
   async function toggleCuota(cu) {
-    const nuevo = cu.estado==='pagada'?'pendiente':'pagada';
-    await supabase.from('cuotas').update({ estado:nuevo }).eq('id', cu.id);
-    // sugerir estado general
+    // Solo para desmarcar (pagada → pendiente)
+    await supabase.from('cuotas').update({ estado:'pendiente', fecha_pago: null }).eq('id', cu.id);
     const otras = cuotasH.filter(x=>x.id!==cu.id);
-    const todasPagadas = [...otras, {...cu, estado:nuevo}].every(x=>x.estado==='pagada');
-    const algunaPagada = [...otras, {...cu, estado:nuevo}].some(x=>x.estado==='pagada');
-    let sugerido = h.estado;
-    if (todasPagadas) sugerido='pagado'; else if (algunaPagada) sugerido='en proceso'; else sugerido='pendiente';
+    const algunaPagada = otras.some(x=>x.estado==='pagada');
+    const sugerido = algunaPagada ? 'en proceso' : 'pendiente';
+    if (sugerido!==h.estado) { await supabase.from('honorarios').update({ estado:sugerido }).eq('id', h.id); setHonActual({...h, estado:sugerido}); }
+    recargar();
+  }
+  async function confirmarPago(cu) {
+    await supabase.from('cuotas').update({ estado:'pagada', fecha_pago: fechaPago||HOY }).eq('id', cu.id);
+    setConfirmandoPagoId(null);
+    const otras = cuotasH.filter(x=>x.id!==cu.id);
+    const todasPagadas = otras.every(x=>x.estado==='pagada');
+    const sugerido = todasPagadas ? 'pagado' : 'en proceso';
     if (sugerido!==h.estado) { await supabase.from('honorarios').update({ estado:sugerido }).eq('id', h.id); setHonActual({...h, estado:sugerido}); }
     recargar();
   }
