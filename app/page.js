@@ -285,6 +285,7 @@ function Contenido(props) {
   if (vista === 'cambiar-password') return <CambiarPassword {...props} />;
   if (vista === 'audiencias') return <AgendaModule tabla="audiencias" titulo="Audiencias" emoji="📅" {...props} />;
   if (vista === 'turnos') return <AgendaModule tabla="turnos" titulo="Turnos" emoji="🕐" {...props} />;
+  if (vista === 'agenda') return <AgendaUnificada {...props} />;
   return null;
 }
 
