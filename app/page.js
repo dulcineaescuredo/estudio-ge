@@ -1577,6 +1577,188 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   );
 }
 
+function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }) {
+  const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES_L = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const anoActual = Number(HOY.substring(0,4));
+  const [vistaEst, setVistaEst] = useState('anual');
+  const [mesStat, setMesStat] = useState(()=>new Date(anoActual, Number(HOY.substring(5,7))-1, 1));
+  const [hoveredStat, setHoveredStat] = useState(null);
+
+  const datosAnuales = Array.from({length:12},(_,i)=>{
+    const str = `${anoActual}-${String(i+1).padStart(2,'0')}`;
+    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&(cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    return { str, mes:i, cobrado, pendiente };
+  });
+  const maxAnual = Math.max(...datosAnuales.map(m=>Math.max(m.cobrado,m.pendiente)),1);
+
+  const mesStatStr = `${mesStat.getFullYear()}-${String(mesStat.getMonth()+1).padStart(2,'0')}`;
+  const diasEnMes = new Date(mesStat.getFullYear(),mesStat.getMonth()+1,0).getDate();
+  const todasCuotasMes = cuotas.filter(cu=>(cu.vencimiento||'').startsWith(mesStatStr));
+  const datosDiarios = Array.from({length:diasEnMes},(_,i)=>{
+    const dia = String(i+1).padStart(2,'0');
+    const dateStr = `${mesStatStr}-${dia}`;
+    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&cu.fecha_pago===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&cu.vencimiento===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    return { dateStr, dia:i+1, cobrado, pendiente };
+  }).filter(d=>d.cobrado>0||d.pendiente>0);
+  const maxDiario = Math.max(...datosDiarios.map(d=>Math.max(d.cobrado,d.pendiente)),1);
+
+  function fmtK(n) {
+    if (n>=1000000) return `$${(n/1000000).toFixed(1).replace(/\.0$/,'')}M`;
+    if (n>=1000) return `$${(n/1000).toFixed(1).replace(/\.0$/,'')}k`;
+    return `$${Math.round(n)}`;
+  }
+
+  const L=50,R=10,T=24,B=40,VW=620,VH=260;
+  const chartW=VW-L-R, chartH=VH-T-B;
+  const refs=[0.25,0.5,0.75,1];
+  const legend = (
+    <div style={{display:'flex',gap:14,fontSize:11,color:'#6B7280',marginTop:6}}>
+      <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#16A34A',display:'inline-block'}}></span>Cobrado</span>
+      <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#B45309',display:'inline-block'}}></span>Pendiente</span>
+    </div>
+  );
+  const tooltip = hoveredStat ? (
+    <g>
+      <rect x={hoveredStat.tx-62} y={hoveredStat.ty-20} width={124} height={20} rx={4} fill="#1a1a1a" opacity={0.88}/>
+      <text x={hoveredStat.tx} y={hoveredStat.ty-6} textAnchor="middle" fontSize={10} fill="#fff" fontFamily="system-ui">{hoveredStat.text}</text>
+    </g>
+  ) : null;
+
+  return (
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16,flexWrap:'wrap'}}>
+        <button onClick={onVolver} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#4a4a4a'}}>← Volver</button>
+        <span style={{fontSize:16,fontWeight:600,color:'#1a1a1a'}}>
+          {vistaEst==='anual' ? `Evolución anual — ${anoActual}` : `Detalle — ${MESES_L[mesStat.getMonth()]} ${mesStat.getFullYear()}`}
+        </span>
+        {vistaEst==='mensual' && (
+          <button onClick={()=>{setVistaEst('anual');setHoveredStat(null);}} style={{marginLeft:'auto',padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280'}}>← Volver al año</button>
+        )}
+      </div>
+
+      {vistaEst==='anual' && (
+        <Card>
+          <div onMouseLeave={()=>setHoveredStat(null)}>
+            <svg viewBox={`0 0 ${VW} ${VH}`} style={{width:'100%',height:'auto',display:'block',overflow:'visible'}}>
+              {refs.map(f=>{
+                const y=T+chartH*(1-f);
+                return (
+                  <g key={f}>
+                    <line x1={L} y1={y} x2={VW-R} y2={y} stroke="#EBEBEA" strokeWidth="1" strokeDasharray="4 3"/>
+                    <text x={L-4} y={y+3} textAnchor="end" fontSize={9} fill="#a0a0a0" fontFamily="system-ui">{fmtK(maxAnual*f)}</text>
+                  </g>
+                );
+              })}
+              {datosAnuales.map((m,i)=>{
+                const gW=chartW/12, gX=L+i*gW;
+                const bW=Math.min(16,(gW-8)/2);
+                const innerOff=(gW-bW*2-4)/2;
+                const cX=gX+innerOff, pX=cX+bW+4;
+                const cH=Math.max(0,(m.cobrado/maxAnual)*chartH);
+                const pH=Math.max(0,(m.pendiente/maxAnual)*chartH);
+                const base=T+chartH;
+                const isHov=hoveredStat?.mes===i;
+                return (
+                  <g key={i} style={{cursor:'pointer'}} onClick={()=>{setMesStat(new Date(anoActual,i,1));setVistaEst('mensual');setHoveredStat(null);}}>
+                    <rect x={cX} y={base-cH} width={bW} height={Math.max(cH,1)} rx={2}
+                      fill={isHov&&hoveredStat?.tipo==='cobrado'?'#15803D':'#16A34A'}
+                      onMouseEnter={()=>setHoveredStat({mes:i,tipo:'cobrado',tx:Math.min(Math.max(cX+bW/2,70),VW-70),ty:Math.max(base-cH-8,T+6),text:`${MESES_C[m.mes]}: ${fmtMoneda(m.cobrado)}`})}
+                    />
+                    <rect x={pX} y={base-pH} width={bW} height={Math.max(pH,1)} rx={2}
+                      fill={isHov&&hoveredStat?.tipo==='pendiente'?'#92400E':'#B45309'}
+                      onMouseEnter={()=>setHoveredStat({mes:i,tipo:'pendiente',tx:Math.min(Math.max(pX+bW/2,70),VW-70),ty:Math.max(base-pH-8,T+6),text:`${MESES_C[m.mes]}: ${fmtMoneda(m.pendiente)}`})}
+                    />
+                    <text x={gX+gW/2} y={base+16} textAnchor="middle" fontSize={9} fill="#8a8a8a" fontFamily="system-ui">{MESES_C[m.mes]}</text>
+                  </g>
+                );
+              })}
+              {tooltip}
+            </svg>
+          </div>
+          {legend}
+          <div style={{fontSize:11,color:'#8a8a8a',textAlign:'center',marginTop:6}}>Clic en una barra para ver el detalle del mes</div>
+        </Card>
+      )}
+
+      {vistaEst==='mensual' && (
+        <Card>
+          {datosDiarios.length===0 ? (
+            <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin movimientos registrados en este mes.</div>
+          ) : (
+            <div onMouseLeave={()=>setHoveredStat(null)}>
+              <svg viewBox={`0 0 ${VW} ${VH}`} style={{width:'100%',height:'auto',display:'block',overflow:'visible'}}>
+                {refs.map(f=>{
+                  const y=T+chartH*(1-f);
+                  return (
+                    <g key={f}>
+                      <line x1={L} y1={y} x2={VW-R} y2={y} stroke="#EBEBEA" strokeWidth="1" strokeDasharray="4 3"/>
+                      <text x={L-4} y={y+3} textAnchor="end" fontSize={9} fill="#a0a0a0" fontFamily="system-ui">{fmtK(maxDiario*f)}</text>
+                    </g>
+                  );
+                })}
+                {datosDiarios.map((d,i)=>{
+                  const n=datosDiarios.length;
+                  const gW=chartW/n, gX=L+i*gW;
+                  const bW=Math.min(20,(gW-6)/2);
+                  const innerOff=(gW-bW*2-4)/2;
+                  const cX=gX+Math.max(innerOff,0), pX=cX+bW+4;
+                  const cH=Math.max(0,(d.cobrado/maxDiario)*chartH);
+                  const pH=Math.max(0,(d.pendiente/maxDiario)*chartH);
+                  const base=T+chartH;
+                  const isHov=hoveredStat?.dateStr===d.dateStr;
+                  const parts=d.dateStr.split('-');
+                  const fechaLabel=`${parts[2]}/${parts[1]}`;
+                  return (
+                    <g key={d.dateStr}>
+                      <rect x={cX} y={base-cH} width={bW} height={Math.max(cH,1)} rx={2}
+                        fill={isHov&&hoveredStat?.tipo==='cobrado'?'#15803D':'#16A34A'}
+                        onMouseEnter={()=>setHoveredStat({dateStr:d.dateStr,tipo:'cobrado',tx:Math.min(Math.max(cX+bW/2,70),VW-70),ty:Math.max(base-cH-8,T+6),text:`${fechaLabel}: ${fmtMoneda(d.cobrado)}`})}
+                      />
+                      <rect x={pX} y={base-pH} width={bW} height={Math.max(pH,1)} rx={2}
+                        fill={isHov&&hoveredStat?.tipo==='pendiente'?'#92400E':'#B45309'}
+                        onMouseEnter={()=>setHoveredStat({dateStr:d.dateStr,tipo:'pendiente',tx:Math.min(Math.max(pX+bW/2,70),VW-70),ty:Math.max(base-pH-8,T+6),text:`${fechaLabel}: ${fmtMoneda(d.pendiente)}`})}
+                      />
+                      <text x={gX+gW/2} y={base+16} textAnchor="middle" fontSize={9} fill="#8a8a8a" fontFamily="system-ui">{String(d.dia)}</text>
+                    </g>
+                  );
+                })}
+                {tooltip}
+              </svg>
+            </div>
+          )}
+          {legend}
+          {todasCuotasMes.length>0 && (
+            <div style={{marginTop:16,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+              <div style={{fontSize:12,color:'#6B7280',fontWeight:600,marginBottom:10}}>Cuotas del mes</div>
+              {todasCuotasMes.map(cu=>{
+                const hon=honorarios.find(h=>h.id===cu.honorario_id);
+                const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
+                const cli=hon?.cliente_id?clientes.find(c=>c.id===hon.cliente_id):null;
+                const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||null):(exp?exp.caratula:(cli?cli.nombre:null));
+                return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+                    {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
+                    {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
+                  </div>
+                  <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
+                    <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
+                    {cu.estado==='pagada' && cu.fecha_pago && <span style={{fontSize:10,color:'#8a8a8a'}}>{formatFecha(cu.fecha_pago)}</span>}
+                  </div>
+                </div>;
+              })}
+            </div>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
 function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
   function defaultDistrib(pfs) {
     if (!pfs.length) return [];
