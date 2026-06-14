@@ -2012,12 +2012,15 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     const soma=distribSocios.reduce((s,ds)=>s+Number(ds.porcentaje||0),0);
     if (soma!==100) { alert(`La distribución debe sumar 100% (ahora suma ${soma}%).`); return; }
     setGuardandoDistrib(true);
+    const gp=Number(gastosPorc||0);
+    const factor=(100-gp)/100;
     await supabase.from('honorarios_socios').delete().eq('honorario_id', h.id);
-    await supabase.from('honorarios_socios').insert(
-      distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).map(ds=>({
-        honorario_id:h.id, perfil_id:ds.perfil_id, porcentaje:Number(ds.porcentaje), estudio_id:perfil.estudio_id
-      }))
-    );
+    const rows=[];
+    if (gp>0) rows.push({ honorario_id:h.id, perfil_id:null, porcentaje:gp, estudio_id:perfil.estudio_id, es_gasto:true });
+    distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).forEach(ds=>{
+      rows.push({ honorario_id:h.id, perfil_id:ds.perfil_id, porcentaje:Number(ds.porcentaje)*factor, estudio_id:perfil.estudio_id, es_gasto:false });
+    });
+    if (rows.length) await supabase.from('honorarios_socios').insert(rows);
     setGuardandoDistrib('ok');
     setTimeout(()=>setGuardandoDistrib(false),2000);
   }
