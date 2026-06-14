@@ -1587,7 +1587,7 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
 
   const datosAnuales = Array.from({length:12},(_,i)=>{
     const str = `${anoActual}-${String(i+1).padStart(2,'0')}`;
-    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&(cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     return { str, mes:i, cobrado, pendiente };
   });
