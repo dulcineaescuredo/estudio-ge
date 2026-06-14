@@ -1925,20 +1925,34 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
   const [fechaPago, setFechaPago] = useState(HOY);
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [distribSocios, setDistribSocios] = useState([]);
+  const [gastosPorc, setGastosPorc] = useState(3);
   const [guardandoDistrib, setGuardandoDistrib] = useState(false);
   useEffect(()=>{
     if (!h?.id || !perfil?.estudio_id) return;
     Promise.all([
       supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre'),
-      supabase.from('honorarios_socios').select('*').eq('honorario_id', h.id)
-    ]).then(([{data:pfs},{data:hs}])=>{
-      const perfiles=pfs||[], socios=hs||[];
-      const n=perfiles.length, base=n?Math.floor(100/n):0;
+      supabase.from('honorarios_socios').select('*').eq('honorario_id', h.id),
+      supabase.from('config').select('*').eq('estudio_id', perfil.estudio_id).maybeSingle()
+    ]).then(([{data:pfs},{data:hs},{data:cfg}])=>{
+      const perfiles=pfs||[];
+      const socios=(hs||[]).filter(x=>!x.es_gasto);
+      const gastRow=(hs||[]).find(x=>x.es_gasto);
+      const gPorc=gastRow?Number(gastRow.porcentaje):(cfg?.gastos_porcentaje??3);
+      const distCfg=Array.isArray(cfg?.distribucion_socios)?cfg.distribucion_socios:[];
       const tieneRegistros=socios.length>0;
+      setGastosPorc(gPorc);
       setPerfilesEstudio(perfiles);
-      setDistribSocios(perfiles.map((p,i)=>{
-        const ex=socios.find(s=>s.perfil_id===p.id);
-        return { perfil_id:p.id, nombre:p.nombre, porcentaje:tieneRegistros?(ex?Number(ex.porcentaje):0):(i===n-1?100-base*(n-1):base) };
+      setDistribSocios(perfiles.map(p=>{
+        if (tieneRegistros) {
+          const ex=socios.find(s=>s.perfil_id===p.id);
+          if (ex) {
+            const factorInv=gPorc<100?100/(100-gPorc):1;
+            return { perfil_id:p.id, nombre:p.nombre, porcentaje:Math.round(Number(ex.porcentaje)*factorInv*10)/10 };
+          }
+          return { perfil_id:p.id, nombre:p.nombre, porcentaje:0 };
+        }
+        const cfgEntry=distCfg.find(d=>d.nombre===p.nombre);
+        return { perfil_id:p.id, nombre:p.nombre, porcentaje:cfgEntry?cfgEntry.porcentaje:0 };
       }));
     });
   }, [h?.id, perfil?.estudio_id]);
