@@ -1429,12 +1429,16 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
     const payload = { concepto:f.concepto, tipo_trabajo:f.tipo_trabajo, forma:f.forma, valor:Number(f.valor),
       monto_base: f.monto_base ? Number(f.monto_base) : null,
-      expediente_id:f.expediente_id||null, cliente_id:f.cliente_id||null, en_cuotas:f.en_cuotas, notas:f.notas,
+      expediente_id: f.vinculo_tipo==='expediente' ? f.expediente_id||null : null,
+      cliente_id: f.vinculo_tipo==='cliente' ? f.cliente_id||null : null,
+      contraparte_nombre: f.vinculo_tipo==='contraparte' ? f.contraparte_nombre||null : null,
+      vinculo_tipo: f.vinculo_tipo==='ninguno' ? null : f.vinculo_tipo,
+      en_cuotas:f.en_cuotas, notas:f.notas,
       estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null };
     const { error } = await supabase.from('honorarios').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
-    setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', expediente_id:'', cliente_id:'', en_cuotas:false, notas:'', fecha:HOY });
+    setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
     recargar();
     setTimeout(()=>setMsg(''),4000);
   }
