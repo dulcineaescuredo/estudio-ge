@@ -1594,6 +1594,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
             <Badge bg="#F1EFE8" color="#444441">{formaLabel(h, valorUhon)}</Badge>
             {exp && <Badge bg="#E6F1FB" color="#0C447C">Exp: {exp.caratula}</Badge>}
             {cli && <Badge bg="#FBEAF0" color="#72243E">Cliente: {cli.nombre}</Badge>}
+            {h.vinculo_tipo==='contraparte' && h.contraparte_nombre && <Badge bg="#F1EFE8" color="#444441">Contraparte: {h.contraparte_nombre}</Badge>}
             {h.en_cuotas && <Badge bg="#FAEEDA" color="#633806">En cuotas</Badge>}
             {h.fecha && <Badge bg="#F1EFE8" color="#444441">📅 {formatFecha(h.fecha)}</Badge>}
           </div>
