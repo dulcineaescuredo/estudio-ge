@@ -2304,9 +2304,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción *</label>
         <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
-        <select style={inputStyle} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
-          <option value="">Seleccioná</option>{ABOGADAS.map(a=><option key={a}>{a}</option>)}<option>Todos</option>
-        </select>
+        <SocioChips value={f.responsable} onChange={v=>set('responsable',v)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
         <input type="date" style={inputStyle} value={f.deadline} onChange={e=>set('deadline',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a (opcional)</label>
