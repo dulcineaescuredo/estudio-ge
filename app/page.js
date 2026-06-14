@@ -2775,3 +2775,259 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
     </Card>
   );
 }
+
+function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
+  const [audiencias, setAudiencias] = useState([]);
+  const [turnos, setTurnos] = useState([]);
+  const [vistaAg, setVistaAg] = useState('mes');
+  const [navDate, setNavDate] = useState(new Date(HOY+'T00:00:00'));
+  const [detalleEv, setDetalleEv] = useState(null);
+
+  useEffect(()=>{ cargar(); },[]);
+
+  async function cargar() {
+    const [{ data: a },{ data: t }] = await Promise.all([
+      supabase.from('audiencias').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'),
+      supabase.from('turnos').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'),
+    ]);
+    setAudiencias(a||[]);
+    setTurnos(t||[]);
+  }
+
+  async function eliminarEvento(ev) {
+    const tabla = ev._tipo==='audiencia'?'audiencias':'turnos';
+    if (!confirm('¿Eliminar este evento?')) return;
+    await supabase.from(tabla).delete().eq('id',ev.id);
+    setDetalleEv(null);
+    cargar();
+  }
+
+  const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento);
+  const AU_COLOR = '#9B4F6A';
+  const TU_COLOR = '#2B6CB0';
+  const VE_COLOR = '#B45309';
+
+  function chipColor(tipo) {
+    if (tipo==='audiencia') return AU_COLOR;
+    if (tipo==='turno') return TU_COLOR;
+    return VE_COLOR;
+  }
+
+  function dateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function eventosDelDia(fs) {
+    return [
+      ...audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'audiencia'})),
+      ...turnos.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'turno'})),
+      ...vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_tipo:'vencimiento'})),
+    ].sort((a,b)=>{
+      if (a._tipo==='vencimiento'&&b._tipo!=='vencimiento') return 1;
+      if (b._tipo==='vencimiento'&&a._tipo!=='vencimiento') return -1;
+      return (a.hora||'').localeCompare(b.hora||'');
+    });
+  }
+
+  function fmtH(h) { return h?h.substring(0,5):''; }
+
+  function chipLabel(ev) {
+    if (ev._tipo==='vencimiento') return (ev.motivo_vencimiento||(ev.caratula||'').split(' c/')[0]).substring(0,20);
+    return `${fmtH(ev.hora)?fmtH(ev.hora)+' ':''}${(ev.tipo||'').substring(0,16)}`;
+  }
+
+  function handleChipClick(e, ev) {
+    e.stopPropagation();
+    if (ev._tipo==='vencimiento') {
+      const exp = expedientes.find(x=>x.id===ev.id);
+      if (exp) { setExpActual(exp); setVista('detalle'); }
+    } else {
+      setDetalleEv(ev);
+    }
+  }
+
+  function handleEvClick(ev) {
+    if (ev._tipo==='vencimiento') {
+      const exp = expedientes.find(x=>x.id===ev.id);
+      if (exp) { setExpActual(exp); setVista('detalle'); }
+    } else {
+      setDetalleEv(ev);
+    }
+  }
+
+  const año = navDate.getFullYear();
+  const mes = navDate.getMonth();
+
+  function navAnt() {
+    if (vistaAg==='mes') setNavDate(new Date(año,mes-1,1));
+    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()-7*864e5));
+    else setNavDate(new Date(navDate.getTime()-864e5));
+  }
+  function navSig() {
+    if (vistaAg==='mes') setNavDate(new Date(año,mes+1,1));
+    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()+7*864e5));
+    else setNavDate(new Date(navDate.getTime()+864e5));
+  }
+
+  const lunSem = new Date(navDate);
+  lunSem.setDate(navDate.getDate()-((navDate.getDay()+6)%7));
+
+  let navTit = '';
+  if (vistaAg==='mes') navTit = `${MESES_AG[mes]} ${año}`;
+  else if (vistaAg==='semana') {
+    const domSem = new Date(lunSem); domSem.setDate(lunSem.getDate()+6);
+    navTit = `${lunSem.getDate()} ${MESES_AG[lunSem.getMonth()].substring(0,3)} — ${domSem.getDate()} ${MESES_AG[domSem.getMonth()].substring(0,3)} ${domSem.getFullYear()}`;
+  } else {
+    navTit = `${navDate.getDate()} de ${MESES_AG[mes]} ${año}`;
+  }
+
+  function renderChip(ev, i) {
+    const bg = chipColor(ev._tipo);
+    return (
+      <div key={`${ev._tipo}-${ev.id}-${i}`}
+        onClick={e=>handleChipClick(e,ev)}
+        style={{fontSize:10,background:bg,color:'#fff',borderRadius:4,padding:'1px 4px',
+          marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',cursor:'pointer'}}>
+        {chipLabel(ev)}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
+        <div style={{fontSize:22,fontWeight:700,color:'#1A1A1A'}}>🗓️ Agenda</div>
+        <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+          <div style={{display:'flex',border:'1px solid #DDDCDA',borderRadius:8,overflow:'hidden'}}>
+            {[['mes','Mes'],['semana','Semana'],['dia','Día']].map(([v,l])=>(
+              <button key={v} onClick={()=>setVistaAg(v)}
+                style={{padding:'6px 14px',fontSize:12,fontWeight:vistaAg===v?600:400,cursor:'pointer',border:'none',
+                  background:vistaAg===v?'#4A5568':'#fff',color:vistaAg===v?'#fff':'#6B7280',fontFamily:'system-ui'}}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:10,alignItems:'center'}}>
+            {[[AU_COLOR,'Audiencias'],[TU_COLOR,'Turnos'],[VE_COLOR,'Vencimientos']].map(([bg,label])=>(
+              <div key={label} style={{display:'flex',alignItems:'center',gap:4,fontSize:11,color:'#6B7280'}}>
+                <span style={{width:10,height:10,borderRadius:3,background:bg,display:'inline-block',flexShrink:0}}></span>
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+        <button onClick={navAnt} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
+        <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:220,textAlign:'center'}}>{navTit}</span>
+        <button onClick={navSig} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>›</button>
+        <button onClick={()=>setNavDate(new Date(HOY+'T00:00:00'))} style={{fontSize:11,color:'#6B7280',background:'none',border:'1px solid #DDDCDA',borderRadius:6,padding:'3px 8px',cursor:'pointer',fontFamily:'system-ui'}}>Hoy</button>
+      </div>
+
+      {vistaAg==='mes' && (()=>{
+        const primer = new Date(año,mes,1).getDay();
+        const offset = (primer+6)%7;
+        const ultDia = new Date(año,mes+1,0).getDate();
+        const celdas = [];
+        for (let i=0;i<offset;i++) celdas.push(null);
+        for (let d=1;d<=ultDia;d++) celdas.push(d);
+        return (
+          <Card>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
+              {DIAS_SEM_AG.map(d=><div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#8a8a8a',padding:'4px 0'}}>{d}</div>)}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+              {celdas.map((d,i)=>{
+                if (!d) return <div key={`b${i}`} style={{minHeight:80}} />;
+                const fs = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const evs = eventosDelDia(fs);
+                const esHoy = fs===HOY;
+                return (
+                  <div key={d}
+                    style={{minHeight:80,borderRadius:8,padding:'5px 4px',
+                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}>
+                    <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:2}}>{d}</div>
+                    {evs.slice(0,3).map((ev,i)=>renderChip(ev,i))}
+                    {evs.length>3&&<div style={{fontSize:9,color:'#8a8a8a'}}>+{evs.length-3} más</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        );
+      })()}
+
+      {vistaAg==='semana' && (()=>{
+        const dias = Array.from({length:7},(_,i)=>{const d=new Date(lunSem);d.setDate(lunSem.getDate()+i);return d;});
+        return (
+          <Card>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:6}}>
+              {dias.map(d=>{
+                const fs = dateStr(d);
+                const evs = eventosDelDia(fs);
+                const esHoy = fs===HOY;
+                return (
+                  <div key={fs}
+                    style={{minHeight:120,borderRadius:10,padding:'8px 6px',
+                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}>
+                    <div style={{fontSize:11,fontWeight:600,color:esHoy?'#2B6CB0':'#4a4a4a'}}>{DIAS_SEM_AG[(d.getDay()+6)%7]}</div>
+                    <div style={{fontSize:18,fontWeight:700,color:esHoy?'#2B6CB0':'#1a1a1a',marginBottom:6}}>{d.getDate()}</div>
+                    {evs.map((ev,i)=>renderChip(ev,i))}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        );
+      })()}
+
+      {vistaAg==='dia' && (()=>{
+        const fs = dateStr(navDate);
+        const evs = eventosDelDia(fs);
+        return (
+          <Card>
+            <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a',marginBottom:14}}>Eventos del día</div>
+            {evs.length===0&&<div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin eventos para este día.</div>}
+            {evs.map((ev,i)=>{
+              const bg = chipColor(ev._tipo);
+              const expVinc = ev._tipo!=='vencimiento' ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
+              const cliVinc = ev._tipo!=='vencimiento' ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
+              const vinc = expVinc?expVinc.caratula:cliVinc?cliVinc.nombre:'';
+              const icono = ev._tipo==='audiencia'?'📅':ev._tipo==='turno'?'🕐':'⚠️';
+              const titulo = ev._tipo==='vencimiento'
+                ? (ev.motivo_vencimiento||ev.caratula)
+                : (ev.tipo||ev._tipo);
+              return (
+                <div key={`${ev._tipo}-${ev.id}-${i}`}
+                  onClick={()=>handleEvClick(ev)}
+                  style={{display:'flex',gap:12,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',alignItems:'flex-start'}}>
+                  <div style={{width:48,flexShrink:0,textAlign:'right'}}>
+                    {ev.hora
+                      ?<div style={{fontSize:14,fontWeight:700,color:bg}}>{fmtH(ev.hora)}</div>
+                      :<div style={{fontSize:12,color:'#c0c0c0'}}>—</div>}
+                  </div>
+                  <div style={{fontSize:16,flexShrink:0,marginTop:1}}>{icono}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{titulo}</div>
+                    {ev.descripcion&&ev._tipo!=='vencimiento'&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                    {vinc&&<div style={{fontSize:11,color:'#8a8a8a'}}>📁 {vinc}</div>}
+                    {ev._tipo==='vencimiento'&&ev.numero&&<div style={{fontSize:11,color:'#8a8a8a'}}>{ev.numero}</div>}
+                  </div>
+                  <div style={{width:8,height:8,borderRadius:2,background:bg,flexShrink:0,marginTop:6}}></div>
+                </div>
+              );
+            })}
+          </Card>
+        );
+      })()}
+
+      {detalleEv&&(
+        <AgendaDetalle ev={detalleEv} expedientes={expedientes||[]} clientes={clientes||[]}
+          onEditar={()=>{ setVista(detalleEv._tipo==='audiencia'?'audiencias':'turnos'); setDetalleEv(null); }}
+          onEliminar={()=>eliminarEvento(detalleEv)}
+          onCerrar={()=>setDetalleEv(null)} />
+      )}
+    </div>
+  );
+}
