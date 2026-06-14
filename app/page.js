@@ -2107,6 +2107,19 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
 
       {perfilesEstudio.length > 0 && (
         <Card title="👥 Distribución entre socios">
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#4a4a4a',display:'block',marginBottom:6}}>Gastos del estudio</label>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+              <input type="number" min="0" max="100" value={gastosPorc}
+                onChange={e=>setGastosPorc(e.target.value)}
+                style={{width:70,padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:13,fontFamily:'system-ui',textAlign:'right'}} />
+              <span style={{fontSize:13,color:'#4a4a4a'}}>% del total</span>
+            </div>
+            <div style={{fontSize:11,color:'#8a8a8a'}}>Se descuenta del total antes de distribuir entre socios</div>
+          </div>
+          <label style={{fontSize:12,fontWeight:600,color:'#4a4a4a',display:'block',marginBottom:6}}>
+            {'Distribución entre socios (sobre el '+Math.max(0,100-Number(gastosPorc||0))+'% restante)'}
+          </label>
           {distribSocios.map((ds,i)=>(
             <div key={ds.perfil_id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
               <span style={{fontSize:13,color:'#4a4a4a',flex:1}}>{ds.nombre}</span>
@@ -2116,10 +2129,17 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
               <span style={{fontSize:13,color:'#4a4a4a'}}>%</span>
             </div>
           ))}
-          {(()=>{ const s=distribSocios.reduce((a,ds)=>a+Number(ds.porcentaje||0),0);
-            return <div style={{fontSize:11,marginBottom:10,marginTop:2,color:s===100?'#27500A':s===0?'#8a8a8a':'#A32D2D'}}>
-              {s===100?'✓ Suma 100%':`Suma ${s}% — debe ser 100%`}
-            </div>; })()}
+          {(()=>{
+            const s=distribSocios.reduce((a,ds)=>a+Number(ds.porcentaje||0),0);
+            const gp=Number(gastosPorc||0), factor=(100-gp)/100;
+            const resumen='Gastos: '+gp+'% · '+distribSocios.filter(ds=>Number(ds.porcentaje||0)>0).map(ds=>ds.nombre+': '+(Number(ds.porcentaje)*factor).toFixed(1).replace(/\.0$/,'')+'%').join(' · ');
+            return <>
+              <div style={{fontSize:11,marginTop:4,marginBottom:s===100?4:10,color:s===100?'#27500A':s===0?'#8a8a8a':'#A32D2D'}}>
+                {s===0?'Sin distribución configurada':s===100?'✓ 100%':'Suma '+s+'% — debe ser 100%'}
+              </div>
+              {s===100 && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:10}}>{resumen}</div>}
+            </>;
+          })()}
           <button onClick={guardarDistrib}
             style={{...btnPrimary,padding:'7px 14px',
               background:guardandoDistrib==='ok'?'#27500A':btnPrimary.background,
