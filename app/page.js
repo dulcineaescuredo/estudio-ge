@@ -1154,7 +1154,7 @@ function VerConsultas({ consultas, recargar }) {
               </div>
               <input value={editForm.motivo} onChange={ev=>setEditForm({...editForm,motivo:ev.target.value})} placeholder="Motivo"
                 style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
-              <textarea value={editForm.comentario||''} onChange={ev=>setEditForm({...editForm,comentario:ev.target.value})} placeholder="Comentario (opcional)"
+              <textarea value={editForm.comentario||''} onChange={ev=>setEditForm({...editForm,comentario:ev.target.value})} placeholder="Paso siguiente (opcional)"
                 style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:48}} />
               {editForm.tipo==='primera'&&(
                 <input type="number" value={editForm.valor_consulta||''} onChange={ev=>setEditForm({...editForm,valor_consulta:ev.target.value})} placeholder="Valor de la consulta ($)"
