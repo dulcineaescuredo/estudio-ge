@@ -3621,7 +3621,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
               const bg = chipColor(ev._tipo);
               const expVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
               const cliVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
-              const vinc = expVinc?expVinc.caratula:cliVinc?cliVinc.nombre:'';
+              const vinc = expVinc?expVinc.caratula:cliVinc?nombreCompleto(cliVinc):'';
               const icono = ev._tipo==='audiencia'?'⚖️':ev._tipo==='turno'?'🕐':ev._tipo==='tarea'?'✅':'⚠️';
               const titulo = ev._tipo==='vencimiento'
                 ? (ev.motivo_vencimiento||ev.caratula)
