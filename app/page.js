@@ -1253,11 +1253,11 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
   const set = (k,v)=>setF({...f,[k]:v});
 
   const sugsCliente = !clienteId && clienteQ
-    ? (clientes||[]).filter(cl=>(cl.nombre||'').toLowerCase().includes(clienteQ.toLowerCase())).slice(0,8)
+    ? (clientes||[]).filter(cl=>(nombreCompleto(cl)||'').toLowerCase().includes(clienteQ.toLowerCase())||(cl.dni||'').includes(clienteQ)).slice(0,8)
     : [];
 
   function seleccionarCliente(cl) {
-    setClienteId(cl.id); setClienteNombre(cl.nombre); setClienteQ(''); setClienteAbierto(false);
+    setClienteId(cl.id); setClienteNombre(nombreCompleto(cl)); setClienteQ(''); setClienteAbierto(false);
     setClienteDni(cl.dni||''); setClienteTelefono(cl.telefono||''); setClienteDomicilio(cl.domicilio||''); setClienteEmail(cl.email||'');
   }
 
