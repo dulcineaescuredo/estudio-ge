@@ -976,7 +976,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
         <select style={inputStyle} value={f.cliente_id} onChange={e=>onClienteChange(e.target.value)}>
           <option value="">Sin vincular</option>
-          {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+          {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{nombreCompleto(cl)}</option>)}
         </select>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hipótesis de máxima</label>
         <textarea style={{...inputStyle,minHeight:52,resize:'vertical'}} placeholder="El mejor resultado posible para el cliente..." value={f.hipotesis_maxima} onChange={e=>set('hipotesis_maxima',e.target.value)} />
