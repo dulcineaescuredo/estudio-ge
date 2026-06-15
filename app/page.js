@@ -1210,6 +1210,7 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
   const [clienteDomicilio, setClienteDomicilio] = useState('');
   const [clienteEmail, setClienteEmail] = useState('');
   const [msg, setMsg] = useState('');
+  const [estadoPago, setEstadoPago] = useState('pendiente');
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, abogada: prev.abogada||perfil.nombre})); }, [perfil]);
   const set = (k,v)=>setF({...f,[k]:v});
 
