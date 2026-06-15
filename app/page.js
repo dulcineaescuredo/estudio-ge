@@ -497,7 +497,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>No tenés tareas pendientes 🎉</div>}
       </Card>
-      {cuotasACobrar.length > 0 && (
+      {(cuotasACobrar.length > 0 || honConRecordatorio.length > 0) && (
         <Card title="💰 Cuotas a cobrar">
           {cuotasACobrar.map(cu=>{
             const hon=(honorarios||[]).find(h=>h.id===cu.honorario_id);
@@ -513,6 +513,18 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
               </div>
               <span style={{fontSize:13,fontWeight:600,marginRight:4}}>{fmtMoneda(cu.monto)}</span>
               <Badge bg={badge.bg} color={badge.color}>{badge.label}</Badge>
+            </div>;
+          })}
+          {honConRecordatorio.map(h=>{
+            const exp=h.expediente_id?expedientes.find(e=>e.id===h.expediente_id):null;
+            const cli=h.cliente_id?(clientes||[]).find(c=>c.id===h.cliente_id):null;
+            const nombre=h.vinculo_tipo==='contraparte'?(h.contraparte_nombre||'—'):(exp?exp.caratula:(cli?nombreCompleto(cli):'—'));
+            return <div key={`rec-${h.id}`} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{h.concepto}</div>
+                <div style={{fontSize:11,color:'#92400E'}}>Recordar a {nombre} que vence el {formatFecha(h.fecha_limite_pago)}</div>
+              </div>
+              <Badge bg="#FEF9EE" color="#92400E">límite {formatFecha(h.fecha_limite_pago)}</Badge>
             </div>;
           })}
         </Card>
