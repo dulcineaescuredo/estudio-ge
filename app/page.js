@@ -1335,6 +1335,18 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
             <>
               <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Valor de la consulta ($)</label>
               <input type="number" style={inputStyle} placeholder="Ej: 20000" value={f.valor_consulta} onChange={e=>set('valor_consulta',e.target.value)} />
+              {Number(f.valor_consulta) > 0 && (
+                <>
+                  <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado de pago</label>
+                  <div style={{display:'flex',gap:8,marginBottom:12}}>
+                    {[['pendiente','Pendiente de cobro'],['pagado','Ya está pagado']].map(([v,l])=>(
+                      <button key={v} type="button" onClick={()=>setEstadoPago(v)}
+                        style={{flex:1,padding:9,border:estadoPago===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',
+                          background:estadoPago===v?'#E6F1FB':'#f9f8f5',color:estadoPago===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Paso siguiente</label>
