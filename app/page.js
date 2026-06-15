@@ -300,6 +300,10 @@ function Contenido(props) {
   if (vista === 'audiencias') return <AgendaModule tabla="audiencias" titulo="Audiencias" emoji="📅" {...props} />;
   if (vista === 'turnos') return <AgendaModule tabla="turnos" titulo="Turnos" emoji="🕐" {...props} />;
   if (vista === 'agenda') return <AgendaUnificada {...props} />;
+  if (vista === 'agenda-vencimientos') return <AgendaUnificada filtro="vencimientos" {...props} />;
+  if (vista === 'agenda-audiencias') return <AgendaUnificada filtro="audiencias" {...props} />;
+  if (vista === 'agenda-turnos') return <AgendaUnificada filtro="turnos" {...props} />;
+  if (vista === 'agenda-tareas') return <AgendaUnificada filtro="tareas" {...props} />;
   return null;
 }
 
