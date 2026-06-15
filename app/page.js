@@ -2196,7 +2196,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           )}
         </div>
         {lista.length ? (
-          <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} />
+          <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} recargar={recargar} />
         ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
       </Card>
 
