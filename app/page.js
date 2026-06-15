@@ -1905,6 +1905,7 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
   ];
 
   return (
+    <div style={{overflowX:'auto'}}>
     <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
       <thead>
         <tr style={{background:'#F7F6F3'}}>
