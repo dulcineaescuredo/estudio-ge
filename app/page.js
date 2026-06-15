@@ -2885,7 +2885,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
     ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(vincQ.toLowerCase())||(e.numero||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8)
     : [];
   const sugsCli = vinculo==='cliente' && vincQ
-    ? clientes.filter(cl=>(cl.nombre||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8)
+    ? clientes.filter(cl=>(nombreCompleto(cl)||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8)
     : [];
   async function guardar() {
     if (!f.descripcion||!f.responsable) { alert('Completá descripción y responsable (*)'); return; }
