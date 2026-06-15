@@ -1664,7 +1664,7 @@ function Clientes({ clientes, setVista, setCliActual, expedientes }) {
                 return <tr key={cl.id} style={{cursor:'pointer',background:hoveredRow===cl.id?'#F7F6F3':'transparent'}}
                   onMouseEnter={()=>setHoveredRow(cl.id)} onMouseLeave={()=>setHoveredRow(null)}
                   onClick={()=>{setCliActual(cl);setVista('detalle-cliente');}}>
-                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{cl.nombre}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{nombreCompleto(cl)}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{cl.dni||'—'}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{cl.telefono||'—'}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{cl.responsable?<Badge bg={socioColor(cl.responsable).bg} color={socioColor(cl.responsable).color}>{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#6B7280'}}>—</span>}</td>
