@@ -245,8 +245,8 @@ export default function Home() {
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
             <div style={{display:'flex',gap:8,marginTop:1}}>
-              <button onClick={logout} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Cerrar sesión</button>
-              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#8BABC7',background:'none',border:'none',padding:0,cursor:'pointer'}}>Contraseña</button>
+              <button onClick={logout} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Cerrar sesión</button>
+              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Contraseña</button>
             </div>
           </div>
         </div>
