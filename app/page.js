@@ -482,49 +482,166 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
 
 const ESTADO_DOT = { activo:'#27500A', espera:'#633806', apelado:'#0C447C', archivado:'#8a8a8a' };
 
+const PALETA_PROCESO = ['#9B4F6A','#2B6CB0','#27500A','#B45309','#6B21A8','#0891B2','#BE123C','#047857','#9333EA','#D97706'];
+
 function Expedientes({ expedientes, setVista, setExpActual }) {
   const [q, setQ] = useState('');
+  const [filtroP, setFiltroP] = useState('');
+  const [filtroE, setFiltroE] = useState('');
+  const [pagina, setPagina] = useState(1);
   const [hoveredRow, setHoveredRow] = useState(null);
-  const lista = expedientes.filter(e=>!q||(e.caratula||'').toLowerCase().includes(q.toLowerCase())||(e.numero||'').toLowerCase().includes(q.toLowerCase()));
+  const POR_PAG = 50;
+
+  const tiposProceso = [...new Set(expedientes.map(e=>e.tipo_proceso).filter(Boolean))];
+
+  function dotColorProceso(tp) {
+    const idx = tiposProceso.indexOf(tp);
+    return idx >= 0 ? PALETA_PROCESO[idx % PALETA_PROCESO.length] : '#8a8a8a';
+  }
+
+  function calcEtapa(e) {
+    const mapa = PROCESOS[e.tipo_proceso];
+    const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},dec:{}}; } catch { return {hechas:{},dec:{}}; } })();
+    if (!prog.hechas) prog.hechas = {}; if (!prog.dec) prog.dec = {};
+    const esDemandada = e.rol === 'demandada';
+    const etapasVis = mapa && mapa.etapas.length ? mapa.etapas
+      .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
+      .filter(et => !(esDemandada && et.id === 'dem'))
+      .map(et => esDemandada && et.id === 'con' ? {...et, n:'Contestar demanda'} : et)
+      : [];
+    if (!mapa || !etapasVis.length) return '—';
+    if (etapasVis.every(et => prog.hechas[et.id])) return 'Finalizado';
+    return etapasVis.find(et => !prog.hechas[et.id])?.n || '—';
+  }
+
+  function resolveResponsable(e) {
+    if (e.responsable) return e.responsable;
+    if (!e.cliente_id) return '';
+    const otros = expedientes.filter(x => x.id !== e.id && x.cliente_id === e.cliente_id && x.responsable);
+    if (!otros.length) return '';
+    const freq = {};
+    otros.forEach(x => { freq[x.responsable] = (freq[x.responsable]||0)+1; });
+    return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  function resetPag() { setPagina(1); }
+
+  const listaProcTexto = expedientes.filter(e => {
+    const textoOk = !q || (e.caratula||'').toLowerCase().includes(q.toLowerCase()) || (e.numero||'').toLowerCase().includes(q.toLowerCase());
+    const procesoOk = !filtroP || e.tipo_proceso === filtroP;
+    return textoOk && procesoOk;
+  });
+
+  const etapasUnicas = [...new Set(listaProcTexto.map(e=>calcEtapa(e)).filter(s=>s&&s!=='—'))].sort();
+
+  const listaFiltrada = listaProcTexto.filter(e => !filtroE || calcEtapa(e) === filtroE);
+
+  const totalPags = Math.max(1, Math.ceil(listaFiltrada.length / POR_PAG));
+  const pagActual = Math.min(pagina, totalPags);
+  const desde = (pagActual - 1) * POR_PAG;
+  const hasta = Math.min(desde + POR_PAG, listaFiltrada.length);
+  const listaPag = listaFiltrada.slice(desde, hasta);
+
   return (
     <Card title="📁 Expedientes">
-      <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>setQ(e.target.value)} />
-      {lista.length ? (
-        <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-          <thead><tr style={{background:'#F7F6F3'}}>{['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
-          <tbody>
-            {lista.map(e=>{
-              const mapa = PROCESOS[e.tipo_proceso];
-              const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},dec:{}}; } catch { return {hechas:{},dec:{}}; } })();
-              if (!prog.hechas) prog.hechas = {}; if (!prog.dec) prog.dec = {};
-              const esDemandada = e.rol === 'demandada';
-              const etapasVis = mapa && mapa.etapas.length ? mapa.etapas
-                .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
-                .filter(et => !(esDemandada && et.id === 'dem'))
-                .map(et => esDemandada && et.id === 'con' ? {...et, n:'Contestar demanda'} : et)
-                : [];
-              const etapaActual = !mapa || !etapasVis.length ? '—'
-                : etapasVis.every(et => prog.hechas[et.id]) ? 'Finalizado'
-                : (etapasVis.find(et => !prog.hechas[et.id])?.n || '—');
-              return <tr key={e.id} style={{cursor:'pointer',background:hoveredRow===e.id?'#F7F6F3':'transparent'}}
-                onMouseEnter={()=>setHoveredRow(e.id)} onMouseLeave={()=>setHoveredRow(null)}
-                onClick={()=>{setExpActual(e);setVista('detalle');}}>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:11,color:'#6B7280'}}>{e.numero}</td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:7}}>
-                    <span style={{width:8,height:8,borderRadius:'50%',background:ESTADO_DOT[e.estado]||'#8a8a8a',display:'inline-block',flexShrink:0}}></span>
-                    <span style={{fontWeight:500}}>{e.caratula}</span>
-                  </div>
-                </td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{mapa?mapa.nombre:'—'}</td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
-                <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={socioColor(e.responsable).bg} color={socioColor(e.responsable).color}>{e.responsable||'—'}</Badge></td>
-              </tr>;
-            })}
-          </tbody>
-        </table>
-      ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin expedientes todavía. Cargá el primero desde "Nuevo expediente".</div>}
+      <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>{setQ(e.target.value);resetPag();}} />
+
+      <div style={{display:'flex',gap:10,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
+        <select style={{...inputStyle,marginBottom:0,flex:'1 1 180px',maxWidth:260}}
+          value={filtroP} onChange={e=>{setFiltroP(e.target.value);setFiltroE('');resetPag();}}>
+          <option value="">Todos los procesos</option>
+          {tiposProceso.map(tp=><option key={tp} value={tp}>{PROCESOS[tp]?.nombre||tp}</option>)}
+        </select>
+        <select style={{...inputStyle,marginBottom:0,flex:'1 1 180px',maxWidth:300}}
+          value={filtroE} onChange={e=>{setFiltroE(e.target.value);resetPag();}}>
+          <option value="">Todas las etapas</option>
+          {etapasUnicas.map(et=><option key={et} value={et}>{et}</option>)}
+        </select>
+        {(filtroP||filtroE) && (
+          <button onClick={()=>{setFiltroP('');setFiltroE('');resetPag();}}
+            style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280',fontFamily:'system-ui',whiteSpace:'nowrap'}}>
+            Limpiar ✕
+          </button>
+        )}
+      </div>
+
+      {tiposProceso.length > 0 && (
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+          {tiposProceso.map(tp=>(
+            <div key={tp} style={{display:'flex',alignItems:'center',gap:5,background:'#F7F6F3',borderRadius:20,padding:'3px 10px',cursor:'pointer'}}
+              onClick={()=>{setFiltroP(filtroP===tp?'':tp);setFiltroE('');resetPag();}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:dotColorProceso(tp),display:'inline-block',flexShrink:0}}></span>
+              <span style={{fontSize:11,color:filtroP===tp?'#1A1A1A':'#6B7280',fontWeight:filtroP===tp?600:400}}>{PROCESOS[tp]?.nombre||tp}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {listaFiltrada.length ? (
+        <>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+            <thead><tr style={{background:'#F7F6F3'}}>
+              {['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=>(
+                <th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {listaPag.map(e=>{
+                const mapa = PROCESOS[e.tipo_proceso];
+                const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},dec:{}}; } catch { return {hechas:{},dec:{}}; } })();
+                if (!prog.hechas) prog.hechas = {}; if (!prog.dec) prog.dec = {};
+                const esDemandada = e.rol === 'demandada';
+                const etapasVis = mapa && mapa.etapas.length ? mapa.etapas
+                  .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
+                  .filter(et => !(esDemandada && et.id === 'dem'))
+                  .map(et => esDemandada && et.id === 'con' ? {...et, n:'Contestar demanda'} : et)
+                  : [];
+                const etapaActual = !mapa || !etapasVis.length ? '—'
+                  : etapasVis.every(et => prog.hechas[et.id]) ? 'Finalizado'
+                  : (etapasVis.find(et => !prog.hechas[et.id])?.n || '—');
+                const respDisplay = resolveResponsable(e);
+                const dotColor = dotColorProceso(e.tipo_proceso);
+                return <tr key={e.id} style={{cursor:'pointer',background:hoveredRow===e.id?'#F7F6F3':'transparent'}}
+                  onMouseEnter={()=>setHoveredRow(e.id)} onMouseLeave={()=>setHoveredRow(null)}
+                  onClick={()=>{setExpActual(e);setVista('detalle');}}>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:11,color:'#6B7280'}}>{e.numero}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:7}}>
+                      <span style={{width:8,height:8,borderRadius:'50%',background:dotColor,display:'inline-block',flexShrink:0}}></span>
+                      <span style={{fontWeight:500}}>{e.caratula}</span>
+                    </div>
+                  </td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{mapa?mapa.nombre:'—'}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{etapaActual==='Finalizado'?<Badge bg="#EAF3DE" color="#27500A">Finalizado</Badge>:<span style={{fontSize:12,color:'#4a4a4a'}}>{etapaActual}</span>}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{e.estado}</Badge></td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
+                    {respDisplay ? <Badge bg={socioColor(respDisplay).bg} color={socioColor(respDisplay).color}>{respDisplay}</Badge> : null}
+                  </td>
+                </tr>;
+              })}
+            </tbody>
+          </table>
+
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:14,flexWrap:'wrap',gap:10}}>
+            <span style={{fontSize:12,color:'#6B7280'}}>
+              Mostrando {desde+1}–{hasta} de {listaFiltrada.length} expediente{listaFiltrada.length!==1?'s':''}
+            </span>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <button onClick={()=>setPagina(p=>Math.max(1,p-1))} disabled={pagActual===1}
+                style={{padding:'5px 12px',borderRadius:8,fontSize:12,cursor:pagActual===1?'default':'pointer',border:'1px solid #DDDCDA',background:'#fff',color:pagActual===1?'#C0C0C0':'#4a4a4a',fontFamily:'system-ui'}}>
+                Anterior
+              </button>
+              <span style={{fontSize:12,color:'#4a4a4a',whiteSpace:'nowrap'}}>Página {pagActual} / {totalPags}</span>
+              <button onClick={()=>setPagina(p=>Math.min(totalPags,p+1))} disabled={pagActual===totalPags}
+                style={{padding:'5px 12px',borderRadius:8,fontSize:12,cursor:pagActual===totalPags?'default':'pointer',border:'1px solid #DDDCDA',background:'#fff',color:pagActual===totalPags?'#C0C0C0':'#4a4a4a',fontFamily:'system-ui'}}>
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </>
+      ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>
+        {expedientes.length===0 ? 'Sin expedientes todavía. Cargá el primero desde "Nuevo expediente".' : 'No hay expedientes que coincidan con los filtros.'}
+      </div>}
     </Card>
   );
 }
