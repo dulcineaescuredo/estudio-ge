@@ -299,7 +299,7 @@ function Contenido(props) {
   if (vista === 'tareas') return <Tareas {...props} />;
   if (vista === 'nueva-tarea') return <NuevaTarea {...props} />;
   if (vista === 'cambiar-password') return <CambiarPassword {...props} />;
-  if (vista === 'audiencias') return <AgendaModule tabla="audiencias" titulo="Audiencias" emoji="📅" {...props} />;
+  if (vista === 'audiencias') return <AgendaModule tabla="audiencias" titulo="Audiencias" emoji="⚖️" {...props} />;
   if (vista === 'turnos') return <AgendaModule tabla="turnos" titulo="Turnos" emoji="🕐" {...props} />;
   if (vista === 'agenda') return <AgendaUnificada {...props} />;
   if (vista === 'agenda-vencimientos') return <AgendaUnificada filtro="vencimientos" {...props} />;
