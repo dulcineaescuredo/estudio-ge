@@ -2189,13 +2189,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
               {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
+              {cu.estado==='pagada'&&cu.fecha_pago&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>✓ Pagada el {formatFecha(cu.fecha_pago)}</div>}
+              {cu.estado!=='pagada'&&hon?.fecha_limite_pago&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>Recordar al cliente antes del {formatFecha(hon.fecha_limite_pago)}</div>}
               {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
             </div>
             <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
-              <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
-              {cu.estado==='pagada' && cu.fecha_pago && <span style={{fontSize:10,color:'#8a8a8a'}}>{formatFecha(cu.fecha_pago)}</span>}
-            </div>
+            <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
       </Card>
