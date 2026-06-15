@@ -2007,17 +2007,16 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
           if (isOpen) {
             rows.push(
               <tr key={`panel-${h.id}`}>
-                <td colSpan={5} style={{padding:'0 10px 14px',borderBottom:'1px solid #F0EFED',background:'#FAFAF9'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',paddingTop:10}}>
-                    <span style={{fontSize:12,fontWeight:500,color:'#4a4a4a',whiteSpace:'nowrap'}}>Fecha límite de pago</span>
+                <td colSpan={5} style={{padding:'12px 14px 16px',borderBottom:'1px solid #F0EFED',background:'#FAFAF9'}}>
+                  <div style={{fontSize:10,fontWeight:600,color:'#6B7280',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:10}}>Recordatorio de cobro</div>
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                    <label style={{fontSize:12,color:'#4a4a4a',fontWeight:500,whiteSpace:'nowrap'}}>Fecha límite de pago</label>
                     <input type="date" value={fechaLimiteEdit} onChange={e=>setFechaLimiteEdit(e.target.value)}
                       style={{padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:7,fontSize:12,fontFamily:'system-ui'}} />
                     <button onClick={async ev=>{ev.stopPropagation();await supabase.from('honorarios').update({fecha_limite_pago:fechaLimiteEdit||null}).eq('id',h.id);setPanelAbierto(null);recargar();}}
                       style={{...btnPrimary,padding:'5px 12px',fontSize:12}}>Guardar</button>
-                    <button onClick={ev=>{ev.stopPropagation();setHonActual(h);setVista('detalle-honorario');}}
-                      style={{fontSize:12,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',whiteSpace:'nowrap'}}>Ver detalle →</button>
                   </div>
-                  <div style={{fontSize:11,color:'#8a8a8a',marginTop:7}}>Los socios verán un aviso en el Inicio 3 días antes y el día del vencimiento</div>
+                  <div style={{fontSize:11,color:'#8a8a8a',marginTop:8}}>Los socios verán un aviso en el Inicio 3 días antes y el día del vencimiento</div>
                 </td>
               </tr>
             );
