@@ -3354,12 +3354,14 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
   );
 }
 
-function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual, filtro }) {
+function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setExpActual, filtro }) {
   const [audiencias, setAudiencias] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [vistaAg, setVistaAg] = useState('mes');
   const [navDate, setNavDate] = useState(new Date(HOY+'T00:00:00'));
   const [detalleEv, setDetalleEv] = useState(null);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [fechaPres, setFechaPres] = useState(HOY);
 
   useEffect(()=>{ cargar(); },[]);
 
