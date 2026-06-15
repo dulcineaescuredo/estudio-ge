@@ -1696,11 +1696,12 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
     return `${p[2]}/${p[1]}/${p[0]}`;
   }
   async function guardarDatos() {
-    await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas, responsable:f.responsable }).eq('id', cl.id);
-    setCliActual(f); setEditando(false); recargar();
+    const nombreCombinado = (f.apellido+' '+f.nombre_pila).trim();
+    await supabase.from('clientes').update({ apellido:f.apellido, nombre_pila:f.nombre_pila, nombre:nombreCombinado||f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas, responsable:f.responsable }).eq('id', cl.id);
+    setCliActual({...f, nombre:nombreCombinado||f.nombre}); setEditando(false); recargar();
   }
   async function eliminarCliente() {
-    if (!confirm(`¿Seguro que querés eliminar a ${cl.nombre}? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(`¿Seguro que querés eliminar a ${nombreCompleto(cl)}? Esta acción no se puede deshacer.`)) return;
     await supabase.from('clientes').delete().eq('id', cl.id);
     recargar();
     setVista('clientes');
