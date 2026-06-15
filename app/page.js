@@ -1646,7 +1646,7 @@ function Vencimientos({ expedientes, recargar }) {
 function Clientes({ clientes, setVista, setCliActual, expedientes }) {
   const [q, setQ] = useState('');
   const [hoveredRow, setHoveredRow] = useState(null);
-  const lista = clientes.filter(cl=>!q||(cl.nombre||'').toLowerCase().includes(q.toLowerCase()));
+  const lista = clientes.filter(cl=>!q||(nombreCompleto(cl)||'').toLowerCase().includes(q.toLowerCase())||(cl.dni||'').includes(q));
   return (
     <div>
       <Card title="👥 Clientes">
