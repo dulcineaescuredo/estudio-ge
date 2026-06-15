@@ -331,7 +331,7 @@ function Contenido(props) {
   return null;
 }
 
-function LoDeHoy({ perfil, expedientes, clientes, setVista, setExpActual }) {
+function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual }) {
   const [audienciasHoy, setAudienciasHoy] = useState([]);
   const [turnosHoy, setTurnosHoy] = useState([]);
   const [cargando, setCargando] = useState(true);
