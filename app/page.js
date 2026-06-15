@@ -2366,7 +2366,7 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
                 const hon=honorarios.find(h=>h.id===cu.honorario_id);
                 const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
                 const cli=hon?.cliente_id?clientes.find(c=>c.id===hon.cliente_id):null;
-                const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||null):(exp?exp.caratula:(cli?cli.nombre:null));
+                const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||null):(exp?exp.caratula:(cli?nombreCompleto(cli):null));
                 return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
