@@ -2165,43 +2165,93 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
       </Card>
 
-      <Card>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:cuotasMesHist.length?14:10,flexWrap:'wrap',gap:8}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>📆 Historial mensual</div>
+      <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,marginBottom:14,boxShadow:'0 1px 3px rgba(0,0,0,0.06)',overflow:'hidden'}}>
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px',flexWrap:'wrap',gap:8}}>
+          <div style={{fontSize:11,fontWeight:600,color:'#6B7280',letterSpacing:'0.07em',textTransform:'uppercase'}}>Resumen del mes</div>
           <div style={{display:'flex',alignItems:'center',gap:6}}>
             <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()-1,1))}
               style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
             <span style={{fontWeight:600,fontSize:13,color:'#2c2c2c',minWidth:130,textAlign:'center'}}>{MESES[mesHist.getMonth()]} {mesHist.getFullYear()}</span>
-            {!esMesActualHist
-              ? <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
-                  style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
-              : <span style={{fontSize:11,color:'#8a8a8a',minWidth:24}}>hoy</span>}
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:13,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(pagadasMesHist)}</span>
-            <span style={{fontSize:12,color:'#c0c0c0'}}>/</span>
-            <span style={{fontSize:13,fontWeight:700,color:'#B45309'}}>{fmtMoneda(pendientesMesHist)}</span>
-            {miGanancia>0&&<><span style={{fontSize:12,color:'#c0c0c0'}}>·</span><span style={{fontSize:12,color:'#2563EB',fontWeight:600}}>est. {fmtMoneda(miGanancia)}</span></>}
+            {esMesActualHist ? (
+              <><span style={{fontSize:11,background:'#F0FBF0',color:'#16A34A',padding:'2px 10px',borderRadius:20,fontWeight:600,whiteSpace:'nowrap'}}>hoy</span>
+              <button disabled style={{background:'none',border:'1px solid #E5E7EB',borderRadius:8,padding:'4px 10px',fontSize:14,color:'#C0C0C0',cursor:'not-allowed'}}>›</button></>
+            ) : (
+              <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
+                style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
+            )}
           </div>
         </div>
-        {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
-          const hon = honorarios.find(h=>h.id===cu.honorario_id);
-          const exp = hon?.expediente_id ? expedientes.find(e=>e.id===hon.expediente_id) : null;
-          const cli = hon?.cliente_id ? clientes.find(c=>c.id===hon.cliente_id) : null;
-          const vincLabel = hon?.vinculo_tipo==='contraparte' ? (hon.contraparte_nombre||null) : (exp?exp.caratula:(cli?nombreCompleto(cli):null));
-          return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
-              {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
-              {cu.estado==='pagada'&&cu.fecha_pago&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>✓ Pagada el {formatFecha(cu.fecha_pago)}</div>}
-              {cu.estado!=='pagada'&&hon?.fecha_limite_pago&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>Recordar al cliente antes del {formatFecha(hon.fecha_limite_pago)}</div>}
-              {cu.vencimiento && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>vence {formatFecha(cu.vencimiento)}</div>}
-            </div>
-            <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
-            <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
-          </div>;
-        }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
-      </Card>
+        {/* 3 columnas */}
+        <div style={{display:'flex',borderTop:'1px solid #EBEBEA',borderBottom:'1px solid #EBEBEA',flexWrap:'wrap'}}>
+          <div style={{flex:'1 1 160px',padding:'20px',borderRight:'1px solid #EBEBEA'}}>
+            <div style={{fontSize:11,color:'#6B7280',fontWeight:500,marginBottom:8,textTransform:'uppercase',letterSpacing:'0.04em'}}>Cobrado este mes</div>
+            <div style={{fontSize:28,fontWeight:500,color:'#16A34A',lineHeight:1,marginBottom:8}}>{fmtMoneda(pagadasMesHist)}</div>
+            <div style={{fontSize:11,color:'#8a8a8a'}}>{cuotasMesHist.filter(cu=>cu.estado==='pagada').length} cuota(s) cobrada(s)</div>
+          </div>
+          <div style={{flex:'1 1 160px',padding:'20px',borderRight:'1px solid #EBEBEA'}}>
+            <div style={{fontSize:11,color:'#6B7280',fontWeight:500,marginBottom:8,textTransform:'uppercase',letterSpacing:'0.04em'}}>Pendiente de cobro</div>
+            <div style={{fontSize:28,fontWeight:500,color:'#B45309',lineHeight:1,marginBottom:8}}>{fmtMoneda(pendientesMesHist)}</div>
+            <div style={{fontSize:11,color:'#8a8a8a'}}>{pendientesMesHistCuotas.length} cuota(s) pendiente(s){proxVencMesHist&&<> · próx. {formatFecha(proxVencMesHist)}</>}</div>
+          </div>
+          <div style={{flex:'1 1 160px',padding:'20px'}}>
+            <div style={{fontSize:11,color:'#6B7280',fontWeight:500,marginBottom:8,textTransform:'uppercase',letterSpacing:'0.04em'}}>Valor del UHON</div>
+            {!editUhon ? (
+              <>
+                <div style={{fontSize:28,fontWeight:500,color:'#2563EB',lineHeight:1,marginBottom:8}}>{valorUhon?fmtMoneda(valorUhon):'—'}</div>
+                <div style={{fontSize:11,color:'#8a8a8a'}}>
+                  {totalUhonPendiente>0&&<>{totalUhonPendiente} UHON por cobrar · </>}
+                  <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline',fontFamily:'system-ui'}}>editar</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{fontSize:28,fontWeight:500,color:'#2563EB',lineHeight:1,marginBottom:8}}>{valorUhon?fmtMoneda(valorUhon):'—'}</div>
+                <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                  <input type="number" value={uhonInput} onChange={e=>setUhonInput(e.target.value)} placeholder="Ej: 45000"
+                    style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:12,width:100,fontFamily:'system-ui'}} />
+                  <button onClick={guardarUhon} style={{...btnPrimary,padding:'4px 10px',fontSize:11}}>OK</button>
+                  <button onClick={()=>setEditUhon(false)} style={{fontSize:11,color:'#6B7280',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        {/* Barra de progreso */}
+        <div style={{padding:'14px 20px 12px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <span style={{fontSize:11,color:'#6B7280'}}>Cobrado del total del mes</span>
+            <span style={{fontSize:11,fontWeight:600,color:'#16A34A'}}>{pctCobradoMesHist}%</span>
+          </div>
+          <div style={{height:5,borderRadius:3,background:'#E5E7EB'}}>
+            <div style={{height:'100%',borderRadius:3,background:'#16A34A',width:`${pctCobradoMesHist}%`}}></div>
+          </div>
+        </div>
+        {/* Lista de cuotas del mes */}
+        <div style={{borderTop:'1px solid #EBEBEA',padding:'14px 20px 4px'}}>
+          <div style={{fontSize:11,fontWeight:600,color:'#6B7280',marginBottom:12,textTransform:'uppercase',letterSpacing:'0.05em'}}>Cuotas del mes · {cuotasMesHist.length}</div>
+          {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
+            const hon=honorarios.find(h=>h.id===cu.honorario_id);
+            const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
+            const cli=hon?.cliente_id?clientes.find(c=>c.id===hon.cliente_id):null;
+            const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||null):(exp?exp.caratula:(cli?nombreCompleto(cli):null));
+            const formaStr=hon?formaLabel(hon,valorUhon):null;
+            const detalleDesc=[vincLabel,formaStr,cu.vencimiento?`vence ${formatFecha(cu.vencimiento)}`:null].filter(Boolean).join(' · ');
+            return <div key={cu.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
+                {detalleDesc&&<div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{detalleDesc}</div>}
+                {cu.estado==='pagada'&&cu.fecha_pago&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>✓ Pagada el {formatFecha(cu.fecha_pago)}</div>}
+                {cu.estado!=='pagada'&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>Recordar al cliente antes del {formatFecha(hon?.fecha_limite_pago||cu.vencimiento)}</div>}
+              </div>
+              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+                <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
+                <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
+              </div>
+            </div>;
+          }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:'0 0 16px'}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
+        </div>
+      </div>
       </>)}
     </div>
   );
