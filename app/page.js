@@ -368,7 +368,7 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
   function filaEvento(ev, tipo, onClick) {
     const expVinc = (expedientes||[]).find(e=>e.id===ev.expediente_id);
     const cliVinc = (clientes||[]).find(c=>c.id===ev.cliente_id);
-    const vinc = expVinc?.caratula || cliVinc?.nombre || '';
+    const vinc = expVinc?.caratula || nombreCompleto(cliVinc) || '';
     const color = tipo==='audiencia' ? '#9B4F6A' : '#2B6CB0';
     return (
       <div key={ev.id} onClick={onClick}
