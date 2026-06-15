@@ -597,6 +597,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
 
       {listaFiltrada.length ? (
         <>
+          <div style={{overflowX:'auto'}}>
           <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
             <thead><tr style={{background:'#F7F6F3'}}>
               {['N°','Carátula','Proceso','Etapa actual','Estado','Responsable'].map(h=>(
