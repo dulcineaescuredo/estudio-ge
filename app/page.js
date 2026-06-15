@@ -1270,63 +1270,76 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
   return (
     <Card title="💬 Registrar consulta">
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
-      <div style={{maxWidth:520}}>
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo *</label>
-        <div style={{display:'flex',gap:8,marginBottom:12}}>
-          {[['primera','Primera consulta'],['seguimiento','Seguimiento']].map(([v,l])=>(
-            <button key={v} onClick={()=>set('tipo',v)} style={{flex:1,padding:9,border:f.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:f.tipo===v?'#E6F1FB':'#f9f8f5',color:f.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
-          ))}
-        </div>
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente *</label>
-        <div style={{position:'relative'}}>
-          <input style={{...inputStyle,marginBottom:0}}
-            placeholder="Nombre del cliente..."
-            value={clienteId ? clienteNombre : clienteQ}
-            onChange={ev=>{setClienteQ(ev.target.value);setClienteId('');setClienteNombre('');setClienteAbierto(true);setClienteDni('');setClienteTelefono('');setClienteDomicilio('');setClienteEmail('');}}
-            onFocus={()=>setClienteAbierto(true)}
-            onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
-          />
-          {clienteAbierto&&sugsCliente.length>0&&(
-            <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
-              {sugsCliente.map(cl=>(
-                <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
-                  style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
-                  {cl.nombre}{cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
-                </div>
-              ))}
-            </div>
+      <div style={{display:'flex',gap:24,alignItems:'flex-start',flexWrap:'wrap'}}>
+        {/* Columna izquierda: formulario */}
+        <div style={{flex:'1 1 380px',maxWidth:520}}>
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo *</label>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            {[['primera','Primera consulta'],['seguimiento','Seguimiento']].map(([v,l])=>(
+              <button key={v} onClick={()=>set('tipo',v)} style={{flex:1,padding:9,border:f.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:f.tipo===v?'#E6F1FB':'#f9f8f5',color:f.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
+            ))}
+          </div>
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente *</label>
+          <div style={{position:'relative'}}>
+            <input style={{...inputStyle,marginBottom:0}}
+              placeholder="Nombre del cliente..."
+              value={clienteId ? clienteNombre : clienteQ}
+              onChange={ev=>{setClienteQ(ev.target.value);setClienteId('');setClienteNombre('');setClienteAbierto(true);setClienteDni('');setClienteTelefono('');setClienteDomicilio('');setClienteEmail('');}}
+              onFocus={()=>setClienteAbierto(true)}
+              onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
+            />
+            {clienteAbierto&&sugsCliente.length>0&&(
+              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
+                {sugsCliente.map(cl=>(
+                  <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
+                    style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
+                    {cl.nombre}{cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {clienteId && <div style={{fontSize:11,color:'#27500A',marginTop:4,marginBottom:8}}>✓ Cliente existente</div>}
+          {!clienteId && clienteQ && <div style={{fontSize:11,color:'#8a8a8a',marginTop:4,marginBottom:8}}>Se creará como cliente nuevo al guardar</div>}
+          {!clienteId && !clienteQ && <div style={{marginBottom:8}}/>}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+            {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Domicilio',clienteDomicilio,setClienteDomicilio],['Email',clienteEmail,setClienteEmail]].map(([label,val,setter])=>(
+              <div key={label}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:3}}>{label}</label>
+                <input style={{...inputStyle,marginBottom:0,fontSize:12}} value={val} onChange={e=>setter(e.target.value)} />
+              </div>
+            ))}
+          </div>
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
+          <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Abogada/o *</label>
+          <select style={inputStyle} value={f.abogada} onChange={e=>set('abogada',e.target.value)}>
+            <option value="">Seleccioná</option>{ABOGADAS.map(a=><option key={a}>{a}</option>)}
+          </select>
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Motivo *</label>
+          <input style={inputStyle} placeholder="Ej: Alimentos, sucesión, despido..." value={f.motivo} onChange={e=>set('motivo',e.target.value)} />
+          {f.tipo==='primera'&&(
+            <>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Valor de la consulta ($)</label>
+              <input type="number" style={inputStyle} placeholder="Ej: 20000" value={f.valor_consulta} onChange={e=>set('valor_consulta',e.target.value)} />
+            </>
           )}
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario</label>
+          <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
+          <button onClick={guardar} style={btnPrimary}>Guardar consulta</button>
         </div>
-        {clienteId && <div style={{fontSize:11,color:'#27500A',marginTop:4,marginBottom:8}}>✓ Cliente existente</div>}
-        {!clienteId && clienteQ && <div style={{fontSize:11,color:'#8a8a8a',marginTop:4,marginBottom:8}}>Se creará como cliente nuevo al guardar</div>}
-        {!clienteId && !clienteQ && <div style={{marginBottom:8}}/>}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-          {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Domicilio',clienteDomicilio,setClienteDomicilio],['Email',clienteEmail,setClienteEmail]].map(([label,val,setter])=>(
-            <div key={label}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:3}}>{label}</label>
-              <input style={{...inputStyle,marginBottom:0,fontSize:12}} value={val} onChange={e=>setter(e.target.value)} />
-            </div>
-          ))}
+        {/* Columna derecha: bloc de notas */}
+        <div style={{flex:'1 1 300px',display:'flex',flexDirection:'column',alignSelf:'stretch',minHeight:500}}>
+          <div style={{fontSize:13,fontWeight:600,color:'#1A1A1A',marginBottom:10}}>📝 Notas de la consulta</div>
+          <textarea
+            style={{flex:1,width:'100%',minHeight:500,padding:'14px 16px',border:'1px solid #EBEBEA',borderRadius:10,
+              fontSize:13,fontFamily:'system-ui',lineHeight:1.7,color:'#1A1A1A',background:'#fff',
+              resize:'vertical',outline:'none',boxSizing:'border-box'}}
+            placeholder="Tomá notas durante la consulta..."
+            value={f.notas_consulta}
+            onChange={e=>set('notas_consulta',e.target.value)}
+          />
         </div>
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
-        <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Abogada/o *</label>
-        <select style={inputStyle} value={f.abogada} onChange={e=>set('abogada',e.target.value)}>
-          <option value="">Seleccioná</option>{ABOGADAS.map(a=><option key={a}>{a}</option>)}
-        </select>
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Motivo *</label>
-        <input style={inputStyle} placeholder="Ej: Alimentos, sucesión, despido..." value={f.motivo} onChange={e=>set('motivo',e.target.value)} />
-        {f.tipo==='primera'&&(
-          <>
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Valor de la consulta ($)</label>
-            <input type="number" style={inputStyle} placeholder="Ej: 20000" value={f.valor_consulta} onChange={e=>set('valor_consulta',e.target.value)} />
-          </>
-        )}
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario</label>
-        <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Notas de la consulta</label>
-        <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.notas_consulta} onChange={e=>set('notas_consulta',e.target.value)} />
-        <button onClick={guardar} style={btnPrimary}>Guardar consulta</button>
       </div>
     </Card>
   );
