@@ -2108,6 +2108,10 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
     return s+(hs ? Number(cu.monto)*Number(hs.porcentaje)/100 : 0);
   },0);
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const pendientesMesHistCuotas = cuotasMesHist.filter(cu=>cu.estado!=='pagada');
+  const proxVencMesHist = pendientesMesHistCuotas.slice().sort((a,b)=>(a.vencimiento||'').localeCompare(b.vencimiento||''))[0]?.vencimiento;
+  const totalMesHist = pagadasMesHist + pendientesMesHist;
+  const pctCobradoMesHist = totalMesHist > 0 ? Math.round(pagadasMesHist / totalMesHist * 100) : 0;
 
   return (
     <div>
