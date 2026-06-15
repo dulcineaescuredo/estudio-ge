@@ -3342,11 +3342,11 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
                 borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
                 {(vinculo==='expediente'?sugsExp:sugsCli).map(item=>(
                   <div key={item.id} onMouseDown={e=>e.preventDefault()}
-                    onClick={()=>{setVincId(item.id);setVincNombre(vinculo==='expediente'?item.caratula:item.nombre);setVincQ('');setVincAbierto(false);}}
+                    onClick={()=>{setVincId(item.id);setVincNombre(vinculo==='expediente'?item.caratula:nombreCompleto(item));setVincQ('');setVincAbierto(false);}}
                     style={{padding:'9px 12px',cursor:'pointer',fontSize:12,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
                     {vinculo==='expediente'
                       ?<><span style={{color:'#6B7280',fontSize:11}}>{item.numero} — </span>{item.caratula}</>
-                      :item.nombre}
+                      :nombreCompleto(item)}
                   </div>
                 ))}
               </div>
