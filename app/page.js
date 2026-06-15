@@ -222,6 +222,7 @@ export default function Home() {
             ['consultas','💬','Consultas',''],
             ['nueva-consulta','➕','Nueva consulta','sub'],
             ['tareas','✅','Tareas',''],
+            ['nueva-tarea','➕','Nueva tarea','sub'],
             ['honorarios','💰','Honorarios',''],
             ['clientes','👥','Clientes',''],
           ].map(([id,emoji,label,tipo])=>{
