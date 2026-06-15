@@ -227,9 +227,12 @@ export default function Home() {
           ].map(([id,emoji,label,tipo])=>{
             const isSub = tipo==='sub';
             return <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:8,fontSize:isSub?12:13,border:'none',
-                background:vista===id?'rgba(255,255,255,0.12)':'none',
-                color:vista===id?'#fff':'#8BABC7',
+              style={{display:'flex',alignItems:'center',gap:8,
+                width:vista===id?'calc(100% - 8px)':'100%',
+                marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
+                textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:6,fontSize:isSub?12:13,border:'none',
+                background:vista===id?'rgba(255,255,255,0.18)':'transparent',
+                color:'#FFFFFF',
                 fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
               <span style={{fontSize:isSub?12:14,flexShrink:0}}>{emoji}</span>{label}
             </button>;
