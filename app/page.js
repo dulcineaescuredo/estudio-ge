@@ -1717,7 +1717,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
       <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-          <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{cl.nombre}</div>
+          <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{nombreCompleto(cl)}</div>
           <div style={{display:'flex',gap:8}}>
               <button onClick={()=>{setF(cl);setEditando(!editando);}} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>{editando?'Cancelar':'Editar datos'}</button>
               {!editando && <button onClick={eliminarCliente} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D'}}>Eliminar</button>}
