@@ -3150,7 +3150,7 @@ function AgendaModule({ tabla, titulo, emoji, expedientes, clientes, perfil }) {
             {evs.map(ev=>{
               const exp=(expedientes||[]).find(e=>e.id===ev.expediente_id);
               const cli=(clientes||[]).find(c=>c.id===ev.cliente_id);
-              const vinc=exp?exp.caratula:cli?cli.nombre:null;
+              const vinc=exp?exp.caratula:cli?nombreCompleto(cli):null;
               return (
                 <div key={ev.id} onClick={()=>abrirDetalle(ev)}
                   style={{display:'flex',gap:14,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}}>
