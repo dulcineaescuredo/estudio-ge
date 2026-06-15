@@ -2883,7 +2883,7 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
   );
 }
 
-function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
+function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual, filtro }) {
   const [audiencias, setAudiencias] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [vistaAg, setVistaAg] = useState('mes');
@@ -2902,6 +2902,7 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
   }
 
   async function eliminarEvento(ev) {
+    if (ev._tipo!=='audiencia'&&ev._tipo!=='turno') return;
     const tabla = ev._tipo==='audiencia'?'audiencias':'turnos';
     if (!confirm('¿Eliminar este evento?')) return;
     await supabase.from(tabla).delete().eq('id',ev.id);
@@ -2910,13 +2911,19 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
   }
 
   const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento);
+  const tareasConDeadline = (tareas||[]).filter(e=>e.fecha_limite&&normEstado(e.estado)!=='terminado');
   const AU_COLOR = '#9B4F6A';
   const TU_COLOR = '#2B6CB0';
   const VE_COLOR = '#B45309';
+  const TA_COLOR = '#D97706';
+
+  const filtroToTipo = {vencimientos:'vencimiento',audiencias:'audiencia',turnos:'turno',tareas:'tarea'};
+  const tipoActivo = filtro ? filtroToTipo[filtro] : null;
 
   function chipColor(tipo) {
     if (tipo==='audiencia') return AU_COLOR;
     if (tipo==='turno') return TU_COLOR;
+    if (tipo==='tarea') return TA_COLOR;
     return VE_COLOR;
   }
 
@@ -2925,13 +2932,15 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
   }
 
   function eventosDelDia(fs) {
-    return [
-      ...audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'audiencia'})),
-      ...turnos.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'turno'})),
-      ...vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_tipo:'vencimiento'})),
-    ].sort((a,b)=>{
-      if (a._tipo==='vencimiento'&&b._tipo!=='vencimiento') return 1;
-      if (b._tipo==='vencimiento'&&a._tipo!=='vencimiento') return -1;
+    const todos = [
+      ...(!tipoActivo||tipoActivo==='audiencia'?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'audiencia'})):[]),
+      ...(!tipoActivo||tipoActivo==='turno'?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'turno'})):[]),
+      ...(!tipoActivo||tipoActivo==='tarea'?tareasConDeadline.filter(e=>e.fecha_limite===fs).map(e=>({...e,_tipo:'tarea'})):[]),
+      ...(!tipoActivo||tipoActivo==='vencimiento'?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_tipo:'vencimiento'})):[]),
+    ];
+    return todos.sort((a,b)=>{
+      const orden = {audiencia:0,turno:1,tarea:2,vencimiento:3};
+      if (orden[a._tipo]!==orden[b._tipo]) return orden[a._tipo]-orden[b._tipo];
       return (a.hora||'').localeCompare(b.hora||'');
     });
   }
@@ -2940,6 +2949,7 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
 
   function chipLabel(ev) {
     if (ev._tipo==='vencimiento') return (ev.motivo_vencimiento||(ev.caratula||'').split(' c/')[0]).substring(0,20);
+    if (ev._tipo==='tarea') return (ev.titulo||'Tarea').substring(0,20);
     return `${fmtH(ev.hora)?fmtH(ev.hora)+' ':''}${(ev.tipo||'').substring(0,16)}`;
   }
 
@@ -2948,6 +2958,8 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
     if (ev._tipo==='vencimiento') {
       const exp = expedientes.find(x=>x.id===ev.id);
       if (exp) { setExpActual(exp); setVista('detalle'); }
+    } else if (ev._tipo==='tarea') {
+      setVista('tareas');
     } else {
       setDetalleEv(ev);
     }
@@ -2957,6 +2969,8 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
     if (ev._tipo==='vencimiento') {
       const exp = expedientes.find(x=>x.id===ev.id);
       if (exp) { setExpActual(exp); setVista('detalle'); }
+    } else if (ev._tipo==='tarea') {
+      setVista('tareas');
     } else {
       setDetalleEv(ev);
     }
@@ -2988,6 +3002,13 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
     navTit = `${navDate.getDate()} de ${MESES_AG[mes]} ${año}`;
   }
 
+  const leyendaTodos = [[AU_COLOR,'Audiencias'],[TU_COLOR,'Turnos'],[TA_COLOR,'Tareas'],[VE_COLOR,'Vencimientos']];
+  const leyendaLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/deadline'};
+  const leyenda = tipoActivo ? [[chipColor(tipoActivo),leyendaLabel[filtro]]] : leyendaTodos;
+
+  const tituloLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/deadline'};
+  const tituloTexto = filtro ? `📅 ${tituloLabel[filtro]}` : '🗓️ Agenda';
+
   function renderChip(ev, i) {
     const bg = chipColor(ev._tipo);
     return (
@@ -3003,7 +3024,7 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
-        <div style={{fontSize:22,fontWeight:700,color:'#1A1A1A'}}>🗓️ Agenda</div>
+        <div style={{fontSize:22,fontWeight:700,color:'#1A1A1A'}}>{tituloTexto}</div>
         <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <div style={{display:'flex',border:'1px solid #DDDCDA',borderRadius:8,overflow:'hidden'}}>
             {[['mes','Mes'],['semana','Semana'],['dia','Día']].map(([v,l])=>(
@@ -3015,7 +3036,7 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
             ))}
           </div>
           <div style={{display:'flex',gap:10,alignItems:'center'}}>
-            {[[AU_COLOR,'Audiencias'],[TU_COLOR,'Turnos'],[VE_COLOR,'Vencimientos']].map(([bg,label])=>(
+            {leyenda.map(([bg,label])=>(
               <div key={label} style={{display:'flex',alignItems:'center',gap:4,fontSize:11,color:'#6B7280'}}>
                 <span style={{width:10,height:10,borderRadius:3,background:bg,display:'inline-block',flexShrink:0}}></span>
                 {label}
@@ -3098,12 +3119,14 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
             {evs.length===0&&<div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin eventos para este día.</div>}
             {evs.map((ev,i)=>{
               const bg = chipColor(ev._tipo);
-              const expVinc = ev._tipo!=='vencimiento' ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
-              const cliVinc = ev._tipo!=='vencimiento' ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
+              const expVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
+              const cliVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
               const vinc = expVinc?expVinc.caratula:cliVinc?cliVinc.nombre:'';
-              const icono = ev._tipo==='audiencia'?'📅':ev._tipo==='turno'?'🕐':'⚠️';
+              const icono = ev._tipo==='audiencia'?'📅':ev._tipo==='turno'?'🕐':ev._tipo==='tarea'?'✅':'⚠️';
               const titulo = ev._tipo==='vencimiento'
                 ? (ev.motivo_vencimiento||ev.caratula)
+                : ev._tipo==='tarea'
+                ? (ev.titulo||'Tarea')
                 : (ev.tipo||ev._tipo);
               return (
                 <div key={`${ev._tipo}-${ev.id}-${i}`}
@@ -3117,7 +3140,9 @@ function AgendaUnificada({ expedientes, clientes, setVista, setExpActual }) {
                   <div style={{fontSize:16,flexShrink:0,marginTop:1}}>{icono}</div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{titulo}</div>
-                    {ev.descripcion&&ev._tipo!=='vencimiento'&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                    {ev._tipo==='tarea'&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                    {ev._tipo==='tarea'&&ev.responsable&&<div style={{fontSize:11,color:'#8a8a8a'}}>👤 {ev.responsable}</div>}
+                    {(ev._tipo==='audiencia'||ev._tipo==='turno')&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
                     {vinc&&<div style={{fontSize:11,color:'#8a8a8a'}}>📁 {vinc}</div>}
                     {ev._tipo==='vencimiento'&&ev.numero&&<div style={{fontSize:11,color:'#8a8a8a'}}>{ev.numero}</div>}
                   </div>
