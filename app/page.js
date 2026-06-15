@@ -640,6 +640,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
               })}
             </tbody>
           </table>
+          </div>
 
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:14,flexWrap:'wrap',gap:10}}>
             <span style={{fontSize:12,color:'#6B7280'}}>
