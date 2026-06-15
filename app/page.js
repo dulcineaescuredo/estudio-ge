@@ -1981,12 +1981,13 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
             <tr key={h.id} style={{cursor:'pointer',background:isOpen?'#F0EEE8':hoveredRow===h.id?'#F7F6F3':'transparent'}}
               onMouseEnter={()=>setHoveredRow(h.id)} onMouseLeave={()=>setHoveredRow(null)}
               onClick={()=>{if(isOpen){setPanelAbierto(null);}else{setPanelAbierto(h.id);setFechaLimiteEdit(h.fecha_limite_pago||'');}}}>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontWeight:500}}>
-                {h.concepto}
-                {!h.en_cuotas&&h.estado==='pagado'&&h.fecha_pago&&<div style={{fontSize:11,color:'#27500A',fontWeight:400,marginTop:2}}>pagado el {formatFecha(h.fecha_pago)}</div>}
-                {h.en_cuotas&&ultimoPago&&<div style={{fontSize:11,color:'#27500A',fontWeight:400,marginTop:2}}>último pago: {formatFecha(ultimoPago)}</div>}
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>
+                {vinc}
+                {(!h.en_cuotas&&h.estado==='pagado'&&h.fecha_pago)&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>pagado el {formatFecha(h.fecha_pago)}</div>}
+                {(h.en_cuotas&&ultimoPago)&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>último pago: {formatFecha(ultimoPago)}</div>}
+                {(h.estado!=='pagado'&&!ultimoPago&&h.fecha_limite_pago)&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>límite {formatFecha(h.fecha_limite_pago)}</div>}
               </td>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{vinc}</td>
               <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
               <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>
                 {h.en_cuotas ? (
