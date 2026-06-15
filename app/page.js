@@ -1335,7 +1335,7 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
             <>
               <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Valor de la consulta ($)</label>
               <input type="number" style={inputStyle} placeholder="Ej: 20000" value={f.valor_consulta} onChange={e=>set('valor_consulta',e.target.value)} />
-              {Number(f.valor_consulta) > 0 && (
+              {f.valor_consulta && f.valor_consulta.toString().trim() !== '' && f.valor_consulta.toString().trim() !== '0' && (
                 <>
                   <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado de pago</label>
                   <div style={{display:'flex',gap:8,marginBottom:12}}>
