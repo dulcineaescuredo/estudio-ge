@@ -3526,6 +3526,11 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
               </div>
             ))}
           </div>
+          {(filtro==='audiencias'||filtro==='turnos')&&(
+            <button onClick={()=>abrirNuevo(HOY)} style={btnPrimary}>
+              + {filtro==='audiencias'?'Nueva audiencia':'Nuevo turno'}
+            </button>
+          )}
         </div>
       </div>
 
