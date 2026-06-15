@@ -2119,53 +2119,6 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       {vistaHon==='estadisticas' ? (
         <EstadisticasHon cuotas={cuotas} honorarios={honorarios} expedientes={expedientes} clientes={clientes} onVolver={()=>setVistaHon('normal')} />
       ) : (<>
-      <Card>
-        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap',alignItems:'center'}}>
-          <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
-          <button onClick={()=>setVistaHon('estadisticas')} style={{...btnPrimary,background:'#fff',color:'#4a4a4a',border:'1px solid #DDDCDA'}}>📊 Estadísticas</button>
-          <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
-        </div>
-        <div style={{display:'flex',gap:14,marginBottom:14,flexWrap:'wrap',alignItems:'center'}}>
-          <div style={{display:'flex',gap:5,alignItems:'center'}}>
-            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>ESTADO</span>
-            {[['pendiente','Pendiente'],['en proceso','En proceso'],['pagado','Pagado']].map(([v,l])=>{
-              const sel=filtroEstados.includes(v);
-              return <button key={v} onClick={()=>setFiltroEstados(sel?filtroEstados.filter(x=>x!==v):[...filtroEstados,v])}
-                style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',border:'none',
-                  background:sel?'#9B4F6A':'#F3F4F6',color:sel?'#fff':'#6B7280',fontFamily:'system-ui'}}>{l}</button>;
-            })}
-          </div>
-          <div style={{display:'flex',gap:5,alignItems:'center'}}>
-            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>FORMA</span>
-            {[['uhon','UHON'],['porcentaje','%'],['fijo','$ fijo']].map(([v,l])=>{
-              const sel=filtroFormas.includes(v);
-              return <button key={v} onClick={()=>setFiltroFormas(sel?filtroFormas.filter(x=>x!==v):[...filtroFormas,v])}
-                style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',border:'none',
-                  background:sel?'#9B4F6A':'#F3F4F6',color:sel?'#fff':'#6B7280',fontFamily:'system-ui'}}>{l}</button>;
-            })}
-          </div>
-          {perfilesFiltro.length > 0 && (
-            <div style={{display:'flex',gap:5,alignItems:'center'}}>
-              <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>SOCIO</span>
-              <select value={filtroSocio} onChange={e=>setFiltroSocio(e.target.value)}
-                style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',background:'#fff',color:'#4a4a4a'}}>
-                <option value="">Todos los socios</option>
-                {perfilesFiltro.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
-              </select>
-            </div>
-          )}
-          {(filtroEstados.length>0||filtroFormas.length>0||filtroSocio) && (
-            <button onClick={()=>{setFiltroEstados([]);setFiltroFormas([]);setFiltroSocio('');}}
-              style={{padding:'4px 10px',borderRadius:20,fontSize:11,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280',fontFamily:'system-ui'}}>
-              Limpiar filtros ✕
-            </button>
-          )}
-        </div>
-        {lista.length ? (
-          <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} recargar={recargar} />
-        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
-      </Card>
-
       <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,marginBottom:14,boxShadow:'0 1px 3px rgba(0,0,0,0.06)',overflow:'hidden'}}>
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px',flexWrap:'wrap',gap:8}}>
@@ -2253,6 +2206,53 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
           }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:'0 0 16px'}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
         </div>
       </div>
+
+      <Card>
+        <div style={{display:'flex',gap:10,marginBottom:10,flexWrap:'wrap',alignItems:'center'}}>
+          <input style={{...inputStyle,marginBottom:0,flex:1,minWidth:200}} placeholder="Buscar por concepto, cliente, expediente..." value={q} onChange={e=>setQ(e.target.value)} />
+          <button onClick={()=>setVistaHon('estadisticas')} style={{...btnPrimary,background:'#fff',color:'#4a4a4a',border:'1px solid #DDDCDA'}}>📊 Estadísticas</button>
+          <button onClick={()=>setVista('nuevo-honorario')} style={btnPrimary}>+ Nuevo honorario</button>
+        </div>
+        <div style={{display:'flex',gap:14,marginBottom:14,flexWrap:'wrap',alignItems:'center'}}>
+          <div style={{display:'flex',gap:5,alignItems:'center'}}>
+            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>ESTADO</span>
+            {[['pendiente','Pendiente'],['en proceso','En proceso'],['pagado','Pagado']].map(([v,l])=>{
+              const sel=filtroEstados.includes(v);
+              return <button key={v} onClick={()=>setFiltroEstados(sel?filtroEstados.filter(x=>x!==v):[...filtroEstados,v])}
+                style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',border:'none',
+                  background:sel?'#9B4F6A':'#F3F4F6',color:sel?'#fff':'#6B7280',fontFamily:'system-ui'}}>{l}</button>;
+            })}
+          </div>
+          <div style={{display:'flex',gap:5,alignItems:'center'}}>
+            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>FORMA</span>
+            {[['uhon','UHON'],['porcentaje','%'],['fijo','$ fijo']].map(([v,l])=>{
+              const sel=filtroFormas.includes(v);
+              return <button key={v} onClick={()=>setFiltroFormas(sel?filtroFormas.filter(x=>x!==v):[...filtroFormas,v])}
+                style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',border:'none',
+                  background:sel?'#9B4F6A':'#F3F4F6',color:sel?'#fff':'#6B7280',fontFamily:'system-ui'}}>{l}</button>;
+            })}
+          </div>
+          {perfilesFiltro.length > 0 && (
+            <div style={{display:'flex',gap:5,alignItems:'center'}}>
+              <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>SOCIO</span>
+              <select value={filtroSocio} onChange={e=>setFiltroSocio(e.target.value)}
+                style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',background:'#fff',color:'#4a4a4a'}}>
+                <option value="">Todos los socios</option>
+                {perfilesFiltro.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
+              </select>
+            </div>
+          )}
+          {(filtroEstados.length>0||filtroFormas.length>0||filtroSocio) && (
+            <button onClick={()=>{setFiltroEstados([]);setFiltroFormas([]);setFiltroSocio('');}}
+              style={{padding:'4px 10px',borderRadius:20,fontSize:11,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280',fontFamily:'system-ui'}}>
+              Limpiar filtros ✕
+            </button>
+          )}
+        </div>
+        {lista.length ? (
+          <HonorariosTable lista={lista} expedientes={expedientes} clientes={clientes} cuotas={cuotas} valorUhon={valorUhon} setHonActual={setHonActual} setVista={setVista} recargar={recargar} />
+        ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
+      </Card>
       </>)}
     </div>
   );
