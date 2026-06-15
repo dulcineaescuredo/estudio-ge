@@ -221,6 +221,7 @@ export default function Home() {
             ['agenda-tareas','✅','Tareas c/vencimiento','sub'],
             ['consultas','💬','Consultas',''],
             ['nueva-consulta','➕','Nueva consulta','sub'],
+            ['ver-consultas','📋','Ver consultas','sub'],
             ['tareas','✅','Tareas',''],
             ['nueva-tarea','➕','Nueva tarea','sub'],
             ['honorarios','💰','Honorarios',''],
