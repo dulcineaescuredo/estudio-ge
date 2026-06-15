@@ -1949,6 +1949,7 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
         })}
       </tbody>
     </table>
+    </div>
   );
 }
 
