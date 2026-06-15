@@ -205,7 +205,7 @@ export default function Home() {
             <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
             <div>
               <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
-              <div style={{fontSize:11,color:'#8BABC7',marginTop:2}}>General Pico, LP</div>
+              <div style={{fontSize:11,color:'#FFFFFF',marginTop:2,opacity:0.75}}>General Pico, LP</div>
             </div>
           </div>
         </div>
