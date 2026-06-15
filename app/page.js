@@ -210,14 +210,26 @@ export default function Home() {
           </div>
         </div>
         <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
-          {[['dashboard','🏠','Inicio'],['vencimientos','📅','Vencimientos'],['clientes','👥','Clientes'],['expedientes','📁','Expedientes'],['nuevo-exp','➕','Nuevo expediente'],['notas','📝','Anotaciones'],['consultas','💬','Consultas'],['nueva-consulta','➕','Nueva consulta'],['tareas','✅','Tareas'],['nueva-tarea','➕','Nueva tarea'],['honorarios','💰','Honorarios'],['audiencias','📅','Audiencias'],['turnos','🕐','Turnos'],['agenda','🗓️','Agenda']].map(([id,emoji,label])=>{
-            const sub = ['nuevo-exp','nueva-consulta','nueva-tarea'].includes(id);
+          {[
+            ['dashboard','🏠','Inicio',''],
+            ['expedientes','📁','Expedientes',''],
+            ['nuevo-exp','➕','Nuevo expediente','sub'],
+            ['agenda','📅','Agenda',''],
+            ['agenda-vencimientos','⚠️','Vencimientos','sub'],
+            ['agenda-audiencias','📅','Audiencias','sub'],
+            ['agenda-turnos','🕐','Turnos','sub'],
+            ['agenda-tareas','✅','Tareas c/deadline','sub'],
+            ['tareas','✅','Tareas',''],
+            ['honorarios','💰','Honorarios',''],
+            ['clientes','👥','Clientes',''],
+          ].map(([id,emoji,label,tipo])=>{
+            const isSub = tipo==='sub';
             return <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:sub?'6px 10px 6px 32px':'8px 10px',borderRadius:8,fontSize:13,border:'none',
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:8,fontSize:isSub?12:13,border:'none',
                 background:vista===id?'rgba(255,255,255,0.12)':'none',
                 color:vista===id?'#fff':'#8BABC7',
                 fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
-              <span style={{fontSize:14,flexShrink:0}}>{emoji}</span>{label}
+              <span style={{fontSize:isSub?12:14,flexShrink:0}}>{emoji}</span>{label}
             </button>;
           })}
         </div>
