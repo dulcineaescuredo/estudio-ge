@@ -3262,7 +3262,7 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
   const esNuevoTipo = f.tipo && !allTipos.map(t=>t.toLowerCase()).includes(f.tipo.toLowerCase());
 
   const sugsExp = vinculo==='expediente'&&vincQ ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(vincQ.toLowerCase())||(e.numero||'').includes(vincQ)).slice(0,8) : [];
-  const sugsCli = vinculo==='cliente'&&vincQ ? clientes.filter(c=>(c.nombre||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8) : [];
+  const sugsCli = vinculo==='cliente'&&vincQ ? clientes.filter(c=>(nombreCompleto(c)||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8) : [];
 
   async function guardar() {
     if (!f.fecha) { alert('La fecha es obligatoria.'); return; }
