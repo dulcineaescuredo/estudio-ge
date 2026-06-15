@@ -3005,11 +3005,12 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
   }
 
   const leyendaTodos = [[AU_COLOR,'Audiencias'],[TU_COLOR,'Turnos'],[TA_COLOR,'Tareas'],[VE_COLOR,'Vencimientos']];
-  const leyendaLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/deadline'};
+  const leyendaLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento'};
   const leyenda = tipoActivo ? [[chipColor(tipoActivo),leyendaLabel[filtro]]] : leyendaTodos;
 
-  const tituloLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/deadline'};
-  const tituloTexto = filtro ? `📅 ${tituloLabel[filtro]}` : '🗓️ Agenda';
+  const tituloLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento'};
+  const tituloEmoji = {vencimientos:'⚠️',audiencias:'⚖️',turnos:'🕐',tareas:'✅'};
+  const tituloTexto = filtro ? `${tituloEmoji[filtro]||'📅'} ${tituloLabel[filtro]}` : '🗓️ Agenda';
 
   function renderChip(ev, i) {
     const bg = chipColor(ev._tipo);
