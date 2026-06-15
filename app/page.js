@@ -1251,21 +1251,33 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
       estudio_id: perfil.estudio_id
     });
     if (error) { alert('Error: '+error.message); return; }
-    if (f.tipo==='primera' && f.valor_consulta && resolvedId) {
-      await supabase.from('honorarios').insert({
-        concepto: `Primera consulta — ${nombreFinal}`,
-        forma: 'fijo', valor: Number(f.valor_consulta),
-        cliente_id: resolvedId, vinculo_tipo: 'cliente',
-        estado: 'pendiente', en_cuotas: false, fecha: f.fecha,
-        estudio_id: perfil.estudio_id
+    let honOk = true;
+    if (f.tipo==='primera' && f.valor_consulta && Number(f.valor_consulta) > 0) {
+      const periodo = f.fecha ? f.fecha.substring(0, 7) : HOY.substring(0, 7);
+      const { error: honError } = await supabase.from('honorarios').insert({
+        concepto: `Consulta - ${nombreFinal}`,
+        tipo_trabajo: 'consulta',
+        forma: 'fijo',
+        valor: Number(f.valor_consulta),
+        cliente_id: resolvedId || null,
+        vinculo_tipo: resolvedId ? 'cliente' : null,
+        estado: estadoPago,
+        en_cuotas: false,
+        fecha: f.fecha,
+        periodo,
+        estudio_id: perfil.estudio_id,
       });
+      if (honError) honOk = false;
     }
-    setMsg(`Consulta de ${nombreFinal} guardada.`);
+    setMsg(honOk
+      ? `Consulta de ${nombreFinal} guardada.`
+      : `Consulta de ${nombreFinal} guardada. No se pudo crear el honorario automáticamente. Podés cargarlo manualmente.`);
     setF({ tipo:'primera', fecha:HOY, abogada:f.abogada, motivo:'', comentario:'', valor_consulta:'', notas_consulta:'' });
     setClienteQ(''); setClienteId(''); setClienteNombre('');
     setClienteDni(''); setClienteTelefono(''); setClienteDomicilio(''); setClienteEmail('');
+    setEstadoPago('pendiente');
     recargar();
-    setTimeout(()=>setMsg(''),3000);
+    setTimeout(()=>setMsg(''), honOk ? 3000 : 6000);
   }
 
   return (
