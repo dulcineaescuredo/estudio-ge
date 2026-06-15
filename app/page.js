@@ -235,7 +235,7 @@ export default function Home() {
                 background:vista===id?'rgba(255,255,255,0.18)':'transparent',
                 color:'#FFFFFF',
                 fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
-              <span style={{fontSize:isSub?12:14,flexShrink:0}}>{emoji}</span>{label}
+              <span style={{fontSize:isSub?13:16,flexShrink:0}}>{emoji}</span>{label}
             </button>;
           })}
         </div>
