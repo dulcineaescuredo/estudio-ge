@@ -354,7 +354,11 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
     .filter(e => e.proximo_vencimiento === HOY_LOCAL &&
       (e.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre));
 
-  const totalHoy = audienciasHoy.length + turnosHoy.length + vencimientosHoy.length;
+  const tareasHoy = (tareas||[])
+    .filter(t => t.deadline === HOY_LOCAL && normEstado(t.estado) !== 'terminado'
+      && (t.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre));
+
+  const totalHoy = audienciasHoy.length + turnosHoy.length + vencimientosHoy.length + tareasHoy.length;
   const sinNada = !cargando && totalHoy === 0;
 
   function fmtH(h) { return h ? h.substring(0,5) : ''; }
