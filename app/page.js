@@ -1830,16 +1830,17 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
 }
 
 function NuevoCliente({ perfil, recargar, setVista }) {
-  const [f, setF] = useState({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
+  const [f, setF] = useState({ apellido:'', nombre_pila:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
-    if (!f.nombre) { alert('El nombre es obligatorio'); return; }
+    if (!f.apellido && !f.nombre_pila) { alert('El apellido o nombre es obligatorio'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
-    const { error } = await supabase.from('clientes').insert({ ...f, estudio_id: perfil.estudio_id });
+    const nombre = (f.apellido+' '+f.nombre_pila).trim();
+    const { error } = await supabase.from('clientes').insert({ ...f, nombre, estudio_id: perfil.estudio_id });
     if (error) { alert('Error: '+error.message); return; }
-    setMsg(`Cliente ${f.nombre} guardado.`);
-    setF({ nombre:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
+    setMsg(`Cliente ${nombre} guardado.`);
+    setF({ apellido:'', nombre_pila:'', dni:'', telefono:'', email:'', domicilio:'', notas:'', responsable:'' });
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
@@ -1847,7 +1848,11 @@ function NuevoCliente({ perfil, recargar, setVista }) {
     <Card title="👤 Nuevo cliente">
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
       <div style={{maxWidth:520}}>
-        {[['nombre','Nombre completo *'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+        <div><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Apellido *</label>
+          <input style={{...inputStyle,textTransform:'uppercase'}} value={f.apellido} onChange={e=>set('apellido',e.target.value.toUpperCase())} /></div>
+        <div><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Nombre *</label>
+          <input style={{...inputStyle,textTransform:'uppercase'}} value={f.nombre_pila} onChange={e=>set('nombre_pila',e.target.value.toUpperCase())} /></div>
+        {[['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
           <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
           <input style={inputStyle} value={f[k]} onChange={e=>set(k,e.target.value)} /></div>
         ))}
