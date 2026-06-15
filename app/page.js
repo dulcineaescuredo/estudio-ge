@@ -1030,7 +1030,7 @@ function Consultas({ consultas, recargar }) {
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
-        {[['💬','Consultas este mes',mesA.length],['✨','Primeras',mesA.filter(c=>c.tipo==='primera').length],['🔄','Seguimientos',mesA.filter(c=>c.tipo==='seguimiento').length],['👤','Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([emoji,l,v])=>(
+        {[['💬','Consultas este mes',mesA.length],['✨','Primeras',mesA.filter(c=>c.tipo==='primera').length],['🔄','Otras consultas',mesA.filter(c=>c.tipo==='seguimiento').length],['👤','Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([emoji,l,v])=>(
           <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
             <span style={{fontSize:24,display:'block',marginBottom:6}}>{emoji}</span>
             <div style={{fontSize:28,fontWeight:700,color:'#1A1A1A',lineHeight:1}}>{v}</div>
