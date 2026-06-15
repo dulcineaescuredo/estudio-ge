@@ -1324,8 +1324,8 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
               <input type="number" style={inputStyle} placeholder="Ej: 20000" value={f.valor_consulta} onChange={e=>set('valor_consulta',e.target.value)} />
             </>
           )}
-          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario</label>
-          <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
+          <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Paso siguiente</label>
+          <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} placeholder="Ej: Llamar la semana que viene, enviar presupuesto..." value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
           <button onClick={guardar} style={btnPrimary}>Guardar consulta</button>
         </div>
         {/* Columna derecha: bloc de notas */}
