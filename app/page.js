@@ -395,6 +395,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
     .sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
   return (
     <div>
+      <LoDeHoy perfil={perfil} expedientes={expedientes} clientes={clientes} setVista={setVista} setExpActual={setExpActual} />
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
         {[['📁','Expedientes activos',activos,null],['⚠️','Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#C53030':null],['✅','Tareas pendientes',tareasPend,null],['💬','Consultas este mes',consMes,null]].map(([emoji,l,v,col])=>(
           <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
