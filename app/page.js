@@ -2018,7 +2018,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       if (!q) return true;
       const exp = expedientes.find(e=>e.id===h.expediente_id);
       const cli = clientes.find(c=>c.id===h.cliente_id);
-      const blob = `${h.concepto} ${h.tipo_trabajo||''} ${exp?exp.caratula:''} ${cli?cli.nombre:''}`.toLowerCase();
+      const blob = `${h.concepto} ${h.tipo_trabajo||''} ${exp?exp.caratula:''} ${cli?nombreCompleto(cli):''}`.toLowerCase();
       return blob.includes(q.toLowerCase());
     });
 
