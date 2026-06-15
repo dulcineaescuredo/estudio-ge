@@ -1344,7 +1344,7 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
                 {sugsCliente.map(cl=>(
                   <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
                     style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
-                    {cl.nombre}{cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
+                    {nombreCompleto(cl)}{cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
                   </div>
                 ))}
               </div>
