@@ -500,7 +500,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
             const hon=(honorarios||[]).find(h=>h.id===cu.honorario_id);
             const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
             const cli=hon?.cliente_id?(clientes||[]).find(c=>c.id===hon.cliente_id):null;
-            const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||'—'):(exp?exp.caratula:(cli?cli.nombre:'—'));
+            const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||'—'):(exp?exp.caratula:(cli?nombreCompleto(cli):'—'));
             const esHoy=cu.vencimiento===HOY;
             const badge=esHoy?{bg:'#FDECEA',color:'#C53030',label:'vence hoy'}:{bg:'#FCEBEB',color:'#791F1F',label:'vencida'};
             return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
