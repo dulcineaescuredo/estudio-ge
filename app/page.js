@@ -402,7 +402,7 @@ function LoDeHoy({ perfil, expedientes, clientes, setVista, setExpActual }) {
 
 function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, cuotas, honorarios, clientes }) {
   const mes = HOY.substring(0,7);
-  const activos = expedientes.filter(e=>e.estado==='activo').length;
+  const activos = expedientes.filter(e=>(e.estado||'').toLowerCase()==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
   const tareasPend = tareas.filter(t=>t.estado==='pendiente').length;
   const vencSemana = expedientes.filter(e=>{ const d=diasHasta(e.proximo_vencimiento); return d!==null && d<=7; });
