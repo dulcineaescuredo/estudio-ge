@@ -417,16 +417,19 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
     .sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
   return (
     <div>
-      <LoDeHoy perfil={perfil} expedientes={expedientes} clientes={clientes} setVista={setVista} setExpActual={setExpActual} />
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
-        {[['📁','Expedientes activos',activos,null],['⚠️','Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#C53030':null],['✅','Tareas pendientes',tareasPend,null],['💬','Consultas este mes',consMes,null]].map(([emoji,l,v,col])=>(
-          <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
+        {[['📁','Expedientes activos',activos,null,'expedientes'],['⚠️','Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#C53030':null,'agenda-vencimientos'],['✅','Tareas pendientes',tareasPend,null,'tareas'],['💬','Consultas este mes',consMes,null,'consultas']].map(([emoji,l,v,col,dest])=>(
+          <div key={l} onClick={()=>setVista(dest)}
+            onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';e.currentTarget.style.borderColor='#DDDCDA';}}
+            onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';e.currentTarget.style.borderColor='#EBEBEA';}}
+            style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)',cursor:'pointer'}}>
             <span style={{fontSize:28,display:'block',marginBottom:8}}>{emoji}</span>
             <div style={{fontSize:32,fontWeight:700,color:col||'#1A1A1A',lineHeight:1}}>{v}</div>
             <div style={{fontSize:12,color:'#6B7280',marginTop:8,lineHeight:1.4}}>{l}</div>
           </div>
         ))}
       </div>
+      <LoDeHoy perfil={perfil} expedientes={expedientes} clientes={clientes} setVista={setVista} setExpActual={setExpActual} />
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
