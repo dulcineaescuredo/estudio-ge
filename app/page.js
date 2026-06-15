@@ -3406,7 +3406,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
     const todos = [
       ...(!tipoActivo||tipoActivo==='audiencia'?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'audiencia'})):[]),
       ...(!tipoActivo||tipoActivo==='turno'?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'turno'})):[]),
-      ...(!tipoActivo||tipoActivo==='tarea'?tareasConDeadline.filter(e=>e.fecha_limite===fs).map(e=>({...e,_tipo:'tarea'})):[]),
+      ...(!tipoActivo||tipoActivo==='tarea'?tareasConDeadline.filter(e=>e.deadline===fs).map(e=>({...e,_tipo:'tarea'})):[]),
       ...(!tipoActivo||tipoActivo==='vencimiento'?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_tipo:'vencimiento'})):[]),
     ];
     return todos.sort((a,b)=>{
