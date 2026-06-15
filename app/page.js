@@ -465,7 +465,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
           </div>
         ))}
       </div>
-      <LoDeHoy perfil={perfil} expedientes={expedientes} clientes={clientes} setVista={setVista} setExpActual={setExpActual} />
+      <LoDeHoy perfil={perfil} expedientes={expedientes} clientes={clientes} tareas={tareas} setVista={setVista} setExpActual={setExpActual} />
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
