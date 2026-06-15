@@ -1952,7 +1952,7 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
         {sorted.map(h=>{
           const exp = expedientes.find(e=>e.id===h.expediente_id);
           const cli = clientes.find(c=>c.id===h.cliente_id);
-          const vinc = h.vinculo_tipo==='contraparte' ? (h.contraparte_nombre||'—') : (exp?exp.caratula : (cli?cli.nombre : '—'));
+          const vinc = h.vinculo_tipo==='contraparte' ? (h.contraparte_nombre||'—') : (exp?exp.caratula : (cli?nombreCompleto(cli) : '—'));
           const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
           const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
           const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
