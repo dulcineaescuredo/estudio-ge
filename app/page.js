@@ -367,7 +367,7 @@ function LoDeHoy({ perfil, expedientes, clientes, setVista, setExpActual }) {
       {sinNada&&<div style={{color:'#8a8a8a',fontSize:13}}>No tenés eventos ni vencimientos para hoy 🎉</div>}
       {audienciasHoy.length>0&&(
         <div style={{marginBottom:14}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>📅 Audiencias de hoy</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>⚖️ Audiencias de hoy</div>
           {audienciasHoy.map(ev=>filaEvento(ev,'audiencia',()=>setVista('audiencias')))}
         </div>
       )}
