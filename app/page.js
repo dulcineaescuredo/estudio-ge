@@ -406,7 +406,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
   const tareasPend = tareas.filter(t=>t.estado==='pendiente').length;
   const vencSemana = expedientes.filter(e=>{ const d=diasHasta(e.proximo_vencimiento); return d!==null && d<=7; });
-  const vencProximos = expedientes.filter(e=>e.proximo_vencimiento && e.estado!=='archivado')
+  const vencProximos = expedientes.filter(e=>e.proximo_vencimiento && (e.estado||'').toLowerCase()!=='archivado')
     .sort((a,b)=>a.proximo_vencimiento.localeCompare(b.proximo_vencimiento)).slice(0,6);
   const misTareas = tareas
     .filter(t => t.estudio_id === '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b' && (t.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre) && normEstado(t.estado) !== 'terminado')
