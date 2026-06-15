@@ -3420,7 +3420,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
 
   function chipLabel(ev) {
     if (ev._tipo==='vencimiento') return (ev.motivo_vencimiento||(ev.caratula||'').split(' c/')[0]).substring(0,20);
-    if (ev._tipo==='tarea') return (ev.titulo||'Tarea').substring(0,20);
+    if (ev._tipo==='tarea') return (ev.descripcion||'Tarea').substring(0,20);
     return `${fmtH(ev.hora)?fmtH(ev.hora)+' ':''}${(ev.tipo||'').substring(0,16)}`;
   }
 
