@@ -2012,7 +2012,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         <div style={{background:'#FEF9EE',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #FDE68A',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
           <div style={{fontSize:12,color:'#92400E',marginBottom:6}}>💳 Saldo pendiente</div>
           <div style={{fontSize:22,fontWeight:700,color:'#B45309'}}>{fmtMoneda(saldoPendiente)}</div>
-          <div style={{fontSize:11,color:'#92400E',marginTop:4}}>en cuotas sin pagar</div>
+          <div style={{fontSize:11,color:'#92400E',marginTop:4}}>pendiente de cobro</div>
         </div>
       </div>
 
