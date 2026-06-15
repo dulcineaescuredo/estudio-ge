@@ -2111,45 +2111,6 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
 
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12,gap:12,flexWrap:'wrap'}}>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'2 1 200px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>💵 Valor actual del UHON</div>
-          {!editUhon ? (
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontSize:24,fontWeight:700}}>{valorUhon?fmtMoneda(valorUhon):'Sin cargar'}</span>
-              <button onClick={()=>{setUhonInput(valorUhon||'');setEditUhon(true);}} style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>editar</button>
-            </div>
-          ) : (
-            <div style={{display:'flex',alignItems:'center',gap:6}}>
-              <input type="number" value={uhonInput} onChange={e=>setUhonInput(e.target.value)} placeholder="Ej: 45000"
-                style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,width:120,fontFamily:'system-ui'}} />
-              <button onClick={guardarUhon} style={{...btnPrimary,padding:'6px 12px'}}>OK</button>
-              <button onClick={()=>setEditUhon(false)} style={{fontSize:12,color:'#6B7280',background:'none',border:'none',cursor:'pointer'}}>cancelar</button>
-            </div>
-          )}
-        </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>⏳ Por cobrar</div>
-          <div style={{fontSize:28,fontWeight:700}}>{totalPorCobrar}</div>
-          <div style={{fontSize:11,color:'#8a8a8a',marginTop:4}}>honorarios</div>
-          {montoPorCobrar > 0 && <div style={{fontSize:12,fontWeight:600,color:'#4a4a4a',marginTop:6}}>{fmtMoneda(montoPorCobrar)}</div>}
-        </div>
-        <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:6}}>📊 UHON por cobrar</div>
-          <div style={{fontSize:22,fontWeight:700}}>{totalUhonPendiente}{valorUhon?<span style={{fontSize:13,color:'#6B7280',fontWeight:400}}> ({fmtMoneda(totalUhonPendiente*valorUhon)})</span>:null}</div>
-        </div>
-        <div style={{background:'#F0FBF0',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #BBF7D0',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#15803D',marginBottom:6}}>✅ Cobrado este mes</div>
-          <div style={{fontSize:22,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(cobradoMes)}</div>
-          <div style={{fontSize:11,color:'#15803D',marginTop:4}}>en cuotas pagadas</div>
-        </div>
-        <div style={{background:'#FEF9EE',borderRadius:14,padding:'18px 20px',flex:'1 1 140px',border:'1px solid #FDE68A',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
-          <div style={{fontSize:12,color:'#92400E',marginBottom:6}}>💳 Saldo pendiente</div>
-          <div style={{fontSize:22,fontWeight:700,color:'#B45309'}}>{fmtMoneda(saldoPendiente)}</div>
-          <div style={{fontSize:11,color:'#92400E',marginTop:4}}>pendiente de cobro</div>
-        </div>
-      </div>
-
       {vistaHon==='estadisticas' ? (
         <EstadisticasHon cuotas={cuotas} honorarios={honorarios} expedientes={expedientes} clientes={clientes} onVolver={()=>setVistaHon('normal')} />
       ) : (<>
