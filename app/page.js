@@ -1076,7 +1076,7 @@ function Consultas({ consultas, recargar }) {
                   <div>
                     <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:3}}>
                       <span style={{fontSize:13,fontWeight:500}}>{c.cliente}</span>
-                      <Badge bg={c.tipo==='primera'?'#FAEEDA':'#EAF3DE'} color={c.tipo==='primera'?'#633806':'#27500A'}>{c.tipo==='primera'?'Primera consulta':'Seguimiento'}</Badge>
+                      <Badge bg={c.tipo==='primera'?'#FAEEDA':'#EAF3DE'} color={c.tipo==='primera'?'#633806':'#27500A'}>{c.tipo==='primera'?'Primera consulta':'Otras consultas'}</Badge>
                     </div>
                     <div style={{display:'flex',gap:8,marginBottom:3,flexWrap:'wrap'}}>
                       <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(c.fecha)}</span>
@@ -1173,7 +1173,7 @@ function VerConsultas({ consultas, recargar }) {
                 <div>
                   <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:3,flexWrap:'wrap'}}>
                     <span style={{fontSize:13,fontWeight:500}}>{c.cliente}</span>
-                    <Badge bg={c.tipo==='primera'?'#FAEEDA':'#EAF3DE'} color={c.tipo==='primera'?'#633806':'#27500A'}>{c.tipo==='primera'?'Primera consulta':'Seguimiento'}</Badge>
+                    <Badge bg={c.tipo==='primera'?'#FAEEDA':'#EAF3DE'} color={c.tipo==='primera'?'#633806':'#27500A'}>{c.tipo==='primera'?'Primera consulta':'Otras consultas'}</Badge>
                     {c.valor_consulta&&<Badge bg="#E6F1FB" color="#0C447C">{fmtMoneda(c.valor_consulta)}</Badge>}
                   </div>
                   <div style={{display:'flex',gap:8,marginBottom:3,flexWrap:'wrap'}}>
