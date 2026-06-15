@@ -1620,6 +1620,12 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
     recargar();
     setVista('clientes');
   }
+  async function guardarNotasPrimer() {
+    await supabase.from('clientes').update({ notas_primer_consulta: notasPrimerEdit||null }).eq('id', cl.id);
+    setCliActual({...cl, notas_primer_consulta: notasPrimerEdit});
+    setEditandoNotasPrimer(false);
+    recargar();
+  }
   return (
     <div>
       <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
