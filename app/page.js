@@ -198,64 +198,79 @@ export default function Home() {
     );
   }
 
-  return (
-    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#F7F6F3',color:'#1A1A1A'}}>
-      <div style={{width:224,minWidth:224,background:'#9B4F6A',display:'flex',flexDirection:'column'}}>
-        <div style={{padding:'20px 18px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
-            <div>
-              <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
-              <div style={{fontSize:11,color:'#FFFFFF',marginTop:2,opacity:0.75}}>General Pico, LP</div>
-            </div>
-          </div>
-        </div>
-        <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
-          {[
-            ['dashboard','🏠','Inicio',''],
-            ['expedientes','📁','Expedientes',''],
-            ['nuevo-exp','➕','Nuevo expediente','sub'],
-            ['agenda','📅','Agenda',''],
-            ['agenda-vencimientos','⚠️','Vencimientos','sub'],
-            ['agenda-audiencias','⚖️','Audiencias','sub'],
-            ['agenda-turnos','🕐','Turnos','sub'],
-            ['agenda-tareas','✅','Tareas c/vencimiento','sub'],
-            ['consultas','💬','Consultas',''],
-            ['nueva-consulta','➕','Nueva consulta','sub'],
-            ['ver-consultas','📋','Ver consultas','sub'],
-            ['tareas','✅','Tareas',''],
-            ['nueva-tarea','➕','Nueva tarea','sub'],
-            ['honorarios','💰','Honorarios',''],
-            ['clientes','👥','Clientes',''],
-          ].map(([id,emoji,label,tipo])=>{
-            const isSub = tipo==='sub';
-            return <button key={id} onClick={()=>{setVista(id);setExpActual(null);}}
-              style={{display:'flex',alignItems:'center',gap:8,
-                width:vista===id?'calc(100% - 8px)':'100%',
-                marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
-                textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:6,fontSize:isSub?13:15,border:'none',
-                background:vista===id?'rgba(255,255,255,0.18)':'transparent',
-                color:'#FFFFFF',
-                fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui'}}>
-              <span style={{fontSize:isSub?13:16,flexShrink:0}}>{emoji}</span>{label}
-            </button>;
-          })}
-        </div>
-        <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:9}}>
-          <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
-            {perfil?.nombre?.[0] || session.user.email[0].toUpperCase()}
-          </div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
-            <div style={{display:'flex',gap:8,marginTop:1}}>
-              <button onClick={logout} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Cerrar sesión</button>
-              <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Contraseña</button>
-            </div>
-          </div>
-        </div>
-      </div>
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-      <div style={{flex:1,overflowY:'auto',padding:24}}>
+  return (
+    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#F7F6F3',color:'#1A1A1A',overflow:'hidden'}}>
+      {sidebarAbierta && isMobile && (
+        <div onClick={()=>setSidebarAbierta(false)}
+          style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:40}} />
+      )}
+      {!sidebarAbierta && (
+        <button onClick={()=>setSidebarAbierta(true)}
+          style={{position:'fixed',top:12,left:0,zIndex:50,background:'#9B4F6A',color:'#fff',border:'none',borderRadius:'0 8px 8px 0',padding:'8px 12px',fontSize:18,cursor:'pointer',lineHeight:1,minHeight:44}}>
+          ☰
+        </button>
+      )}
+      {sidebarAbierta && (
+        <div style={{width:224,minWidth:224,background:'#9B4F6A',display:'flex',flexDirection:'column',
+          ...(isMobile ? {position:'fixed',top:0,left:0,height:'100vh',zIndex:50} : {})}}>
+          <div style={{padding:'16px 18px 14px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:36,height:36,borderRadius:10,background:'#fff',color:'#9B4F6A',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>GE</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700,color:'#fff',lineHeight:1.25}}>Guazzaroni<br/>Escuredo</div>
+                <div style={{fontSize:11,color:'#FFFFFF',marginTop:2,opacity:0.75}}>General Pico, LP</div>
+              </div>
+              <button onClick={()=>setSidebarAbierta(false)} style={{background:'none',border:'none',color:'#fff',fontSize:18,cursor:'pointer',padding:4,lineHeight:1,opacity:0.8,flexShrink:0,minHeight:36}}>☰</button>
+            </div>
+          </div>
+          <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
+            {[
+              ['dashboard','🏠','Inicio',''],
+              ['expedientes','📁','Expedientes',''],
+              ['nuevo-exp','➕','Nuevo expediente','sub'],
+              ['agenda','📅','Agenda',''],
+              ['agenda-vencimientos','⚠️','Vencimientos','sub'],
+              ['agenda-audiencias','⚖️','Audiencias','sub'],
+              ['agenda-turnos','🕐','Turnos','sub'],
+              ['agenda-tareas','✅','Tareas c/vencimiento','sub'],
+              ['consultas','💬','Consultas',''],
+              ['nueva-consulta','➕','Nueva consulta','sub'],
+              ['ver-consultas','📋','Ver consultas','sub'],
+              ['tareas','✅','Tareas',''],
+              ['nueva-tarea','➕','Nueva tarea','sub'],
+              ['honorarios','💰','Honorarios',''],
+              ['clientes','👥','Clientes',''],
+            ].map(([id,emoji,label,tipo])=>{
+              const isSub = tipo==='sub';
+              return <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+                style={{display:'flex',alignItems:'center',gap:8,
+                  width:vista===id?'calc(100% - 8px)':'100%',
+                  marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
+                  textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:6,fontSize:isSub?13:15,border:'none',
+                  background:vista===id?'rgba(255,255,255,0.18)':'transparent',
+                  color:'#FFFFFF',
+                  fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:isSub?36:44}}>
+                <span style={{fontSize:isSub?13:16,flexShrink:0}}>{emoji}</span>{label}
+              </button>;
+            })}
+          </div>
+          <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:9}}>
+            <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
+              {perfil?.nombre?.[0] || session.user.email[0].toUpperCase()}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
+              <div style={{display:'flex',gap:8,marginTop:1}}>
+                <button onClick={logout} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Cerrar sesión</button>
+                <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Contraseña</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,minWidth:0}}>
         {cargandoDatos && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:12}}>Cargando datos...</div>}
         <Contenido
           vista={vista} setVista={setVista}
