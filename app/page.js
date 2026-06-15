@@ -1615,7 +1615,7 @@ function Clientes({ clientes, setVista, setCliActual, expedientes }) {
   );
 }
 
-function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExpActual, recargar }) {
+function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVista, setExpActual, recargar }) {
   const cl = cliActual;
   const [editando, setEditando] = useState(false);
   const [f, setF] = useState(cl);
@@ -1623,6 +1623,13 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
   const [notasPrimerEdit, setNotasPrimerEdit] = useState('');
   if (!cl) return null;
   const exps = expedientes.filter(e=>e.cliente_id===cl.id);
+  const histConsultas = (consultas||[]).filter(c=>c.cliente_id===cl.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  function fmtDMY(f) {
+    if (!f) return '';
+    const p = f.split('-');
+    if (p.length!==3) return f;
+    return `${p[2]}/${p[1]}/${p[0]}`;
+  }
   async function guardarDatos() {
     await supabase.from('clientes').update({ nombre:f.nombre, dni:f.dni, telefono:f.telefono, email:f.email, domicilio:f.domicilio, notas:f.notas, responsable:f.responsable }).eq('id', cl.id);
     setCliActual(f); setEditando(false); recargar();
