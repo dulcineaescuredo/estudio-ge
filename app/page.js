@@ -3193,7 +3193,7 @@ function AgendaModule({ tabla, titulo, emoji, expedientes, clientes, perfil }) {
 function AgendaDetalle({ ev, expedientes, clientes, onEditar, onEliminar, onCerrar }) {
   const exp = expedientes.find(e=>e.id===ev.expediente_id);
   const cli = clientes.find(c=>c.id===ev.cliente_id);
-  const vinc = exp?exp.caratula:cli?cli.nombre:null;
+  const vinc = exp?exp.caratula:cli?nombreCompleto(cli):null;
   return (
     <Card>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}}>
