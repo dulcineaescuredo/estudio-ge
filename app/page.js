@@ -1353,14 +1353,16 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
           {clienteId && <div style={{fontSize:11,color:'#27500A',marginTop:4,marginBottom:8}}>✓ Cliente existente</div>}
           {!clienteId && clienteQ && <div style={{fontSize:11,color:'#8a8a8a',marginTop:4,marginBottom:8}}>Se creará como cliente nuevo al guardar</div>}
           {!clienteId && !clienteQ && <div style={{marginBottom:8}}/>}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-            {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Domicilio',clienteDomicilio,setClienteDomicilio],['Email',clienteEmail,setClienteEmail]].map(([label,val,setter])=>(
-              <div key={label}>
-                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:3}}>{label}</label>
-                <input style={{...inputStyle,marginBottom:0,fontSize:12}} value={val} onChange={e=>setter(e.target.value)} />
-              </div>
-            ))}
-          </div>
+          {f.tipo==='primera'&&(
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+              {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Domicilio',clienteDomicilio,setClienteDomicilio],['Email',clienteEmail,setClienteEmail]].map(([label,val,setter])=>(
+                <div key={label}>
+                  <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:3}}>{label}</label>
+                  <input style={{...inputStyle,marginBottom:0,fontSize:12}} value={val} onChange={e=>setter(e.target.value)} />
+                </div>
+              ))}
+            </div>
+          )}
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
           <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Abogada/o *</label>
