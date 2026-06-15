@@ -1653,6 +1653,7 @@ function Clientes({ clientes, setVista, setCliActual, expedientes }) {
               })}
             </tbody>
           </table>
+          </div>
         ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin clientes todavía. Cargá el primero con "Nuevo cliente".</div>}
       </Card>
     </div>
