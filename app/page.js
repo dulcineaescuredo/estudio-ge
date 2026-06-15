@@ -3382,7 +3382,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
   }
 
   const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento);
-  const tareasConDeadline = (tareas||[]).filter(e=>e.fecha_limite&&normEstado(e.estado)!=='terminado');
+  const tareasConDeadline = (tareas||[]).filter(e=>e.deadline&&normEstado(e.estado)!=='terminado');
   const AU_COLOR = '#9B4F6A';
   const TU_COLOR = '#2B6CB0';
   const VE_COLOR = '#B45309';
