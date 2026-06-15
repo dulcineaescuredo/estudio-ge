@@ -3125,7 +3125,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
               const expVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
               const cliVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
               const vinc = expVinc?expVinc.caratula:cliVinc?cliVinc.nombre:'';
-              const icono = ev._tipo==='audiencia'?'📅':ev._tipo==='turno'?'🕐':ev._tipo==='tarea'?'✅':'⚠️';
+              const icono = ev._tipo==='audiencia'?'⚖️':ev._tipo==='turno'?'🕐':ev._tipo==='tarea'?'✅':'⚠️';
               const titulo = ev._tipo==='vencimiento'
                 ? (ev.motivo_vencimiento||ev.caratula)
                 : ev._tipo==='tarea'
