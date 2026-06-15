@@ -1690,6 +1690,26 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Este cliente no tiene expedientes vinculados todavía. Vinculalos desde el expediente.</div>}
       </Card>
+      <Card title="📝 Notas de primera consulta">
+        {editandoNotasPrimer ? (
+          <div>
+            <textarea style={{...inputStyle,minHeight:80,resize:'vertical'}} value={notasPrimerEdit} onChange={e=>setNotasPrimerEdit(e.target.value)} placeholder="Observaciones de la primera consulta..." />
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={guardarNotasPrimer} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+              <button onClick={()=>setEditandoNotasPrimer(false)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {cl.notas_primer_consulta
+              ? <div style={{fontSize:13,lineHeight:1.6,whiteSpace:'pre-wrap',marginBottom:10,color:'#1a1a1a'}}>{cl.notas_primer_consulta}</div>
+              : <div style={{color:'#8a8a8a',fontSize:13,marginBottom:10}}>Sin notas de primera consulta.</div>
+            }
+            <button onClick={()=>{setNotasPrimerEdit(cl.notas_primer_consulta||'');setEditandoNotasPrimer(true);}}
+              style={{fontSize:12,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',padding:0}}>Editar notas</button>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
