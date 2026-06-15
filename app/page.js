@@ -3598,7 +3598,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, setVista, setExpActual
               const titulo = ev._tipo==='vencimiento'
                 ? (ev.motivo_vencimiento||ev.caratula)
                 : ev._tipo==='tarea'
-                ? (ev.titulo||'Tarea')
+                ? (ev.descripcion||'Tarea')
                 : (ev.tipo||ev._tipo);
               return (
                 <div key={`${ev._tipo}-${ev.id}-${i}`}
