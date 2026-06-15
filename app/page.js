@@ -301,6 +301,7 @@ function Contenido(props) {
   if (vista === 'notas') return <Notas {...props} />;
   if (vista === 'consultas') return <Consultas {...props} />;
   if (vista === 'nueva-consulta') return <NuevaConsulta {...props} />;
+  if (vista === 'ver-consultas') return <VerConsultas {...props} />;
   if (vista === 'tareas') return <Tareas {...props} />;
   if (vista === 'nueva-tarea') return <NuevaTarea {...props} />;
   if (vista === 'cambiar-password') return <CambiarPassword {...props} />;
