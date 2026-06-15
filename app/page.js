@@ -1734,7 +1734,11 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
           </div>
         ) : (
           <div style={{marginTop:12,maxWidth:520}}>
-            {[['nombre','Nombre'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+            <div><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Apellido</label>
+              <input style={{...inputStyle,textTransform:'uppercase'}} value={f.apellido||''} onChange={e=>setF({...f,apellido:e.target.value.toUpperCase()})} /></div>
+            <div><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Nombre</label>
+              <input style={{...inputStyle,textTransform:'uppercase'}} value={f.nombre_pila||''} onChange={e=>setF({...f,nombre_pila:e.target.value.toUpperCase()})} /></div>
+            {[['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
               <div key={k}><label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>{l}</label>
               <input style={inputStyle} value={f[k]||''} onChange={e=>setF({...f,[k]:e.target.value})} /></div>
             ))}
