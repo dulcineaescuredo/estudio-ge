@@ -453,6 +453,9 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
   const cuotasACobrar = (cuotas||[])
     .filter(cu=>cu.estado==='pendiente' && cu.vencimiento && cu.vencimiento<=HOY)
     .sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
+  const _d3=new Date(HOY+'T00:00:00'); _d3.setDate(_d3.getDate()+3);
+  const hoyMas3=`${_d3.getFullYear()}-${String(_d3.getMonth()+1).padStart(2,'0')}-${String(_d3.getDate()).padStart(2,'0')}`;
+  const honConRecordatorio=(honorarios||[]).filter(h=>h.fecha_limite_pago&&h.fecha_limite_pago<=hoyMas3&&h.estado!=='pagado');
   return (
     <div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
