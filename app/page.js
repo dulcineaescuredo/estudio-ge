@@ -124,6 +124,7 @@ export default function Home() {
   const [cliActual, setCliActual] = useState(null);
   const [honActual, setHonActual] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(false);
+  const [sidebarAbierta, setSidebarAbierta] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? false : true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
