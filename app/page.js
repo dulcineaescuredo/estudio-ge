@@ -2361,7 +2361,8 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
       contraparte_nombre: f.vinculo_tipo==='contraparte' ? f.contraparte_nombre||null : null,
       vinculo_tipo: f.vinculo_tipo==='ninguno' ? null : f.vinculo_tipo,
       en_cuotas:f.en_cuotas, notas:f.notas,
-      estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null };
+      estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null,
+      periodo: f.fecha ? f.fecha.substring(0,7) : HOY.substring(0,7) };
     const { data: honData, error } = await supabase.from('honorarios').insert(payload).select('id').single();
     if (error) { alert('Error: '+error.message); return; }
     if (honData?.id) {
