@@ -1046,7 +1046,7 @@ function Consultas({ consultas, recargar }) {
             {esEditando ? (
               <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
                 <div style={{display:'flex',gap:8}}>
-                  {[['primera','Primera consulta'],['seguimiento','Seguimiento']].map(([v,l])=>(
+                  {[['primera','Primera consulta'],['seguimiento','Otras consultas']].map(([v,l])=>(
                     <button key={v} onClick={()=>setEditForm({...editForm,tipo:v})}
                       style={{flex:1,padding:'6px',border:editForm.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:editForm.tipo===v?'#E6F1FB':'#f9f8f5',color:editForm.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
                   ))}
@@ -1137,7 +1137,7 @@ function VerConsultas({ consultas, recargar }) {
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
               <div style={{display:'flex',gap:8}}>
-                {[['primera','Primera consulta'],['seguimiento','Seguimiento']].map(([v,l])=>(
+                {[['primera','Primera consulta'],['seguimiento','Otras consultas']].map(([v,l])=>(
                   <button key={v} onClick={()=>setEditForm({...editForm,tipo:v})}
                     style={{flex:1,padding:'6px',border:editForm.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:editForm.tipo===v?'#E6F1FB':'#f9f8f5',color:editForm.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
                 ))}
@@ -1275,7 +1275,7 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
         <div style={{flex:'1 1 380px',maxWidth:520}}>
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Tipo *</label>
           <div style={{display:'flex',gap:8,marginBottom:12}}>
-            {[['primera','Primera consulta'],['seguimiento','Seguimiento']].map(([v,l])=>(
+            {[['primera','Primera consulta'],['seguimiento','Otras consultas']].map(([v,l])=>(
               <button key={v} onClick={()=>set('tipo',v)} style={{flex:1,padding:9,border:f.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:f.tipo===v?'#E6F1FB':'#f9f8f5',color:f.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
             ))}
           </div>
