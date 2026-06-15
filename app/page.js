@@ -291,6 +291,94 @@ function Contenido(props) {
   return null;
 }
 
+function LoDeHoy({ perfil, expedientes, clientes, setVista, setExpActual }) {
+  const [audienciasHoy, setAudienciasHoy] = useState([]);
+  const [turnosHoy, setTurnosHoy] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    if (!perfil?.nombre) return;
+    (async () => {
+      const [{ data: a },{ data: t }] = await Promise.all([
+        supabase.from('audiencias').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b').eq('fecha',HOY_LOCAL),
+        supabase.from('turnos').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b').eq('fecha',HOY_LOCAL),
+      ]);
+      const esResp = r => (r.responsable||'').split(',').map(s=>s.trim()).includes(perfil.nombre);
+      setAudienciasHoy((a||[]).filter(esResp).sort((x,y)=>(x.hora||'z').localeCompare(y.hora||'z')));
+      setTurnosHoy((t||[]).filter(esResp).sort((x,y)=>(x.hora||'z').localeCompare(y.hora||'z')));
+      setCargando(false);
+    })();
+  }, [perfil?.nombre]);
+
+  const vencimientosHoy = (expedientes||[])
+    .filter(e => e.proximo_vencimiento === HOY_LOCAL &&
+      (e.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre));
+
+  const totalHoy = audienciasHoy.length + turnosHoy.length + vencimientosHoy.length;
+  const sinNada = !cargando && totalHoy === 0;
+
+  function fmtH(h) { return h ? h.substring(0,5) : ''; }
+
+  function filaEvento(ev, tipo, onClick) {
+    const expVinc = (expedientes||[]).find(e=>e.id===ev.expediente_id);
+    const cliVinc = (clientes||[]).find(c=>c.id===ev.cliente_id);
+    const vinc = expVinc?.caratula || cliVinc?.nombre || '';
+    const color = tipo==='audiencia' ? '#9B4F6A' : '#2B6CB0';
+    return (
+      <div key={ev.id} onClick={onClick}
+        style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}>
+        <span style={{fontSize:12,fontWeight:700,color,minWidth:40,flexShrink:0}}>{fmtH(ev.hora)||'—'}</span>
+        <span style={{background:color,color:'#fff',borderRadius:5,padding:'2px 8px',fontSize:11,fontWeight:500,flexShrink:0,whiteSpace:'nowrap'}}>
+          {ev.tipo||(tipo==='audiencia'?'Audiencia':'Turno')}
+        </span>
+        <div style={{flex:1,minWidth:0}}>
+          {ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:1}}>{ev.descripcion}</div>}
+          {vinc&&<div style={{fontSize:11,color:'#8a8a8a'}}>📁 {vinc}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{background:'#FFFBF9',border:'1px solid #F0E6EC',borderLeft:'4px solid #9B4F6A',borderRadius:12,padding:'18px 20px',marginBottom:22}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:sinNada||cargando?6:16}}>
+        <div style={{fontSize:18,fontWeight:700,color:'#1A1A1A'}}>✨ Lo de hoy</div>
+        {totalHoy>0&&<span style={{background:'#9B4F6A',color:'#fff',borderRadius:20,padding:'2px 10px',fontSize:12,fontWeight:600}}>{totalHoy}</span>}
+      </div>
+      {cargando&&<div style={{color:'#c0c0c0',fontSize:12}}>Cargando...</div>}
+      {sinNada&&<div style={{color:'#8a8a8a',fontSize:13}}>No tenés eventos ni vencimientos para hoy 🎉</div>}
+      {audienciasHoy.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>📅 Audiencias de hoy</div>
+          {audienciasHoy.map(ev=>filaEvento(ev,'audiencia',()=>setVista('audiencias')))}
+        </div>
+      )}
+      {turnosHoy.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#2B6CB0',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>🕐 Turnos de hoy</div>
+          {turnosHoy.map(ev=>filaEvento(ev,'turno',()=>setVista('turnos')))}
+        </div>
+      )}
+      {vencimientosHoy.length>0&&(
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:'#B45309',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>⚠️ Vencimientos de hoy</div>
+          {vencimientosHoy.map(e=>(
+            <div key={e.id} onClick={()=>{setExpActual(e);setVista('detalle');}}
+              style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}>
+              <span style={{background:'#B45309',color:'#fff',borderRadius:5,padding:'2px 8px',fontSize:11,fontWeight:500,flexShrink:0}}>vence hoy</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:1}}>{e.caratula}</div>
+                {e.motivo_vencimiento&&<div style={{fontSize:11,color:'#8a8a8a'}}>{e.motivo_vencimiento}</div>}
+              </div>
+              <span style={{fontSize:11,color:'#8a8a8a',flexShrink:0}}>{e.numero}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, cuotas, honorarios, clientes }) {
   const mes = HOY.substring(0,7);
   const activos = expedientes.filter(e=>e.estado==='activo').length;
