@@ -1635,6 +1635,7 @@ function Clientes({ clientes, setVista, setCliActual, expedientes }) {
           <button onClick={()=>setVista('nuevo-cliente')} style={{...btnPrimary,marginLeft:10,flexShrink:0}}>+ Nuevo cliente</button>
         </div>
         {lista.length ? (
+          <div style={{overflowX:'auto'}}>
           <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
             <thead><tr style={{background:'#F7F6F3'}}>{['Nombre','DNI','Teléfono','Responsable','Expedientes activos'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 10px',fontSize:11,color:'#6B7280',borderBottom:'1px solid #EBEBEA',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>{h}</th>)}</tr></thead>
             <tbody>
