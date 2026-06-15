@@ -2161,32 +2161,23 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
         ) : <div style={{color:'#6B7280',fontSize:13,textAlign:'center',padding:30}}>Sin honorarios cargados. Cargá el primero con "Nuevo honorario".</div>}
       </Card>
 
-      <Card title="📆 Historial mensual">
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-          <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()-1,1))}
-            style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
-          <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:160,textAlign:'center'}}>{MESES[mesHist.getMonth()]} {mesHist.getFullYear()}</span>
-          {!esMesActualHist
-            ? <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
-                style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
-            : <span style={{fontSize:11,color:'#8a8a8a'}}>mes actual</span>}
-        </div>
-        <div style={{display:'flex',gap:10,marginBottom:cuotasMesHist.length?14:0,flexWrap:'wrap'}}>
-          <div style={{background:'#F0FBF0',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
-            <div style={{fontSize:11,color:'#15803D',fontWeight:600,marginBottom:4}}>COBRADO</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(pagadasMesHist)}</div>
+      <Card>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:cuotasMesHist.length?14:10,flexWrap:'wrap',gap:8}}>
+          <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>📆 Historial mensual</div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()-1,1))}
+              style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>‹</button>
+            <span style={{fontWeight:600,fontSize:13,color:'#2c2c2c',minWidth:130,textAlign:'center'}}>{MESES[mesHist.getMonth()]} {mesHist.getFullYear()}</span>
+            {!esMesActualHist
+              ? <button onClick={()=>setMesHist(new Date(mesHist.getFullYear(),mesHist.getMonth()+1,1))}
+                  style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:14,color:'#4a4a4a'}}>›</button>
+              : <span style={{fontSize:11,color:'#8a8a8a',minWidth:24}}>hoy</span>}
           </div>
-          <div style={{background:'#FEF9EE',borderRadius:10,padding:'12px 16px',flex:'1 1 110px'}}>
-            <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>PENDIENTE</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#B45309'}}>{fmtMoneda(pendientesMesHist)}</div>
-          </div>
-          <div style={{background:'#F9FAFB',borderRadius:10,padding:'12px 16px',flex:'1 1 80px'}}>
-            <div style={{fontSize:11,color:'#6B7280',fontWeight:600,marginBottom:4}}>CUOTAS</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#1a1a1a'}}>{cuotasMesHist.length}</div>
-          </div>
-          <div style={{background:'#EBF0FA',borderRadius:10,padding:'12px 16px',flex:'1 1 110px',border:'1px solid #BFDBFE'}}>
-            <div style={{fontSize:11,color:'#2563EB',fontWeight:600,marginBottom:4}}>TU GANANCIA EST.</div>
-            <div style={{fontSize:20,fontWeight:700,color:'#2563EB'}}>{fmtMoneda(miGanancia)}</div>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:13,fontWeight:700,color:'#16A34A'}}>{fmtMoneda(pagadasMesHist)}</span>
+            <span style={{fontSize:12,color:'#c0c0c0'}}>/</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#B45309'}}>{fmtMoneda(pendientesMesHist)}</span>
+            {miGanancia>0&&<><span style={{fontSize:12,color:'#c0c0c0'}}>·</span><span style={{fontSize:12,color:'#2563EB',fontWeight:600}}>est. {fmtMoneda(miGanancia)}</span></>}
           </div>
         </div>
         {cuotasMesHist.length ? cuotasMesHist.map(cu=>{
