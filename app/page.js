@@ -3241,7 +3241,7 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
   const [vincId, setVincId] = useState(eventoEdit?.expediente_id||eventoEdit?.cliente_id||'');
   const [vincNombre, setVincNombre] = useState(()=>{
     if (eventoEdit?.expediente_id) return expedientes.find(e=>e.id===eventoEdit.expediente_id)?.caratula||'';
-    if (eventoEdit?.cliente_id) return clientes.find(c=>c.id===eventoEdit.cliente_id)?.nombre||'';
+    if (eventoEdit?.cliente_id) return nombreCompleto(clientes.find(c=>c.id===eventoEdit.cliente_id))||'';
     return '';
   });
   const [vincAbierto, setVincAbierto] = useState(false);
