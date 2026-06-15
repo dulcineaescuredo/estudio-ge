@@ -78,6 +78,8 @@ const HOY = new Date().toISOString().split('T')[0];
 const _hd = new Date();
 const HOY_LOCAL = `${_hd.getFullYear()}-${String(_hd.getMonth()+1).padStart(2,'0')}-${String(_hd.getDate()).padStart(2,'0')}`;
 
+const nombreCompleto = (c) => c?.apellido && c?.nombre_pila ? `${c.apellido}, ${c.nombre_pila}` : (c?.apellido || c?.nombre_pila || c?.nombre || '');
+
 function diasHasta(fecha) {
   if (!fecha) return null;
   const hoy = new Date(HOY + 'T00:00:00');
