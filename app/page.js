@@ -3648,6 +3648,15 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
           onEliminar={()=>eliminarEvento(detalleEv)}
           onCerrar={()=>setDetalleEv(null)} />
       )}
+      {mostrarForm&&(filtro==='audiencias'||filtro==='turnos')&&(
+        <AgendaForm
+          tabla={filtro==='audiencias'?'audiencias':'turnos'}
+          tipos={filtro==='audiencias'?TIPOS_AUDIENCIA:TIPOS_TURNO}
+          fechaPres={fechaPres}
+          eventoEdit={null}
+          expedientes={expedientes||[]} clientes={clientes||[]} perfil={perfil}
+          onGuardar={guardarEvento} onCancelar={cerrarForm} />
+      )}
     </div>
   );
 }
