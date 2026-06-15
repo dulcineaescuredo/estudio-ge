@@ -2021,7 +2021,12 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
       if (h.forma==='porcentaje') return s+(Number(h.valor)||0)/100*(Number(h.monto_base)||0);
       return s+(Number(h.valor)||0);
     },0);
-  const cobradoMes = cuotas.filter(cu=>cu.estado==='pagada' && (cu.fecha_pago||cu.vencimiento||'').startsWith(mesActual)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+  const honSinCuotasPagMes = honorarios.filter(h=>!h.en_cuotas && h.estado==='pagado' && h.periodo===mesActual).reduce((s,h)=>{
+    if (h.forma==='uhon') return s+(Number(h.valor)||0)*(valorUhon||0);
+    if (h.forma==='porcentaje') return s+(Number(h.valor)||0)/100*(Number(h.monto_base)||0);
+    return s+(Number(h.valor)||0);
+  },0);
+  const cobradoMes = cuotas.filter(cu=>cu.estado==='pagada' && (cu.fecha_pago||cu.vencimiento||'').startsWith(mesActual)).reduce((s,cu)=>s+(Number(cu.monto)||0),0) + honSinCuotasPagMes;
   const saldoPendiente = cuotas.filter(cu=>cu.estado!=='pagada').reduce((s,cu)=>s+(Number(cu.monto)||0),0)
     + honSinCuotasPend.reduce((s,h)=>{
       if (h.forma==='uhon') return s+(Number(h.valor)||0)*(valorUhon||0);
