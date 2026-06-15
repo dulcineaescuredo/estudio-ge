@@ -75,6 +75,8 @@ const PROCESOS = {
 PROCESOS.regimen = { nombre: 'Régimen comunicacional', etapas: JSON.parse(JSON.stringify(PROCESOS.alimentos.etapas)) };
 
 const HOY = new Date().toISOString().split('T')[0];
+const _hd = new Date();
+const HOY_LOCAL = `${_hd.getFullYear()}-${String(_hd.getMonth()+1).padStart(2,'0')}-${String(_hd.getDate()).padStart(2,'0')}`;
 
 function diasHasta(fecha) {
   if (!fecha) return null;
