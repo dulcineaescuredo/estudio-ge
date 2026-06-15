@@ -1606,6 +1606,8 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, setVista, setExp
   const cl = cliActual;
   const [editando, setEditando] = useState(false);
   const [f, setF] = useState(cl);
+  const [editandoNotasPrimer, setEditandoNotasPrimer] = useState(false);
+  const [notasPrimerEdit, setNotasPrimerEdit] = useState('');
   if (!cl) return null;
   const exps = expedientes.filter(e=>e.cliente_id===cl.id);
   async function guardarDatos() {
