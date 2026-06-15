@@ -1968,33 +1968,60 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
         </tr>
       </thead>
       <tbody>
-        {sorted.map(h=>{
+        {sorted.flatMap(h=>{
           const exp = expedientes.find(e=>e.id===h.expediente_id);
           const cli = clientes.find(c=>c.id===h.cliente_id);
           const vinc = h.vinculo_tipo==='contraparte' ? (h.contraparte_nombre||'—') : (exp?exp.caratula : (cli?nombreCompleto(cli) : '—'));
           const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
           const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
           const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
-          return <tr key={h.id} style={{cursor:'pointer',background:hoveredRow===h.id?'#F7F6F3':'transparent'}}
-            onMouseEnter={()=>setHoveredRow(h.id)} onMouseLeave={()=>setHoveredRow(null)}
-            onClick={()=>{setHonActual(h);setVista('detalle-honorario');}}>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{vinc}</td>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>
-              {h.en_cuotas ? (
-                <div>
-                  <span>{pagadas}/{cuotasH.length}</span>
-                  {cuotasH.length > 0 && (
-                    <div style={{marginTop:4,height:4,borderRadius:2,background:'#E5E7EB',minWidth:44}}>
-                      <div style={{height:'100%',borderRadius:2,background:'#16A34A',width:`${Math.round(pagadas/cuotasH.length*100)}%`}}></div>
-                    </div>
-                  )}
-                </div>
-              ) : '—'}
-            </td>
-            <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
-          </tr>;
+          const isOpen = panelAbierto === h.id;
+          const ultimoPago = cuotasH.filter(cu=>cu.estado==='pagada').sort((a,b)=>(b.fecha_pago||'').localeCompare(a.fecha_pago||''))[0]?.fecha_pago;
+          const rows = [
+            <tr key={h.id} style={{cursor:'pointer',background:isOpen?'#F0EEE8':hoveredRow===h.id?'#F7F6F3':'transparent'}}
+              onMouseEnter={()=>setHoveredRow(h.id)} onMouseLeave={()=>setHoveredRow(null)}
+              onClick={()=>{if(isOpen){setPanelAbierto(null);}else{setPanelAbierto(h.id);setFechaLimiteEdit(h.fecha_limite_pago||'');}}}>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontWeight:500}}>
+                {h.concepto}
+                {!h.en_cuotas&&h.estado==='pagado'&&h.fecha_pago&&<div style={{fontSize:11,color:'#27500A',fontWeight:400,marginTop:2}}>pagado el {formatFecha(h.fecha_pago)}</div>}
+                {h.en_cuotas&&ultimoPago&&<div style={{fontSize:11,color:'#27500A',fontWeight:400,marginTop:2}}>último pago: {formatFecha(ultimoPago)}</div>}
+              </td>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{vinc}</td>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>
+                {h.en_cuotas ? (
+                  <div>
+                    <span>{pagadas}/{cuotasH.length}</span>
+                    {cuotasH.length > 0 && (
+                      <div style={{marginTop:4,height:4,borderRadius:2,background:'#E5E7EB',minWidth:44}}>
+                        <div style={{height:'100%',borderRadius:2,background:'#16A34A',width:`${Math.round(pagadas/cuotasH.length*100)}%`}}></div>
+                      </div>
+                    )}
+                  </div>
+                ) : '—'}
+              </td>
+              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
+            </tr>
+          ];
+          if (isOpen) {
+            rows.push(
+              <tr key={`panel-${h.id}`}>
+                <td colSpan={5} style={{padding:'0 10px 14px',borderBottom:'1px solid #F0EFED',background:'#FAFAF9'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',paddingTop:10}}>
+                    <span style={{fontSize:12,fontWeight:500,color:'#4a4a4a',whiteSpace:'nowrap'}}>Fecha límite de pago</span>
+                    <input type="date" value={fechaLimiteEdit} onChange={e=>setFechaLimiteEdit(e.target.value)}
+                      style={{padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:7,fontSize:12,fontFamily:'system-ui'}} />
+                    <button onClick={async ev=>{ev.stopPropagation();await supabase.from('honorarios').update({fecha_limite_pago:fechaLimiteEdit||null}).eq('id',h.id);setPanelAbierto(null);recargar();}}
+                      style={{...btnPrimary,padding:'5px 12px',fontSize:12}}>Guardar</button>
+                    <button onClick={ev=>{ev.stopPropagation();setHonActual(h);setVista('detalle-honorario');}}
+                      style={{fontSize:12,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',whiteSpace:'nowrap'}}>Ver detalle →</button>
+                  </div>
+                  <div style={{fontSize:11,color:'#8a8a8a',marginTop:7}}>Los socios verán un aviso en el Inicio 3 días antes y el día del vencimiento</div>
+                </td>
+              </tr>
+            );
+          }
+          return rows;
         })}
       </tbody>
     </table>
