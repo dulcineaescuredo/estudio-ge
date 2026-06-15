@@ -2486,7 +2486,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
         </select>}
         {f.vinculo_tipo==='cliente' && <select style={inputStyle} value={f.cliente_id} onChange={e=>set('cliente_id',e.target.value)}>
           <option value="">Seleccioná cliente</option>
-          {clientes.map(cl=><option key={cl.id} value={cl.id}>{cl.nombre}</option>)}
+          {clientes.map(cl=><option key={cl.id} value={cl.id}>{nombreCompleto(cl)}</option>)}
         </select>}
         {f.vinculo_tipo==='contraparte' && <input style={inputStyle} placeholder="Nombre de la contraparte" value={f.contraparte_nombre||''} onChange={e=>set('contraparte_nombre',e.target.value)} />}
 
