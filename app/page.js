@@ -4286,10 +4286,9 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const a = asuntoActual;
   const [etapas, setEtapas] = useState([]);
   const [gastos, setGastos] = useState([]);
-  const [anotaciones, setAnotaciones] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [notaTexto, setNotaTexto] = useState('');
-  const [nuevaEtapa, setNuevaEtapa] = useState({ descripcion:'', deadline:'' });
+  const [nuevaEtapa, setNuevaEtapa] = useState({ descripcion:'', vencimiento:'' });
   const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
   const [cliId, setCliId] = useState('');
   const [responsable, setResponsable] = useState('');
@@ -4298,8 +4297,6 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [etapaEdits, setEtapaEdits] = useState({});
   const [gastoEdits, setGastoEdits] = useState({});
   const [etapaPanels, setEtapaPanels] = useState({});
-  const [nuevaAnotAsunto, setNuevaAnotAsunto] = useState({ fecha:HOY_LOCAL, autora:'', texto:'' });
-  const [nuevaAnotEtapa, setNuevaAnotEtapa] = useState({});
   const [nuevoLink, setNuevoLink] = useState({ nombre:'', url:'' });
   const [nuevoLinkEtapa, setNuevoLinkEtapa] = useState({});
   const [uploading, setUploading] = useState(false);
