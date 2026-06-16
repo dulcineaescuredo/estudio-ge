@@ -4649,11 +4649,39 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                   ))}
                   {docsEtapa.length === 0 && <div style={{fontSize:12,color:'#8a8a8a',marginBottom:10}}>Sin documentos para esta etapa.</div>}
                   <div style={{marginTop:10}}>
-                    <div style={{marginBottom:8}}>
-                      <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Subir archivo</label>
-                      <input type="file" disabled={uploadingEtapa[et.id]}
-                        onChange={e=>subirDocumento(e.target.files?.[0],et.id)} style={{fontSize:12}} />
-                      {uploadingEtapa[et.id] && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>Subiendo...</span>}
+                    <div style={{marginBottom:10}}>
+                      <input
+                        type="file"
+                        id={`file-etapa-${et.id}`}
+                        style={{display:'none'}}
+                        disabled={uploadingEtapa[et.id]}
+                        onChange={e=>{
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setFilePreviewEtapa(p=>({...p,[et.id]:file.name}));
+                          subirDocumento(file, et.id);
+                          e.target.value = '';
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={uploadingEtapa[et.id]}
+                        onClick={()=>document.getElementById(`file-etapa-${et.id}`).click()}
+                        onMouseEnter={()=>setHoverUploadEtapa(p=>({...p,[et.id]:true}))}
+                        onMouseLeave={()=>setHoverUploadEtapa(p=>({...p,[et.id]:false}))}
+                        style={{padding:'8px 16px',borderRadius:6,fontSize:12,cursor:uploadingEtapa[et.id]?'not-allowed':'pointer',
+                          border:'none',fontFamily:'system-ui',fontWeight:500,
+                          background:hoverUploadEtapa[et.id]&&!uploadingEtapa[et.id]?'#7d3d55':'#9B4F6A',
+                          color:'#fff',opacity:uploadingEtapa[et.id]?0.6:1,transition:'background 0.15s'}}
+                      >
+                        📎 Adjuntar archivo
+                      </button>
+                      {uploadingEtapa[et.id] && filePreviewEtapa[et.id] && (
+                        <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreviewEtapa[et.id]} — Subiendo...</div>
+                      )}
+                      {!uploadingEtapa[et.id] && filePreviewEtapa[et.id] && (
+                        <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreviewEtapa[et.id]}</div>
+                      )}
                     </div>
                     <div>
                       <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Agregar enlace</label>
