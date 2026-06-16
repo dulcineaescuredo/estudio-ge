@@ -2257,7 +2257,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   );
 }
 
-function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }) {
+function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, valorUhon, onVolver }) {
   const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const MESES_L = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const anoActual = Number(HOY.substring(0,4));
@@ -2265,9 +2265,17 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
   const [mesStat, setMesStat] = useState(()=>new Date(anoActual, Number(HOY.substring(5,7))-1, 1));
   const [hoveredStat, setHoveredStat] = useState(null);
 
+  function montoH(h) {
+    if (h.forma==='uhon') return (Number(h.valor)||0)*(valorUhon||0);
+    if (h.forma==='porcentaje') return (Number(h.valor)||0)/100*(Number(h.monto_base)||0);
+    return Number(h.valor)||0;
+  }
+
   const datosAnuales = Array.from({length:12},(_,i)=>{
     const str = `${anoActual}-${String(i+1).padStart(2,'0')}`;
-    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobradoCuotas = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobradoHon = honorarios.filter(h=>!h.en_cuotas&&h.estado==='pagado'&&(h.periodo||'')===str).reduce((s,h)=>s+montoH(h),0);
+    const cobrado = cobradoCuotas + cobradoHon;
     const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&(cu.vencimiento||'').startsWith(str)).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     return { str, mes:i, cobrado, pendiente };
   });
@@ -2276,10 +2284,13 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, onVolver }
   const mesStatStr = `${mesStat.getFullYear()}-${String(mesStat.getMonth()+1).padStart(2,'0')}`;
   const diasEnMes = new Date(mesStat.getFullYear(),mesStat.getMonth()+1,0).getDate();
   const todasCuotasMes = cuotas.filter(cu=>(cu.vencimiento||'').startsWith(mesStatStr));
+  const honSinCuotasMes = honorarios.filter(h=>!h.en_cuotas&&h.estado==='pagado'&&(h.periodo||'')===mesStatStr);
   const datosDiarios = Array.from({length:diasEnMes},(_,i)=>{
     const dia = String(i+1).padStart(2,'0');
     const dateStr = `${mesStatStr}-${dia}`;
-    const cobrado = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento)===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobradoCuotas = cuotas.filter(cu=>cu.estado==='pagada'&&(cu.fecha_pago||cu.vencimiento)===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
+    const cobradoHon = honorarios.filter(h=>!h.en_cuotas&&h.estado==='pagado'&&h.fecha_pago===dateStr).reduce((s,h)=>s+montoH(h),0);
+    const cobrado = cobradoCuotas + cobradoHon;
     const pendiente = cuotas.filter(cu=>cu.estado==='pendiente'&&cu.vencimiento===dateStr).reduce((s,cu)=>s+(Number(cu.monto)||0),0);
     return { dateStr, dia:i+1, cobrado, pendiente };
   }).filter(d=>d.cobrado>0||d.pendiente>0);
