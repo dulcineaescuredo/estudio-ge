@@ -180,6 +180,30 @@ export default function Home() {
     setCargandoDatos(false);
   }
 
+  async function cargarNotifCount() {
+    if (!perfil?.id) return;
+    const { data } = await supabase.from('notificaciones').select('id').eq('destinatario_id', perfil.id).eq('leida', false).eq('estudio_id', perfil.estudio_id);
+    setNotifNoLeidas((data||[]).length);
+  }
+
+  useEffect(() => {
+    if (perfil?.id) cargarNotifCount();
+  // eslint-disable-next-line
+  }, [vista, perfil?.id]);
+
+  const crearNotificacion = async ({ destinatario_id, mensaje, link = null, contexto = null }) => {
+    if (!perfil || destinatario_id === perfil.id) return;
+    await supabase.from('notificaciones').insert({
+      destinatario_id,
+      remitente_id: perfil.id,
+      mensaje,
+      link,
+      contexto,
+      estudio_id: perfil.estudio_id,
+      leida: false
+    });
+  };
+
   async function login() {
     setLoginError('');
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
