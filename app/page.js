@@ -404,6 +404,101 @@ function Card({ children, title }) {
     </div>
   );
 }
+function extraerMenciones(texto, perfiles) {
+  const nombres = [...(texto.match(/@([\wáéíóúÁÉÍÓÚüÜñÑ]+)/g) || [])].map(m => m.slice(1));
+  return perfiles.filter(p => nombres.some(n => p.nombre.toLowerCase() === n.toLowerCase()));
+}
+
+function MentionTextarea({ value, onChange, onSave, placeholder, rows, style = {}, perfiles = [] }) {
+  const [showDrop, setShowDrop] = useState(false);
+  const [query, setQuery] = useState('');
+  const [atPos, setAtPos] = useState(-1);
+  const [selIdx, setSelIdx] = useState(0);
+  const taRef = useRef(null);
+  const mirrorRef = useRef(null);
+
+  const filtered = perfiles
+    .filter(p => !query || p.nombre.toLowerCase().includes(query.toLowerCase()))
+    .slice(0, 5);
+
+  function handleChange(e) {
+    const val = e.target.value;
+    const cur = e.target.selectionStart;
+    const before = val.slice(0, cur);
+    const m = before.match(/@([\wáéíóúÁÉÍÓÚüÜñÑ]*)$/);
+    if (m) { setQuery(m[1]); setAtPos(before.lastIndexOf('@')); setShowDrop(true); setSelIdx(0); }
+    else setShowDrop(false);
+    onChange(val);
+  }
+
+  function insertMention(nombre) {
+    const cur = taRef.current ? taRef.current.selectionStart : value.length;
+    const newVal = value.slice(0, atPos) + '@' + nombre + ' ' + value.slice(cur);
+    onChange(newVal);
+    setShowDrop(false);
+    setTimeout(() => {
+      if (taRef.current) { const nc = atPos + nombre.length + 2; taRef.current.setSelectionRange(nc, nc); taRef.current.focus(); }
+    }, 0);
+  }
+
+  function handleKeyDown(e) {
+    if (showDrop && filtered.length) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setSelIdx(i => Math.min(i+1, filtered.length-1)); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); setSelIdx(i => Math.max(i-1, 0)); return; }
+      if (e.key === 'Enter') { e.preventDefault(); insertMention(filtered[selIdx].nombre); return; }
+      if (e.key === 'Escape') { setShowDrop(false); return; }
+    }
+    if (onSave && (e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); onSave(); }
+  }
+
+  function handleScroll() {
+    if (mirrorRef.current && taRef.current) mirrorRef.current.scrollTop = taRef.current.scrollTop;
+  }
+
+  function buildHtml(text) {
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/@([\wáéíóúÁÉÍÓÚüÜñÑ]+)/g, (m, n) =>
+        perfiles.some(p => p.nombre.toLowerCase() === n.toLowerCase())
+          ? `<span style="color:#9B4F6A;font-weight:600">${m}</span>` : m)
+      .replace(/\n/g, '<br>') + ' ';
+  }
+
+  const fs = style.fontSize || 13;
+  const mh = style.minHeight || 44;
+  const mb = style.marginBottom !== undefined ? style.marginBottom : 12;
+  const rsz = style.resize || 'vertical';
+  const base = { padding:'9px 12px', fontSize:fs, fontFamily:'system-ui', lineHeight:'1.5', boxSizing:'border-box', whiteSpace:'pre-wrap', wordBreak:'break-word' };
+
+  return (
+    <div style={{ position:'relative', marginBottom:mb }}>
+      <div style={{ position:'relative', background:'#F7F6F3', borderRadius:8, border:'1px solid #DDDCDA', minHeight:mh }}>
+        <div ref={mirrorRef} aria-hidden style={{ ...base, position:'absolute', top:0, left:0, right:0, bottom:0, overflow:'hidden', pointerEvents:'none', color:'#1a1a1a', zIndex:0 }}
+          dangerouslySetInnerHTML={{ __html: buildHtml(value) }} />
+        {!value && placeholder && (
+          <div style={{ ...base, position:'absolute', top:0, left:0, right:0, color:'#a0a0a0', pointerEvents:'none', zIndex:0 }}>{placeholder}</div>
+        )}
+        <textarea ref={taRef} value={value} onChange={handleChange} onKeyDown={handleKeyDown} onScroll={handleScroll}
+          onBlur={()=>setTimeout(()=>setShowDrop(false),150)} rows={rows}
+          style={{ ...base, display:'block', width:'100%', border:'none', outline:'none', background:'transparent', color:'transparent', caretColor:'#1a1a1a', resize:rsz, minHeight:mh, position:'relative', zIndex:1 }} />
+      </div>
+      {showDrop && filtered.length > 0 && (
+        <div style={{ position:'absolute',top:'100%',left:0,background:'#fff',border:'1px solid #E0E0E0',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:200,minWidth:200,maxHeight:220,overflowY:'auto',marginTop:2 }}>
+          {filtered.map((p,i) => (
+            <div key={p.id} onMouseDown={e=>{e.preventDefault();insertMention(p.nombre);}} onMouseEnter={()=>setSelIdx(i)}
+              style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 12px',cursor:'pointer',background:i===selIdx?'#FDF4F7':'#fff',borderBottom:i<filtered.length-1?'1px solid #F0EFED':'none' }}>
+              <div style={{ width:28,height:28,borderRadius:'50%',background:'#9B4F6A',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0 }}>
+                {p.nombre[0].toUpperCase()}
+              </div>
+              <span style={{ fontSize:13,color:'#1a1a1a' }}>{p.nombre}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const inputStyle = {width:'100%',padding:'9px 12px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box',minHeight:44};
 const btnPrimary = {padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #2B6CB0',background:'#2B6CB0',color:'#fff',fontFamily:'system-ui',fontWeight:500};
 
