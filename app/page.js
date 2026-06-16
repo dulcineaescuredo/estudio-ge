@@ -1523,24 +1523,6 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
   const cntPend = listaFiltrada.filter(t=>t.estado==='pendiente').length;
   const cntEnP = listaFiltrada.filter(t=>t.estado==='en proceso').length;
   const cntTerm = listaFiltrada.filter(t=>t.estado==='terminado').length;
-  const grupos = (() => {
-    const map = {};
-    listaFiltrada.forEach(t => {
-      const resps = (t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean);
-      if (resps.length === 0) {
-        if (!map['__sin__']) map['__sin__'] = [];
-        map['__sin__'].push(t);
-      } else {
-        resps.forEach(r => {
-          if (!map[r]) map[r] = [];
-          map[r].push(t);
-        });
-      }
-    });
-    const keys = Object.keys(map).filter(k=>k!=='__sin__').sort();
-    if (map['__sin__']) keys.push('__sin__');
-    return keys.map(k => ({ nombre: k==='__sin__'?'Sin asignar':k, tareas: map[k] }));
-  })();
   const renderCard = (t) => {
     const done = t.estado==='terminado';
     const esEditando = editandoId===t.id;
