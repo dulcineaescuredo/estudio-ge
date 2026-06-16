@@ -4422,6 +4422,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       setFilePreviewEtapa(prev=>({...prev,[etapaId]:null}));
     } else {
       setUploading(false);
+      setFilePreview(null);
     }
     cargarDetalle();
   }
