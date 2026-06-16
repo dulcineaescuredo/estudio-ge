@@ -4512,9 +4512,38 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
         {docsAsunto.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin documentos adjuntos.</div>}
         <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
           <div style={{marginBottom:10}}>
-            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>SUBIR ARCHIVO</label>
-            <input type="file" disabled={uploading} onChange={e=>subirDocumento(e.target.files?.[0],null)} style={{fontSize:12,color:'#1a1a1a'}} />
-            {uploading && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:8}}>Subiendo...</span>}
+            <input
+              type="file"
+              id="file-asunto-general"
+              style={{display:'none'}}
+              disabled={uploading}
+              onChange={e=>{
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setFilePreview(file.name);
+                subirDocumento(file, null);
+                e.target.value = '';
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={()=>document.getElementById('file-asunto-general').click()}
+              onMouseEnter={()=>setHoverUpload(true)}
+              onMouseLeave={()=>setHoverUpload(false)}
+              style={{padding:'8px 16px',borderRadius:6,fontSize:12,cursor:uploading?'not-allowed':'pointer',
+                border:'none',fontFamily:'system-ui',fontWeight:500,
+                background:hoverUpload&&!uploading?'#7d3d55':'#9B4F6A',
+                color:'#fff',opacity:uploading?0.6:1,transition:'background 0.15s'}}
+            >
+              📎 Adjuntar archivo
+            </button>
+            {uploading && filePreview && (
+              <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreview} — Subiendo...</div>
+            )}
+            {!uploading && filePreview && (
+              <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreview}</div>
+            )}
           </div>
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>AGREGAR ENLACE</label>
