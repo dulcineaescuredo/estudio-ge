@@ -2866,6 +2866,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asu
       expediente_id: f.vinculo_tipo==='expediente' ? f.expediente_id||null : null,
       cliente_id: f.vinculo_tipo==='cliente' ? f.cliente_id||null : null,
       contraparte_nombre: f.vinculo_tipo==='contraparte' ? f.contraparte_nombre||null : null,
+      asunto_id: f.vinculo_tipo==='asunto' ? f.asunto_id||null : null,
       vinculo_tipo: f.vinculo_tipo==='ninguno' ? null : f.vinculo_tipo,
       en_cuotas:f.en_cuotas, notas:f.notas,
       estado:'pendiente', estudio_id: perfil.estudio_id, fecha: f.fecha||null,
