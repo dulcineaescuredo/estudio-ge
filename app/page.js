@@ -1584,7 +1584,7 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
             )}
           </>)}
         </div>;
-      }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin tareas.</div>}
+      }) : <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>}
       </div>
     </Card>
   );
