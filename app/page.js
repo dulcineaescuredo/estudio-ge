@@ -1560,7 +1560,12 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
             {(expVinc||cliVinc) && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
             {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
             <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
-              {t.deadline ? (()=>{const vc=vencColor(t.deadline);return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:600,background:vc.bg,color:vc.color}}>{formatFecha(t.deadline)}</span>;})() : <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:600,background:'#F0F0F0',color:'#888'}}>Sin fecha</span>}
+              {(()=>{
+                if(!t.deadline) return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:'normal',background:'#F0F0F0',color:'#888'}}>Sin fecha</span>;
+                const _dd=diasHasta(t.deadline);
+                const _cs=_dd<=2?{bg:'#FDECEA',color:'#C0392B',fw:600}:_dd<=3?{bg:'#FEF0E6',color:'#E67E22',fw:600}:_dd<=7?{bg:'#FAEEDA',color:'#D4A017',fw:400}:{bg:'#EBF6E0',color:'#5A8A4A',fw:400};
+                return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:_cs.fw,background:_cs.bg,color:_cs.color}}>{formatFecha(t.deadline)}</span>;
+              })()}
               {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
                 <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
               ))}
