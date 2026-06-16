@@ -132,6 +132,7 @@ export default function Home() {
   const [cargandoDatos, setCargandoDatos] = useState(false);
   const [sidebarAbierta, setSidebarAbierta] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? false : true);
   const [agendaAbierta, setAgendaAbierta] = useState(false);
+  const [notifNoLeidas, setNotifNoLeidas] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
