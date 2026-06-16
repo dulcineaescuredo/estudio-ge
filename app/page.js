@@ -375,6 +375,7 @@ export default function Home() {
           asuntos={asuntos} asuntoActual={asuntoActual} setAsuntoActual={setAsuntoActual}
           asuntoEtapas={asuntoEtapas}
           honPreset={honPreset} setHonPreset={setHonPreset}
+          notifNoLeidas={notifNoLeidas} setNotifNoLeidas={setNotifNoLeidas}
           recargar={cargarDatos}
         />
       </div>
