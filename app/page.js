@@ -1468,8 +1468,13 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
     const s = localStorage.getItem('tareas_filtro_responsable');
     return s !== null ? s : '';
   });
-  const [editandoId, setEditandoId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [modalEditTarea, setModalEditTarea] = useState(null);
+  const [editModalForm, setEditModalForm] = useState({});
+  const [editVinculo, setEditVinculo] = useState('ninguno');
+  const [editVincQ, setEditVincQ] = useState('');
+  const [editVincId, setEditVincId] = useState('');
+  const [editVincNombre, setEditVincNombre] = useState('');
+  const [editVincAbierto, setEditVincAbierto] = useState(false);
   const [comentarioId, setComentarioId] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [busqueda, setBusqueda] = useState('');
