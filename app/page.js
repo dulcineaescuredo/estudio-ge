@@ -1122,7 +1122,11 @@ function Consultas({ consultas, recargar, setVista }) {
           </div>
         ))}
       </div>
-      <Card title="💬 Registro de consultas">
+      <Card>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>💬 Registro de consultas</div>
+          <button onClick={()=>setVista('nueva-consulta')} style={btnPrimary}>+ Nueva consulta</button>
+        </div>
         <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
