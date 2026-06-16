@@ -192,6 +192,13 @@ export default function Home() {
   // eslint-disable-next-line
   }, [vista, perfil?.id]);
 
+  useEffect(() => {
+    if (!perfil?.estudio_id) return;
+    supabase.from('perfiles').select('id, nombre').eq('estudio_id', perfil.estudio_id).order('nombre')
+      .then(({ data }) => setPerfilesEstudio(data || []));
+  // eslint-disable-next-line
+  }, [perfil?.id]);
+
   const crearNotificacion = async ({ destinatario_id, mensaje, link = null, contexto = null }) => {
     if (!perfil || destinatario_id === perfil.id) return;
     await supabase.from('notificaciones').insert({
