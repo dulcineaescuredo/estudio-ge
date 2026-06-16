@@ -1458,6 +1458,145 @@ function SocioChips({ value, onChange }) {
   );
 }
 
+function ExpCombobox({ expedientes, value, onChange }) {
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+  const selected = value ? expedientes.find(e=>e.id===value) : null;
+  const sugs = !selected && q
+    ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(q.toLowerCase())).slice(0,8)
+    : [];
+  return (
+    <div style={{position:'relative',marginBottom:12}}>
+      <div style={{position:'relative'}}>
+        <input
+          placeholder="Buscar expediente..."
+          value={selected ? selected.caratula : q}
+          onChange={ev=>{if(selected) onChange(''); setQ(ev.target.value); setOpen(true);}}
+          onFocus={()=>setOpen(true)}
+          onBlur={()=>setTimeout(()=>setOpen(false),150)}
+          style={{...inputStyle,marginBottom:0,paddingRight:32,boxSizing:'border-box'}}
+        />
+        {(value||q) && (
+          <button onMouseDown={ev=>ev.preventDefault()} onClick={()=>{onChange('');setQ('');}}
+            style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:0}}>×</button>
+        )}
+      </div>
+      {open && (sugs.length>0||(q&&!selected)) && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #E0E0E0',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:220,overflowY:'auto',marginTop:2}}>
+          {sugs.length>0 ? sugs.map(e=>(
+            <div key={e.id} onMouseDown={ev=>ev.preventDefault()}
+              onClick={()=>{onChange(e.id);setQ('');setOpen(false);}}
+              style={{padding:'10px 14px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}
+              onMouseEnter={ev=>ev.currentTarget.style.background='#F5F5F5'}
+              onMouseLeave={ev=>ev.currentTarget.style.background=''}
+            >
+              {e.caratula}{e.numero&&<span style={{color:'#6B7280',fontSize:11}}> · {e.numero}</span>}
+            </div>
+          )) : (
+            <div style={{padding:'10px 14px',fontSize:13,color:'#8a8a8a'}}>No se encontraron expedientes</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+  const [creando, setCreando] = useState(false);
+  const [pendNombre, setPendNombre] = useState('');
+  const [nf, setNf] = useState({nombre:'',dni:'',telefono:'',email:'',domicilio:''});
+  const selected = value ? clientes.find(c=>c.id===value) : null;
+  const dispNombre = selected ? nombreCompleto(selected) : pendNombre;
+  const sugs = !selected && q
+    ? clientes.filter(c=>(nombreCompleto(c)||'').toLowerCase().includes(q.toLowerCase())).slice(0,8)
+    : [];
+  const mostrarCrear = !!(q && !selected && !sugs.some(c=>nombreCompleto(c).toLowerCase()===q.toLowerCase()));
+  async function crearYVincular() {
+    if (!nf.nombre.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!perfil) { alert('Esperá que cargue el perfil'); return; }
+    const nn = nf.nombre.trim().toUpperCase();
+    const partes = nn.split(' ');
+    const payload = {
+      nombre: nn, apellido: partes[0]||'', nombre_pila: partes.slice(1).join(' ')||'',
+      dni: nf.dni||null, telefono: nf.telefono||null, email: nf.email||null, domicilio: nf.domicilio||null,
+      estudio_id: perfil.estudio_id,
+    };
+    const { data, error } = await supabase.from('clientes').insert(payload).select().single();
+    if (error) { alert('Error: '+error.message); return; }
+    setPendNombre(nn);
+    onChange(data.id);
+    setCreando(false);
+    setNf({nombre:'',dni:'',telefono:'',email:'',domicilio:''});
+    setQ(''); setOpen(false);
+    recargar();
+  }
+  return (
+    <div style={{marginBottom:12}}>
+      <div style={{position:'relative'}}>
+        <input
+          placeholder="Buscar cliente..."
+          value={value ? dispNombre : q}
+          onChange={ev=>{if(value){onChange('');setPendNombre('');} setQ(ev.target.value); setOpen(true); setCreando(false);}}
+          onFocus={()=>setOpen(true)}
+          onBlur={()=>setTimeout(()=>setOpen(false),150)}
+          style={{...inputStyle,marginBottom:0,paddingRight:32,boxSizing:'border-box'}}
+        />
+        {(value||q) && (
+          <button onMouseDown={ev=>ev.preventDefault()} onClick={()=>{onChange('');setQ('');setPendNombre('');setCreando(false);}}
+            style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:0}}>×</button>
+        )}
+        {open && !creando && (sugs.length>0||mostrarCrear||q) && (
+          <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #E0E0E0',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:220,overflowY:'auto',marginTop:2}}>
+            {sugs.map(c=>(
+              <div key={c.id} onMouseDown={ev=>ev.preventDefault()}
+                onClick={()=>{onChange(c.id);setQ('');setOpen(false);}}
+                style={{padding:'10px 14px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}
+                onMouseEnter={ev=>ev.currentTarget.style.background='#F5F5F5'}
+                onMouseLeave={ev=>ev.currentTarget.style.background=''}
+              >{nombreCompleto(c)}</div>
+            ))}
+            {sugs.length===0 && q && !mostrarCrear && (
+              <div style={{padding:'10px 14px',fontSize:13,color:'#8a8a8a'}}>No se encontraron clientes</div>
+            )}
+            {mostrarCrear && (
+              <div onMouseDown={ev=>ev.preventDefault()}
+                onClick={()=>{setNf({...nf,nombre:q});setCreando(true);setOpen(false);}}
+                style={{padding:'10px 14px',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontWeight:600,borderTop:sugs.length>0?'1px solid #F0EFED':undefined}}
+                onMouseEnter={ev=>ev.currentTarget.style.background='#F5F5F5'}
+                onMouseLeave={ev=>ev.currentTarget.style.background=''}
+              >+ Crear cliente "{q}"</div>
+            )}
+          </div>
+        )}
+      </div>
+      {creando && (
+        <div style={{background:'#F9F7FF',border:'1px solid #E0D5F0',borderRadius:8,padding:14,marginTop:6}}>
+          <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:10}}>Nuevo cliente</div>
+          {[['nombre','Nombre *'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+            <div key={k}>
+              <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>{l}</label>
+              <input value={nf[k]} onChange={e=>setNf({...nf,[k]:e.target.value})}
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:12,fontFamily:'system-ui',marginBottom:8,boxSizing:'border-box',background:'#fff',outline:'none'}} />
+            </div>
+          ))}
+          <div style={{display:'flex',gap:8,marginTop:2}}>
+            <button onClick={crearYVincular}
+              style={{padding:'7px 14px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #9B4F6A',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500}}>
+              Crear y vincular
+            </button>
+            <button onClick={()=>{setCreando(false);setNf({nombre:'',dni:'',telefono:'',email:'',domicilio:''});setQ('');}}
+              style={{padding:'7px 14px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, setExpActual, setCliActual }) {
   const [filtro, setFiltro] = useState(() => {
     if (typeof window === 'undefined') return 'activas';
