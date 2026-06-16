@@ -4512,7 +4512,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                 value={nuevoLink.nombre} onChange={e=>setNuevoLink(p=>({...p,nombre:e.target.value}))} />
               <input style={{...inputStyle,marginBottom:0,flex:'3 1 200px'}} placeholder="URL..."
                 value={nuevoLink.url} onChange={e=>setNuevoLink(p=>({...p,url:e.target.value}))} />
-              <button onClick={()=>agregarLink(null)} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar</button>
+              <button type="button" onClick={()=>agregarLink(null)} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar</button>
             </div>
           </div>
         </div>
