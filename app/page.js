@@ -4427,11 +4427,12 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   async function agregarLink(etapaId) {
     const form = etapaId ? (nuevoLinkEtapa[etapaId]||{nombre:'',url:''}) : nuevoLink;
     if (!form.nombre.trim() || !form.url.trim()) { alert('Completá nombre y URL del enlace.'); return; }
-    await supabase.from('asunto_documentos').insert({
-      asunto_id: a.id, estudio_id: perfil.estudio_id,
-      etapa_id: etapaId||null,
-      nombre: form.nombre.trim(), tipo: 'link', url: form.url.trim(),
+    const { error } = await supabase.from('asunto_documentos').insert({
+      asunto_id: a.id, etapa_id: etapaId||null,
+      nombre: form.nombre.trim(), tipo: 'url', url: form.url.trim(),
+      estudio_id: perfil.estudio_id,
     });
+    if (error) { alert('Error URL: ' + JSON.stringify(error)); return; }
     if (etapaId) setNuevoLinkEtapa(prev=>({...prev,[etapaId]:{nombre:'',url:''}}));
     else setNuevoLink({nombre:'',url:''});
     cargarDetalle();
