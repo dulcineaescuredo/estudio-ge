@@ -908,7 +908,7 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
   );
 }
 
-function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, clientes }) {
+function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, clientes, perfilesEstudio = [], crearNotificacion }) {
   const [guardando, setGuardando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
   const [gastosExp, setGastosExp] = useState([]);
