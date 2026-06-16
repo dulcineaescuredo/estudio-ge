@@ -1465,6 +1465,7 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
   const [comentarioId, setComentarioId] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  const [agrupar, setAgrupar] = useState(false);
 
   async function cambiarEstado(t, nuevo) {
     await supabase.from('tareas').update({ estado: nuevo }).eq('id', t.id);
