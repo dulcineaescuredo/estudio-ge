@@ -385,6 +385,8 @@ export default function Home() {
           honPreset={honPreset} setHonPreset={setHonPreset}
           notifNoLeidas={notifNoLeidas} setNotifNoLeidas={setNotifNoLeidas}
           recargar={cargarDatos}
+          crearNotificacion={crearNotificacion}
+          perfilesEstudio={perfilesEstudio}
         />
       </div>
     </div>
