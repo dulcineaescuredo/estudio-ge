@@ -1496,6 +1496,7 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
       if(!a.deadline&&!b.deadline) return 0; if(!a.deadline) return 1; if(!b.deadline) return -1;
       return a.deadline.localeCompare(b.deadline);
     });
+  const ESTADO_SOLID = {'pendiente':'#E09A3A','en proceso':'#5B8FD4','terminado':'#6BAE75'};
   return (
     <Card title="✅ Tareas">
       <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
@@ -1505,13 +1506,15 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
         <option value="terminado">Solo terminadas</option>
         <option value="todas">Todas</option>
       </select>
+      <div style={{marginTop:12}}>
       {lista.length ? lista.map(t=>{
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
         const verComentario = comentarioId===t.id;
         const expVinc = t.expediente_id ? expedientes.find(e=>e.id===t.expediente_id) : null;
         const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
-        return <div key={t.id} style={{padding:'12px 0',borderBottom:'1px solid #F0EFED'}}>
+        const bColor = ESTADO_SOLID[t.estado]||'#E09A3A';
+        return <div key={t.id} style={{marginBottom:12,borderRadius:10,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',background:'#fff',border:'1px solid #EBEBEA',borderLeft:`4px solid ${bColor}`,padding:'14px 16px'}}>
           {esEditando ? (
             <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
               <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
@@ -1524,49 +1527,52 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
                 <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
               </div>
             </div>
-          ) : (
-            <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:500,textDecoration:done?'line-through':'none',color:done?'#8a8a8a':'#1a1a1a',marginBottom:2}}>{t.descripcion}</div>
-                {(expVinc||cliVinc) && <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
-                <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
-                  {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
-                    <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
-                  ))}
-                  {t.deadline && <Badge bg="#FAEEDA" color="#633806">{formatFecha(t.deadline)}</Badge>}
-                </div>
-                {t.comentario && <div style={{fontSize:11,color:'#4a4a4a',marginTop:5,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
-                <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap',alignItems:'center'}}>
-                  {ESTADOS_TAREA.map(es=>{
-                    const sel = t.estado===es;
-                    const col = ESTADO_COLOR[es];
-                    return <button key={es} onClick={()=>cambiarEstado(t,es)}
-                      style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',
-                      border:sel?`1px solid ${col.color}`:'1px solid #e2e2e2',
-                      background:sel?col.bg:'#fff',color:sel?col.color:'#8a8a8a',fontFamily:'system-ui'}}>
-                      {es.charAt(0).toUpperCase()+es.slice(1)}
-                    </button>;
-                  })}
-                  <button onClick={()=>{setEditandoId(t.id);setEditForm({descripcion:t.descripcion,responsable:t.responsable,deadline:t.deadline||''});}}
-                    style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>editar</button>
-                  <button onClick={()=>setComentarioId(verComentario?null:t.id)}
-                    style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer'}}>+ comentario</button>
-                  <button onClick={()=>eliminarTarea(t)}
-                    style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
-                </div>
-                {verComentario && (
-                  <div style={{marginTop:8,display:'flex',gap:8,alignItems:'flex-start'}}>
-                    <textarea value={nuevoComentario} onChange={ev=>setNuevoComentario(ev.target.value)}
-                      placeholder="Escribí un comentario..."
-                      style={{flex:1,padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
-                    <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
-                  </div>
-                )}
+          ) : (<>
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontSize:15,fontWeight:600,color:done?'#8a8a8a':'#1a1a1a',textDecoration:done?'line-through':'none',lineHeight:1.3,flex:1,marginRight:8}}>{t.descripcion}</div>
+              <div style={{display:'flex',gap:2,flexShrink:0}}>
+                {[
+                  {emoji:'✏️',title:'Editar',onClick:()=>{setEditandoId(t.id);setEditForm({descripcion:t.descripcion,responsable:t.responsable,deadline:t.deadline||''});}},
+                  {emoji:'💬',title:'Agregar comentario',onClick:()=>setComentarioId(verComentario?null:t.id)},
+                  {emoji:'🗑️',title:'Eliminar',onClick:()=>eliminarTarea(t)},
+                ].map(({emoji,title,onClick})=>(
+                  <button key={title} onClick={onClick} title={title}
+                    style={{background:'none',border:'none',cursor:'pointer',fontSize:15,borderRadius:'50%',width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'system-ui'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#F0F0F0'}
+                    onMouseLeave={e=>e.currentTarget.style.background='none'}
+                  >{emoji}</button>
+                ))}
               </div>
             </div>
-          )}
+            {(expVinc||cliVinc) && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
+            {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
+            <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
+              {t.deadline ? (()=>{const vc=vencColor(t.deadline);return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:600,background:vc.bg,color:vc.color}}>{formatFecha(t.deadline)}</span>;})() : <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:600,background:'#F0F0F0',color:'#888'}}>Sin fecha</span>}
+              {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+                <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+              ))}
+              <div style={{marginLeft:'auto',display:'flex',gap:4}}>
+                {ESTADOS_TAREA.map(es=>{
+                  const sel=t.estado===es;
+                  return <button key={es} onClick={()=>cambiarEstado(t,es)}
+                    style={{padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',border:'none',background:sel?(ESTADO_SOLID[es]||'#ccc'):'#F0F0F0',color:sel?'#fff':'#888',fontFamily:'system-ui'}}>
+                    {es.charAt(0).toUpperCase()+es.slice(1)}
+                  </button>;
+                })}
+              </div>
+            </div>
+            {verComentario && (
+              <div style={{marginTop:10,display:'flex',gap:8,alignItems:'flex-start'}}>
+                <textarea value={nuevoComentario} onChange={ev=>setNuevoComentario(ev.target.value)}
+                  placeholder="Escribí un comentario..."
+                  style={{flex:1,padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
+                <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
+              </div>
+            )}
+          </>)}
         </div>;
       }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin tareas.</div>}
+      </div>
     </Card>
   );
 }
