@@ -1501,8 +1501,8 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
       responsable: editModalForm.responsable,
       deadline: editModalForm.deadline || null,
       comentario: editModalForm.comentario || null,
-      expediente_id: editVinculo === 'expediente' ? editVincId || null : null,
-      cliente_id: editVinculo === 'cliente' ? editVincId || null : null,
+      expediente_id: editExpId || null,
+      cliente_id: editCliId || null,
     }).eq('id', modalEditTarea.id);
     setModalEditTarea(null);
     recargar();
