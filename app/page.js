@@ -1625,7 +1625,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
           <option value="todas">Todas</option>
         </select>
         <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtroResp} onChange={e=>setFiltroRespAndSave(e.target.value)}>
-          <option value="">Responsable: Todas</option>
+          <option value="">Responsable: Todos</option>
           {responsablesUnicos.map(r=><option key={r} value={r}>{r}</option>)}
         </select>
       </div>
