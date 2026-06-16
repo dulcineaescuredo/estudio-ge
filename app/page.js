@@ -4393,18 +4393,18 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:true}));
     else setUploading(true);
     const path = `${perfil.estudio_id}/${a.id}/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, file);
+    const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, file, { upsert: false });
     if (upErr) {
-      alert('Error al subir archivo.');
+      alert('Error Storage: ' + JSON.stringify(upErr));
       if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:false})); else setUploading(false);
       return;
     }
-    const { data: { publicUrl } } = supabase.storage.from('asunto-documentos').getPublicUrl(path);
-    await supabase.from('asunto_documentos').insert({
-      asunto_id: a.id, estudio_id: perfil.estudio_id,
-      etapa_id: etapaId||null,
-      nombre: file.name, tipo: 'archivo', url: publicUrl,
+    const publicUrl = supabase.storage.from('asunto-documentos').getPublicUrl(path).data.publicUrl;
+    const { error: insErr } = await supabase.from('asunto_documentos').insert({
+      asunto_id: a.id, etapa_id: etapaId||null,
+      nombre: file.name, tipo: 'archivo', url: publicUrl, estudio_id: perfil.estudio_id,
     });
+    if (insErr) alert('Error INSERT documento: ' + JSON.stringify(insErr));
     if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:false})); else setUploading(false);
     cargarDetalle();
   }
