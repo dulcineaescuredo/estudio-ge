@@ -240,6 +240,7 @@ export default function Home() {
             {[
               ['dashboard','🏠','Inicio'],
               ['expedientes','📁','Expedientes'],
+              ['extrajudicial','📋','Extrajudicial'],
             ].map(([id,emoji,label])=>(
               <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
                 style={{display:'flex',alignItems:'center',gap:8,
