@@ -4811,7 +4811,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
               <input type="date" style={{...inputStyle,marginBottom:0}}
                 value={nuevoGasto.fecha} onChange={e=>setNuevoGasto({...nuevoGasto,fecha:e.target.value})} />
             </div>
-            <button onClick={agregarGasto} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar gasto</button>
+            <button onClick={agregarGasto} style={{...btnPrimary,padding:'9px 14px',flexShrink:0,background:'#9B4F6A',borderColor:'#9B4F6A'}}>+ Agregar gasto</button>
           </div>
         </div>
       </Card>
