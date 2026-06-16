@@ -4301,6 +4301,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [nuevoLinkEtapa, setNuevoLinkEtapa] = useState({});
   const [uploading, setUploading] = useState(false);
   const [uploadingEtapa, setUploadingEtapa] = useState({});
+  const [filePreview, setFilePreview] = useState(null);
+  const [hoverUpload, setHoverUpload] = useState(false);
   const [filePreviewEtapa, setFilePreviewEtapa] = useState({});
   const [hoverUploadEtapa, setHoverUploadEtapa] = useState({});
 
