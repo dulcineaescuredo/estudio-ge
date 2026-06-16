@@ -4479,42 +4479,6 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
         <button onClick={()=>actualizarAsunto('notas', notaTexto)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
       </Card>
 
-      <Card title="🗒️ Anotaciones">
-        {anotAsunto.length > 0 && anotAsunto.map(an=>(
-          <div key={an.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,color:'#1a1a1a',whiteSpace:'pre-wrap'}}>{an.texto}</div>
-                <div style={{fontSize:11,color:'#8a8a8a',marginTop:3}}>
-                  {an.autora && <span>{an.autora} · </span>}{formatFecha(an.fecha)}
-                </div>
-              </div>
-              <button onClick={()=>eliminarAnotacion(an)}
-                style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}
-                title="Eliminar anotación">🗑️</button>
-            </div>
-          </div>
-        ))}
-        {anotAsunto.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin anotaciones todavía.</div>}
-        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
-          <div style={{display:'flex',gap:8,marginBottom:8,flexWrap:'wrap'}}>
-            <div style={{flex:'1 1 100px'}}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Fecha</label>
-              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaAnotAsunto.fecha}
-                onChange={e=>setNuevaAnotAsunto(p=>({...p,fecha:e.target.value}))} />
-            </div>
-            <div style={{flex:'2 1 140px'}}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Autora</label>
-              <input style={{...inputStyle,marginBottom:0}} placeholder="Nombre..." value={nuevaAnotAsunto.autora}
-                onChange={e=>setNuevaAnotAsunto(p=>({...p,autora:e.target.value}))} />
-            </div>
-          </div>
-          <textarea style={{...inputStyle,minHeight:60,resize:'vertical',marginBottom:8}} placeholder="Texto de la anotación..."
-            value={nuevaAnotAsunto.texto} onChange={e=>setNuevaAnotAsunto(p=>({...p,texto:e.target.value}))} />
-          <button onClick={()=>agregarAnotacion(null)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>+ Agregar anotación</button>
-        </div>
-      </Card>
-
       <Card title="📎 Documentos">
         {docsAsunto.length > 0 && docsAsunto.map(dc=>(
           <div key={dc.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
