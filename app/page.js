@@ -133,6 +133,7 @@ export default function Home() {
   const [sidebarAbierta, setSidebarAbierta] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? false : true);
   const [agendaAbierta, setAgendaAbierta] = useState(false);
   const [notifNoLeidas, setNotifNoLeidas] = useState(0);
+  const [perfilesEstudio, setPerfilesEstudio] = useState([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
