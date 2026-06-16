@@ -4396,7 +4396,11 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     if (!file) return;
     if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:true}));
     else setUploading(true);
-    const path = `${perfil.estudio_id}/${a.id}/${Date.now()}_${file.name}`;
+    const safeName = file.name
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${perfil.estudio_id}/${a.id}/${Date.now()}_${safeName}`;
     const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, file, { upsert: false });
     if (upErr) {
       alert('Error Storage: ' + JSON.stringify(upErr));
