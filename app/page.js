@@ -1546,16 +1546,10 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
           <div style={{display:'flex',gap:2,flexShrink:0}}>
             {[
               {emoji:'✏️',title:'Editar',onClick:()=>{
-                const _vt=t.expediente_id?'expediente':t.cliente_id?'cliente':'ninguno';
-                const _expNom=t.expediente_id?(expedientes.find(e=>e.id===t.expediente_id)||{}).caratula||'':'';
-                const _cliNom=t.cliente_id?nombreCompleto(clientes.find(c=>c.id===t.cliente_id)||{}):'';
                 setModalEditTarea(t);
                 setEditModalForm({descripcion:t.descripcion||'',responsable:t.responsable||'',deadline:t.deadline||'',comentario:t.comentario||''});
-                setEditVinculo(_vt);
-                setEditVincId(t.expediente_id||t.cliente_id||'');
-                setEditVincNombre(_expNom||_cliNom);
-                setEditVincQ('');
-                setEditVincAbierto(false);
+                setEditExpId(t.expediente_id||'');
+                setEditCliId(t.cliente_id||'');
               }},
               {emoji:'💬',title:'Agregar comentario',onClick:()=>setComentarioId(verComentario?null:t.id)},
               {emoji:'🗑️',title:'Eliminar',onClick:()=>eliminarTarea(t)},
