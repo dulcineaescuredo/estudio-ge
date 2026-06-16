@@ -4981,3 +4981,100 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     </div>
   );
 }
+
+function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas }) {
+  const [notifs, setNotifs] = useState([]);
+  const [perfilesMap, setPerfilesMap] = useState({});
+  const [cargando, setCargando] = useState(true);
+
+  async function cargar() {
+    if (!perfil?.id) return;
+    setCargando(true);
+    const [{ data: ns }, { data: ps }] = await Promise.all([
+      supabase.from('notificaciones').select('*').eq('destinatario_id', perfil.id).eq('estudio_id', perfil.estudio_id).order('created_at', { ascending: false }),
+      supabase.from('perfiles').select('id, nombre').eq('estudio_id', perfil.estudio_id),
+    ]);
+    setNotifs(ns || []);
+    const map = {};
+    (ps || []).forEach(p => { map[p.id] = p.nombre; });
+    setPerfilesMap(map);
+    setCargando(false);
+  }
+
+  useEffect(() => { cargar(); }, [perfil?.id]);
+
+  async function marcarTodasLeidas() {
+    if (!perfil?.id) return;
+    await supabase.from('notificaciones').update({ leida: true }).eq('destinatario_id', perfil.id).eq('estudio_id', perfil.estudio_id).eq('leida', false);
+    setNotifs(prev => prev.map(n => ({ ...n, leida: true })));
+    setNotifNoLeidas(0);
+  }
+
+  async function marcarLeida(n) {
+    if (n.leida) return;
+    await supabase.from('notificaciones').update({ leida: true }).eq('id', n.id);
+    setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, leida: true } : x));
+    setNotifNoLeidas(prev => Math.max(0, prev - 1));
+  }
+
+  async function clickFila(n) {
+    await marcarLeida(n);
+    if (n.link) setVista(n.link);
+  }
+
+  function formatFechaNotif(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const dia = d.getDate();
+    const mes = meses[d.getMonth()];
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${dia} ${mes} · ${h}:${m}`;
+  }
+
+  return (
+    <div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+        <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>🔔 Notificaciones</div>
+        <button onClick={marcarTodasLeidas}
+          style={{padding:'8px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500}}>
+          Marcar todas como leídas
+        </button>
+      </div>
+      <Card>
+        {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:20,textAlign:'center'}}>Cargando...</div>}
+        {!cargando && notifs.length === 0 && (
+          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>No tenés notificaciones todavía.</div>
+        )}
+        {!cargando && notifs.map(n => {
+          const nombreRemitente = perfilesMap[n.remitente_id] || '?';
+          const inicial = nombreRemitente[0]?.toUpperCase() || '?';
+          return (
+            <div key={n.id} onClick={() => clickFila(n)}
+              style={{
+                display:'flex',alignItems:'flex-start',gap:12,padding:'14px 0',
+                borderBottom:'1px solid #F0EFED',cursor:'pointer',
+                background:n.leida?'#fff':'#FDF4F7',
+                borderLeft:n.leida?'none':'3px solid #9B4F6A',
+                paddingLeft:n.leida?0:10,
+                marginLeft:n.leida?0:-10,
+              }}>
+              <div style={{width:36,height:36,borderRadius:'50%',background:'#9B4F6A',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:700,flexShrink:0}}>
+                {inicial}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,color:'#1a1a1a',lineHeight:1.4,fontWeight:n.leida?400:500}}>{n.mensaje}</div>
+                <div style={{fontSize:11,color:'#8a8a8a',marginTop:4}}>{formatFechaNotif(n.created_at)}</div>
+              </div>
+              {!n.leida && (
+                <button onClick={ev=>{ev.stopPropagation();marcarLeida(n);}} title="Marcar como leída"
+                  style={{fontSize:14,color:'#9B4F6A',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}>✓</button>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
