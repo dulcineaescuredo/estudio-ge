@@ -4288,7 +4288,12 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [gastos, setGastos] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [notaTexto, setNotaTexto] = useState('');
-  const [nuevaEtapa, setNuevaEtapa] = useState({ descripcion:'', vencimiento:'' });
+  const [nuevaEtapaForm, setNuevaEtapaForm] = useState({ descripcion:'', vencimiento:'', comentario:'' });
+  const [showNuevaEtapa, setShowNuevaEtapa] = useState(false);
+  const [nuevaEtapaFile, setNuevaEtapaFile] = useState(null);
+  const [nuevaEtapaFilePreview, setNuevaEtapaFilePreview] = useState(null);
+  const [nuevaEtapaLink, setNuevaEtapaLink] = useState({ nombre:'', url:'' });
+  const [uploadingNuevaEtapa, setUploadingNuevaEtapa] = useState(false);
   const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
   const [cliId, setCliId] = useState('');
   const [responsable, setResponsable] = useState('');
