@@ -1549,19 +1549,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
     const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
     const bColor = ESTADO_SOLID[t.estado]||'#E09A3A';
     return <div key={t.id} style={{marginBottom:12,borderRadius:10,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',background:'#fff',border:'1px solid #EBEBEA',borderLeft:`4px solid ${bColor}`,padding:'14px 16px'}}>
-      {esEditando ? (
-        <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
-          <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
-            style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
-          <SocioChips value={editForm.responsable} onChange={v=>setEditForm({...editForm,responsable:v})} />
-          <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
-            style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={()=>guardarEdicion(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
-            <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
-          </div>
-        </div>
-      ) : (<>
+      <>
         <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:4}}>
           <div style={{fontSize:15,fontWeight:600,color:done?'#8a8a8a':'#1a1a1a',textDecoration:done?'line-through':'none',lineHeight:1.3,flex:1,marginRight:8}}>{t.descripcion}</div>
           <div style={{display:'flex',gap:2,flexShrink:0}}>
