@@ -3080,18 +3080,9 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
   const [f, setF] = useState({ descripcion:'', responsable:'', deadline:'', comentario:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
-  const [vinculo, setVinculo] = useState('ninguno');
-  const [vincQ, setVincQ] = useState('');
-  const [vincId, setVincId] = useState('');
-  const [vincNombre, setVincNombre] = useState('');
-  const [vincAbierto, setVincAbierto] = useState(false);
+  const [vincExpId, setVincExpId] = useState('');
+  const [vincCliId, setVincCliId] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
-  const sugsExp = vinculo==='expediente' && vincQ
-    ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(vincQ.toLowerCase())||(e.numero||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8)
-    : [];
-  const sugsCli = vinculo==='cliente' && vincQ
-    ? clientes.filter(cl=>(nombreCompleto(cl)||'').toLowerCase().includes(vincQ.toLowerCase())).slice(0,8)
-    : [];
   async function guardar() {
     if (!f.descripcion||!f.responsable) { alert('Completá descripción y responsable (*)'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
