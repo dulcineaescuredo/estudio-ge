@@ -4083,3 +4083,342 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     </div>
   );
 }
+
+function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoActual }) {
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+
+  const listaFiltrada = (asuntos||[]).filter(a => {
+    if (filtroEstado === 'activos') return (a.estado||'activo') === 'activo';
+    if (filtroEstado === 'finalizados') return a.estado === 'finalizado';
+    return true;
+  });
+
+  return (
+    <Card>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>📋 Extrajudicial</div>
+        <button onClick={()=>setVista('nuevo-asunto')} style={btnPrimary}>+ Nuevo asunto</button>
+      </div>
+      <div style={{display:'flex',gap:8,marginBottom:14}}>
+        {[['todos','Todos'],['activos','Activos'],['finalizados','Finalizados']].map(([v,l])=>(
+          <button key={v} onClick={()=>setFiltroEstado(v)}
+            style={{padding:'5px 14px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',border:'none',
+              background:filtroEstado===v?'#9B4F6A':'#F3F4F6',color:filtroEstado===v?'#fff':'#6B7280',fontFamily:'system-ui'}}>
+            {l}
+          </button>
+        ))}
+      </div>
+      {listaFiltrada.length ? listaFiltrada.map(a => {
+        const cli = (clientes||[]).find(c=>c.id===a.cliente_id);
+        const etapasAsunto = (asuntoEtapas||[]).filter(e=>e.asunto_id===a.id);
+        const completadas = etapasAsunto.filter(e=>e.completada).length;
+        const totalEtapas = etapasAsunto.length;
+        const esFinalizado = a.estado === 'finalizado';
+        return (
+          <div key={a.id}
+            onClick={()=>{setAsuntoActual(a);setVista('detalle-asunto');}}
+            style={{padding:'14px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',display:'flex',alignItems:'flex-start',gap:12}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a',marginBottom:5}}>{a.titulo}</div>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                {cli && <span style={{fontSize:12,color:'#6B7280'}}>👤 {nombreCompleto(cli)}</span>}
+                {a.responsable && a.responsable.split(',').map(r=>r.trim()).filter(Boolean).map(r=>(
+                  <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                ))}
+                {totalEtapas > 0 && <span style={{fontSize:12,color:'#6B7280'}}>{completadas}/{totalEtapas} etapas</span>}
+              </div>
+            </div>
+            <Badge bg={esFinalizado?'#F3F4F6':'#EAF3DE'} color={esFinalizado?'#6B7280':'#27500A'}>
+              {esFinalizado?'Finalizado':'Activo'}
+            </Badge>
+          </div>
+        );
+      }) : (
+        <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>
+          {(asuntos||[]).length===0 ? 'Sin asuntos todavía. Cargá el primero con "+ Nuevo asunto".' : 'No hay asuntos que coincidan con el filtro.'}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function NuevoAsunto({ perfil, recargar, setVista, clientes }) {
+  const [f, setF] = useState({ titulo:'', responsable:'', estado:'activo' });
+  const [cliId, setCliId] = useState('');
+  const [msg, setMsg] = useState('');
+  useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
+  const set = (k,v)=>setF({...f,[k]:v});
+
+  async function guardar() {
+    if (!f.titulo) { alert('El título del asunto es obligatorio.'); return; }
+    if (!perfil) { alert('Esperá un segundo a que cargue tu perfil.'); return; }
+    const { error } = await supabase.from('asuntos').insert({
+      titulo: f.titulo, responsable: f.responsable||null, estado: f.estado,
+      cliente_id: cliId||null, estudio_id: perfil.estudio_id,
+    });
+    if (error) { alert('Error: '+error.message); return; }
+    setMsg(`Asunto "${f.titulo}" guardado.`);
+    setF({ titulo:'', responsable: f.responsable, estado:'activo' });
+    setCliId('');
+    recargar();
+    setTimeout(()=>setMsg(''),3000);
+  }
+
+  return (
+    <Card title="📋 Nuevo asunto extrajudicial">
+      {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
+      <div style={{maxWidth:520}}>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Título del asunto *</label>
+        <input style={inputStyle} placeholder="Ej: Constitución SRL García, contrato de locación..." value={f.titulo} onChange={e=>set('titulo',e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente</label>
+        <CliCombobox clientes={clientes||[]} value={cliId} onChange={setCliId} perfil={perfil} recargar={recargar} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable</label>
+        <SocioChips value={f.responsable} onChange={v=>set('responsable',v)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado</label>
+        <div style={{display:'flex',gap:8,marginBottom:14}}>
+          {[['activo','Activo'],['finalizado','Finalizado']].map(([v,l])=>(
+            <button key={v} onClick={()=>set('estado',v)}
+              style={{flex:1,padding:9,border:f.estado===v?'1px solid #9B4F6A':'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontWeight:500,cursor:'pointer',
+                background:f.estado===v?'#FBEAF0':'#f9f8f5',color:f.estado===v?'#9B4F6A':'#4a4a4a',fontFamily:'system-ui'}}>
+              {l}
+            </button>
+          ))}
+        </div>
+        <button onClick={guardar} style={btnPrimary}>Guardar asunto</button>
+      </div>
+    </Card>
+  );
+}
+
+function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, honorarios, cuotas, valorUhon, perfil, recargar, asuntos, honPreset, setHonPreset, setHonActual }) {
+  const a = asuntoActual;
+  const [etapas, setEtapas] = useState([]);
+  const [gastos, setGastos] = useState([]);
+  const [notaTexto, setNotaTexto] = useState('');
+  const [nuevaEtapa, setNuevaEtapa] = useState({ descripcion:'', deadline:'' });
+  const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
+  const [cliId, setCliId] = useState('');
+  const [responsable, setResponsable] = useState('');
+  const [estado, setEstado] = useState('activo');
+  const [titulo, setTitulo] = useState('');
+
+  useEffect(()=>{
+    if (!a) return;
+    setTitulo(a.titulo||'');
+    setNotaTexto(a.notas||'');
+    setCliId(a.cliente_id||'');
+    setResponsable(a.responsable||'');
+    setEstado(a.estado||'activo');
+    cargarDetalle();
+  // eslint-disable-next-line
+  }, [a?.id]);
+
+  async function cargarDetalle() {
+    if (!a?.id) return;
+    const [{ data: et },{ data: gs }] = await Promise.all([
+      supabase.from('asunto_etapas').select('*').eq('asunto_id', a.id).order('orden', { ascending: true }),
+      supabase.from('asunto_gastos').select('*').eq('asunto_id', a.id).order('fecha', { ascending: false }),
+    ]);
+    setEtapas(et||[]);
+    setGastos(gs||[]);
+  }
+
+  async function actualizarAsunto(campo, valor) {
+    setAsuntoActual(prev => ({...prev, [campo]: valor}));
+    await supabase.from('asuntos').update({ [campo]: valor||null }).eq('id', a.id);
+    recargar();
+  }
+
+  async function toggleEtapa(et) {
+    const completada = !et.completada;
+    const fecha_completada = completada ? HOY_LOCAL : null;
+    await supabase.from('asunto_etapas').update({ completada, fecha_completada }).eq('id', et.id);
+    cargarDetalle();
+    recargar();
+  }
+
+  async function eliminarEtapa(et) {
+    if (!confirm('¿Eliminar esta etapa?')) return;
+    await supabase.from('asunto_etapas').delete().eq('id', et.id);
+    cargarDetalle();
+    recargar();
+  }
+
+  async function agregarEtapa() {
+    if (!nuevaEtapa.descripcion.trim()) { alert('La descripción es obligatoria.'); return; }
+    const orden = etapas.length > 0 ? Math.max(...etapas.map(e=>e.orden||0)) + 1 : 1;
+    await supabase.from('asunto_etapas').insert({
+      asunto_id: a.id, estudio_id: perfil.estudio_id,
+      descripcion: nuevaEtapa.descripcion.trim(),
+      deadline: nuevaEtapa.deadline||null,
+      orden, completada: false,
+    });
+    setNuevaEtapa({ descripcion:'', deadline:'' });
+    cargarDetalle();
+    recargar();
+  }
+
+  async function agregarGasto() {
+    if (!nuevoGasto.descripcion.trim() || !nuevoGasto.monto) { alert('Completá descripción y monto.'); return; }
+    await supabase.from('asunto_gastos').insert({
+      asunto_id: a.id, estudio_id: perfil.estudio_id,
+      descripcion: nuevoGasto.descripcion.trim(),
+      monto: Number(nuevoGasto.monto),
+      fecha: nuevoGasto.fecha||HOY_LOCAL,
+    });
+    setNuevoGasto({ descripcion:'', monto:'', fecha:HOY_LOCAL });
+    cargarDetalle();
+  }
+
+  if (!a) return null;
+
+  const honAsunto = (honorarios||[]).filter(h=>h.asunto_id===a.id);
+  const totalGastos = gastos.reduce((s,g)=>s+(Number(g.monto)||0),0);
+
+  return (
+    <div>
+      <button onClick={()=>setVista('extrajudicial')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver</button>
+
+      <Card>
+        <input
+          value={titulo}
+          onChange={e=>setTitulo(e.target.value)}
+          onBlur={()=>actualizarAsunto('titulo', titulo)}
+          style={{fontSize:20,fontWeight:700,border:'none',outline:'none',background:'transparent',width:'100%',marginBottom:14,fontFamily:'system-ui',padding:0,color:'#1a1a1a'}}
+        />
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:5,fontWeight:600}}>CLIENTE</label>
+          <CliCombobox clientes={clientes||[]} value={cliId}
+            onChange={v=>{setCliId(v); actualizarAsunto('cliente_id',v||null);}}
+            perfil={perfil} recargar={recargar} />
+        </div>
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:5,fontWeight:600}}>RESPONSABLE</label>
+          <SocioChips value={responsable} onChange={v=>{setResponsable(v); actualizarAsunto('responsable',v);}} />
+        </div>
+        <div>
+          <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:5,fontWeight:600}}>ESTADO</label>
+          <div style={{display:'flex',gap:8}}>
+            {[['activo','Activo'],['finalizado','Finalizado']].map(([v,l])=>(
+              <button key={v} onClick={()=>{setEstado(v); actualizarAsunto('estado',v);}}
+                style={{padding:'5px 18px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:'none',
+                  background:estado===v?(v==='finalizado'?'#F3F4F6':'#EAF3DE'):'#f9f8f5',
+                  color:estado===v?(v==='finalizado'?'#6B7280':'#27500A'):'#8a8a8a',fontFamily:'system-ui'}}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card title="📝 Notas">
+        <textarea
+          style={{...inputStyle,minHeight:80,resize:'vertical'}}
+          value={notaTexto}
+          onChange={e=>setNotaTexto(e.target.value)}
+          placeholder="Notas sobre este asunto..."
+        />
+        <button onClick={()=>actualizarAsunto('notas', notaTexto)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
+      </Card>
+
+      <Card title="📋 Etapas">
+        {etapas.length ? etapas.map(et => {
+          const vencido = et.deadline && et.deadline < HOY_LOCAL && !et.completada;
+          return (
+            <div key={et.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+              <div
+                onClick={()=>toggleEtapa(et)}
+                style={{width:16,height:16,borderRadius:4,flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
+                  border:et.completada?'none':'1.5px solid #c9c9c4',background:et.completada?'#2B6CB0':'#fff'}}>
+                {et.completada?'✓':''}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500,color:et.completada?'#8a8a8a':'#1a1a1a',textDecoration:et.completada?'line-through':'none'}}>{et.descripcion}</div>
+                <div style={{display:'flex',gap:8,marginTop:3,flexWrap:'wrap'}}>
+                  {et.deadline && !et.completada && (
+                    <span style={{fontSize:11,color:vencido?'#B45309':'#8a8a8a',fontWeight:vencido?600:400}}>
+                      {vencido?'⚠️ ':''}Vence {formatFecha(et.deadline)}
+                    </span>
+                  )}
+                  {et.completada && et.fecha_completada && (
+                    <span style={{fontSize:11,color:'#27500A',fontWeight:500}}>✓ Completada {formatFecha(et.fecha_completada)}</span>
+                  )}
+                </div>
+              </div>
+              <button onClick={()=>eliminarEtapa(et)}
+                style={{fontSize:13,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'0 4px',lineHeight:1,flexShrink:0}}
+                title="Eliminar etapa">🗑️</button>
+            </div>
+          );
+        }) : <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin etapas todavía.</div>}
+        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+          <div style={{display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
+            <div style={{flex:'2 1 160px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Descripción</label>
+              <input style={{...inputStyle,marginBottom:0}} placeholder="Nueva etapa..."
+                value={nuevaEtapa.descripcion} onChange={e=>setNuevaEtapa({...nuevaEtapa,descripcion:e.target.value})}
+                onKeyDown={e=>e.key==='Enter'&&agregarEtapa()} />
+            </div>
+            <div style={{flex:'1 1 120px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Deadline (opcional)</label>
+              <input type="date" style={{...inputStyle,marginBottom:0}}
+                value={nuevaEtapa.deadline} onChange={e=>setNuevaEtapa({...nuevaEtapa,deadline:e.target.value})} />
+            </div>
+            <button onClick={agregarEtapa} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar etapa</button>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="💸 Gastos">
+        {gastos.length > 0 && (
+          <>
+            {gastos.map(g => (
+              <div key={g.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:500}}>{g.descripcion}</div>
+                  {g.fecha && <div style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(g.fecha)}</div>}
+                </div>
+                <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(g.monto)}</span>
+              </div>
+            ))}
+            <div style={{display:'flex',justifyContent:'flex-end',paddingTop:10,borderTop:'1px solid #F0EFED',marginTop:2}}>
+              <span style={{fontSize:13,fontWeight:700,color:'#1a1a1a'}}>Total: {fmtMoneda(totalGastos)}</span>
+            </div>
+          </>
+        )}
+        {gastos.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin gastos cargados.</div>}
+        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+          <div style={{display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
+            <div style={{flex:'2 1 160px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Descripción</label>
+              <input style={{...inputStyle,marginBottom:0}} placeholder="Ej: Sellado, tasa notarial..."
+                value={nuevoGasto.descripcion} onChange={e=>setNuevoGasto({...nuevoGasto,descripcion:e.target.value})} />
+            </div>
+            <div style={{flex:'1 1 100px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Monto ($)</label>
+              <input type="number" style={{...inputStyle,marginBottom:0}} placeholder="0"
+                value={nuevoGasto.monto} onChange={e=>setNuevoGasto({...nuevoGasto,monto:e.target.value})} />
+            </div>
+            <div style={{flex:'1 1 120px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Fecha</label>
+              <input type="date" style={{...inputStyle,marginBottom:0}}
+                value={nuevoGasto.fecha} onChange={e=>setNuevoGasto({...nuevoGasto,fecha:e.target.value})} />
+            </div>
+            <button onClick={agregarGasto} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar gasto</button>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="💰 Honorarios">
+        <button onClick={()=>{setHonPreset&&setHonPreset({vinculo_tipo:'asunto',asunto_id:a.id});setVista('nuevo-honorario');}}
+          style={{...btnPrimary,marginBottom:14}}>+ Nuevo honorario</button>
+        {honAsunto.length > 0 ? (
+          <HonorariosTable lista={honAsunto} expedientes={[]} clientes={clientes||[]} cuotas={cuotas||[]}
+            valorUhon={valorUhon} setHonActual={setHonActual||(() =>{})} setVista={setVista} recargar={recargar} asuntos={asuntos||[]} />
+        ) : (
+          <div style={{color:'#8a8a8a',fontSize:13}}>Sin honorarios vinculados a este asunto todavía.</div>
+        )}
+      </Card>
+    </div>
+  );
+}
