@@ -4441,8 +4441,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
 
   const honAsunto = (honorarios||[]).filter(h=>h.asunto_id===a.id);
   const totalGastos = gastos.reduce((s,g)=>s+(Number(g.monto)||0),0);
-  const anotAsunto = anotaciones.filter(an=>!an.etapa_id);
   const docsAsunto = documentos.filter(dc=>!dc.etapa_id);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
     <div>
