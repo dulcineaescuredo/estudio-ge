@@ -2287,7 +2287,10 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
   function resolveVinc(h) {
     const exp=expedientes.find(e=>e.id===h.expediente_id);
     const cli=clientes.find(c=>c.id===h.cliente_id);
-    return h.vinculo_tipo==='contraparte'?(h.contraparte_nombre||''):(exp?exp.caratula:(cli?nombreCompleto(cli):''));
+    const as_=(asuntos||[]).find(a=>a.id===h.asunto_id);
+    if (h.vinculo_tipo==='contraparte') return h.contraparte_nombre||'';
+    if (h.vinculo_tipo==='asunto') return as_?as_.titulo:'';
+    return exp?exp.caratula:(cli?nombreCompleto(cli):'');
   }
   function cuotaRatio(h) {
     const ch=cuotas.filter(cu=>cu.honorario_id===h.id);
