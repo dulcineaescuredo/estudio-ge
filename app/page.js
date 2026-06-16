@@ -4892,13 +4892,14 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                     <span style={{fontSize:12,fontWeight:600,color:'#1a1a1a'}}>Comentario</span>
                     <button onClick={()=>toggleEtapaPanel(et.id,'comentario')} style={{fontSize:14,background:'none',border:'none',cursor:'pointer',color:'#8a8a8a'}}>✕</button>
                   </div>
-                  <textarea
+                  <MentionTextarea
                     style={{...inputStyle,minHeight:70,resize:'vertical',marginBottom:8,fontSize:12}}
                     placeholder="Comentario sobre esta etapa..."
                     value={editComentario}
-                    onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:e.target.value}}))}
+                    onChange={v=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:v}}))}
+                    perfiles={perfilesEstudio}
                   />
-                  <button onClick={()=>actualizarEtapa(et,'comentario',editComentario)}
+                  <button onClick={async()=>{await actualizarEtapa(et,'comentario',editComentario);if(crearNotificacion){const mens=extraerMenciones(editComentario,perfilesEstudio);const prv=editComentario.substring(0,60);for(const d of mens)await crearNotificacion({destinatario_id:d.id,mensaje:`${perfil.nombre} te mencionó en "${et.descripcion}" (${a.titulo}): "${prv}"`,contexto:`${a.titulo} — ${et.descripcion}`,link:'extrajudicial'});}}}
                     style={{...btnPrimary,padding:'6px 12px',fontSize:12,background:'#9B4F6A',borderColor:'#9B4F6A'}}>Guardar</button>
                 </div>
               )}
