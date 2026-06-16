@@ -4309,7 +4309,6 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     setCliId(a.cliente_id||'');
     setResponsable(a.responsable||'');
     setEstado(a.estado||'activo');
-    setNuevaAnotAsunto({ fecha:HOY_LOCAL, autora:perfil?.nombre||'', texto:'' });
     cargarDetalle();
   // eslint-disable-next-line
   }, [a?.id]);
