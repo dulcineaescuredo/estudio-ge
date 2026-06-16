@@ -4209,6 +4209,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const a = asuntoActual;
   const [etapas, setEtapas] = useState([]);
   const [gastos, setGastos] = useState([]);
+  const [anotaciones, setAnotaciones] = useState([]);
+  const [documentos, setDocumentos] = useState([]);
   const [notaTexto, setNotaTexto] = useState('');
   const [nuevaEtapa, setNuevaEtapa] = useState({ descripcion:'', deadline:'' });
   const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
@@ -4216,6 +4218,15 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [responsable, setResponsable] = useState('');
   const [estado, setEstado] = useState('activo');
   const [titulo, setTitulo] = useState('');
+  const [etapaEdits, setEtapaEdits] = useState({});
+  const [gastoEdits, setGastoEdits] = useState({});
+  const [etapaPanels, setEtapaPanels] = useState({});
+  const [nuevaAnotAsunto, setNuevaAnotAsunto] = useState({ fecha:HOY_LOCAL, autora:'', texto:'' });
+  const [nuevaAnotEtapa, setNuevaAnotEtapa] = useState({});
+  const [nuevoLink, setNuevoLink] = useState({ nombre:'', url:'' });
+  const [nuevoLinkEtapa, setNuevoLinkEtapa] = useState({});
+  const [uploading, setUploading] = useState(false);
+  const [uploadingEtapa, setUploadingEtapa] = useState({});
 
   useEffect(()=>{
     if (!a) return;
@@ -4224,18 +4235,23 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     setCliId(a.cliente_id||'');
     setResponsable(a.responsable||'');
     setEstado(a.estado||'activo');
+    setNuevaAnotAsunto({ fecha:HOY_LOCAL, autora:perfil?.nombre||'', texto:'' });
     cargarDetalle();
   // eslint-disable-next-line
   }, [a?.id]);
 
   async function cargarDetalle() {
     if (!a?.id) return;
-    const [{ data: et },{ data: gs }] = await Promise.all([
+    const [{ data: et },{ data: gs },{ data: an },{ data: dc }] = await Promise.all([
       supabase.from('asunto_etapas').select('*').eq('asunto_id', a.id).order('orden', { ascending: true }),
       supabase.from('asunto_gastos').select('*').eq('asunto_id', a.id).order('fecha', { ascending: false }),
+      supabase.from('asunto_anotaciones').select('*').eq('asunto_id', a.id).order('fecha', { ascending: false }),
+      supabase.from('asunto_documentos').select('*').eq('asunto_id', a.id).order('id', { ascending: true }),
     ]);
     setEtapas(et||[]);
     setGastos(gs||[]);
+    setAnotaciones(an||[]);
+    setDocumentos(dc||[]);
   }
 
   async function actualizarAsunto(campo, valor) {
@@ -4250,6 +4266,11 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     await supabase.from('asunto_etapas').update({ completada, fecha_completada }).eq('id', et.id);
     cargarDetalle();
     recargar();
+  }
+
+  async function actualizarEtapa(et, campo, valor) {
+    await supabase.from('asunto_etapas').update({ [campo]: valor||null }).eq('id', et.id);
+    cargarDetalle();
   }
 
   async function eliminarEtapa(et) {
@@ -4273,6 +4294,17 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     recargar();
   }
 
+  async function actualizarGasto(g, campo, valor) {
+    await supabase.from('asunto_gastos').update({ [campo]: campo==='monto'?Number(valor):valor }).eq('id', g.id);
+    cargarDetalle();
+  }
+
+  async function eliminarGasto(g) {
+    if (!confirm('¿Eliminar este gasto?')) return;
+    await supabase.from('asunto_gastos').delete().eq('id', g.id);
+    cargarDetalle();
+  }
+
   async function agregarGasto() {
     if (!nuevoGasto.descripcion.trim() || !nuevoGasto.monto) { alert('Completá descripción y monto.'); return; }
     await supabase.from('asunto_gastos').insert({
@@ -4285,27 +4317,96 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     cargarDetalle();
   }
 
+  async function agregarAnotacion(etapaId) {
+    const form = etapaId ? (nuevaAnotEtapa[etapaId]||{fecha:HOY_LOCAL,autora:'',texto:''}) : nuevaAnotAsunto;
+    if (!form.texto.trim()) { alert('Escribí el texto de la anotación.'); return; }
+    await supabase.from('asunto_anotaciones').insert({
+      asunto_id: a.id, estudio_id: perfil.estudio_id,
+      etapa_id: etapaId||null,
+      fecha: form.fecha||HOY_LOCAL,
+      autora: form.autora||null,
+      texto: form.texto.trim(),
+    });
+    if (etapaId) {
+      setNuevaAnotEtapa(prev=>({...prev,[etapaId]:{fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''}}));
+    } else {
+      setNuevaAnotAsunto({fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''});
+    }
+    cargarDetalle();
+  }
+
+  async function eliminarAnotacion(an) {
+    if (!confirm('¿Eliminar esta anotación?')) return;
+    await supabase.from('asunto_anotaciones').delete().eq('id', an.id);
+    cargarDetalle();
+  }
+
+  async function subirDocumento(file, etapaId) {
+    if (!file) return;
+    if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:true}));
+    else setUploading(true);
+    const path = `${a.id}/${Date.now()}_${file.name}`;
+    const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, file);
+    if (upErr) {
+      alert('Error al subir archivo.');
+      if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:false})); else setUploading(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from('asunto-documentos').getPublicUrl(path);
+    await supabase.from('asunto_documentos').insert({
+      asunto_id: a.id, estudio_id: perfil.estudio_id,
+      etapa_id: etapaId||null,
+      nombre: file.name, tipo: 'archivo', url: publicUrl,
+    });
+    if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:false})); else setUploading(false);
+    cargarDetalle();
+  }
+
+  async function agregarLink(etapaId) {
+    const form = etapaId ? (nuevoLinkEtapa[etapaId]||{nombre:'',url:''}) : nuevoLink;
+    if (!form.nombre.trim() || !form.url.trim()) { alert('Completá nombre y URL del enlace.'); return; }
+    await supabase.from('asunto_documentos').insert({
+      asunto_id: a.id, estudio_id: perfil.estudio_id,
+      etapa_id: etapaId||null,
+      nombre: form.nombre.trim(), tipo: 'link', url: form.url.trim(),
+    });
+    if (etapaId) setNuevoLinkEtapa(prev=>({...prev,[etapaId]:{nombre:'',url:''}}));
+    else setNuevoLink({nombre:'',url:''});
+    cargarDetalle();
+  }
+
+  async function eliminarDocumento(dc) {
+    if (!confirm('¿Eliminar este documento?')) return;
+    if (dc.tipo === 'archivo') {
+      const marker = '/object/public/asunto-documentos/';
+      const idx = dc.url.indexOf(marker);
+      if (idx !== -1) await supabase.storage.from('asunto-documentos').remove([dc.url.slice(idx + marker.length)]);
+    }
+    await supabase.from('asunto_documentos').delete().eq('id', dc.id);
+    cargarDetalle();
+  }
+
+  function toggleEtapaPanel(etapaId, panel) {
+    setEtapaPanels(prev=>({...prev,[etapaId]:prev[etapaId]===panel?null:panel}));
+  }
+
   if (!a) return null;
 
   const honAsunto = (honorarios||[]).filter(h=>h.asunto_id===a.id);
   const totalGastos = gastos.reduce((s,g)=>s+(Number(g.monto)||0),0);
+  const anotAsunto = anotaciones.filter(an=>!an.etapa_id);
+  const docsAsunto = documentos.filter(dc=>!dc.etapa_id);
 
   return (
     <div>
       <button onClick={()=>setVista('extrajudicial')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver</button>
 
       <Card>
-        <input
-          value={titulo}
-          onChange={e=>setTitulo(e.target.value)}
-          onBlur={()=>actualizarAsunto('titulo', titulo)}
-          style={{fontSize:20,fontWeight:700,border:'none',outline:'none',background:'transparent',width:'100%',marginBottom:14,fontFamily:'system-ui',padding:0,color:'#1a1a1a'}}
-        />
+        <input value={titulo} onChange={e=>setTitulo(e.target.value)} onBlur={()=>actualizarAsunto('titulo', titulo)}
+          style={{fontSize:20,fontWeight:700,border:'none',outline:'none',background:'transparent',width:'100%',marginBottom:14,fontFamily:'system-ui',padding:0,color:'#1a1a1a'}} />
         <div style={{marginBottom:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:5,fontWeight:600}}>CLIENTE</label>
-          <CliCombobox clientes={clientes||[]} value={cliId}
-            onChange={v=>{setCliId(v); actualizarAsunto('cliente_id',v||null);}}
-            perfil={perfil} recargar={recargar} />
+          <CliCombobox clientes={clientes||[]} value={cliId} onChange={v=>{setCliId(v); actualizarAsunto('cliente_id',v||null);}} perfil={perfil} recargar={recargar} />
         </div>
         <div style={{marginBottom:12}}>
           <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:5,fontWeight:600}}>RESPONSABLE</label>
@@ -4327,42 +4428,197 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       </Card>
 
       <Card title="📝 Notas">
-        <textarea
-          style={{...inputStyle,minHeight:80,resize:'vertical'}}
-          value={notaTexto}
-          onChange={e=>setNotaTexto(e.target.value)}
-          placeholder="Notas sobre este asunto..."
-        />
+        <textarea style={{...inputStyle,minHeight:80,resize:'vertical'}} value={notaTexto} onChange={e=>setNotaTexto(e.target.value)} placeholder="Notas sobre este asunto..." />
         <button onClick={()=>actualizarAsunto('notas', notaTexto)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
+      </Card>
+
+      <Card title="🗒️ Anotaciones">
+        {anotAsunto.length > 0 && anotAsunto.map(an=>(
+          <div key={an.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,color:'#1a1a1a',whiteSpace:'pre-wrap'}}>{an.texto}</div>
+                <div style={{fontSize:11,color:'#8a8a8a',marginTop:3}}>
+                  {an.autora && <span>{an.autora} · </span>}{formatFecha(an.fecha)}
+                </div>
+              </div>
+              <button onClick={()=>eliminarAnotacion(an)}
+                style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}
+                title="Eliminar anotación">🗑️</button>
+            </div>
+          </div>
+        ))}
+        {anotAsunto.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin anotaciones todavía.</div>}
+        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+          <div style={{display:'flex',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+            <div style={{flex:'1 1 100px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Fecha</label>
+              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaAnotAsunto.fecha}
+                onChange={e=>setNuevaAnotAsunto(p=>({...p,fecha:e.target.value}))} />
+            </div>
+            <div style={{flex:'2 1 140px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Autora</label>
+              <input style={{...inputStyle,marginBottom:0}} placeholder="Nombre..." value={nuevaAnotAsunto.autora}
+                onChange={e=>setNuevaAnotAsunto(p=>({...p,autora:e.target.value}))} />
+            </div>
+          </div>
+          <textarea style={{...inputStyle,minHeight:60,resize:'vertical',marginBottom:8}} placeholder="Texto de la anotación..."
+            value={nuevaAnotAsunto.texto} onChange={e=>setNuevaAnotAsunto(p=>({...p,texto:e.target.value}))} />
+          <button onClick={()=>agregarAnotacion(null)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>+ Agregar anotación</button>
+        </div>
+      </Card>
+
+      <Card title="📎 Documentos">
+        {docsAsunto.length > 0 && docsAsunto.map(dc=>(
+          <div key={dc.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+            <span style={{fontSize:15}}>{dc.tipo==='archivo'?'📄':'🔗'}</span>
+            <a href={dc.url} target="_blank" rel="noopener noreferrer"
+              style={{flex:1,fontSize:13,color:'#2B6CB0',textDecoration:'none',fontWeight:500}}>{dc.nombre}</a>
+            <button onClick={()=>eliminarDocumento(dc)}
+              style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}
+              title="Eliminar documento">🗑️</button>
+          </div>
+        ))}
+        {docsAsunto.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin documentos adjuntos.</div>}
+        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+          <div style={{marginBottom:10}}>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>SUBIR ARCHIVO</label>
+            <input type="file" disabled={uploading} onChange={e=>subirDocumento(e.target.files?.[0],null)} style={{fontSize:12,color:'#1a1a1a'}} />
+            {uploading && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:8}}>Subiendo...</span>}
+          </div>
+          <div>
+            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>AGREGAR ENLACE</label>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <input style={{...inputStyle,marginBottom:0,flex:'2 1 160px'}} placeholder="Nombre del enlace..."
+                value={nuevoLink.nombre} onChange={e=>setNuevoLink(p=>({...p,nombre:e.target.value}))} />
+              <input style={{...inputStyle,marginBottom:0,flex:'3 1 200px'}} placeholder="URL..."
+                value={nuevoLink.url} onChange={e=>setNuevoLink(p=>({...p,url:e.target.value}))} />
+              <button onClick={()=>agregarLink(null)} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar</button>
+            </div>
+          </div>
+        </div>
       </Card>
 
       <Card title="📋 Etapas">
         {etapas.length ? etapas.map(et => {
           const vencido = et.deadline && et.deadline < HOY_LOCAL && !et.completada;
+          const editDesc = etapaEdits[et.id]?.descripcion ?? et.descripcion;
+          const editDeadline = etapaEdits[et.id]?.deadline ?? (et.deadline||'');
+          const panel = etapaPanels[et.id]||null;
+          const anotEtapa = anotaciones.filter(an=>an.etapa_id===et.id);
+          const docsEtapa = documentos.filter(dc=>dc.etapa_id===et.id);
+          const formAnotEtapa = nuevaAnotEtapa[et.id]||{fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''};
+          const formLinkEtapa = nuevoLinkEtapa[et.id]||{nombre:'',url:''};
           return (
-            <div key={et.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
-              <div
-                onClick={()=>toggleEtapa(et)}
-                style={{width:16,height:16,borderRadius:4,flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
-                  border:et.completada?'none':'1.5px solid #c9c9c4',background:et.completada?'#2B6CB0':'#fff'}}>
-                {et.completada?'✓':''}
-              </div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:500,color:et.completada?'#8a8a8a':'#1a1a1a',textDecoration:et.completada?'line-through':'none'}}>{et.descripcion}</div>
-                <div style={{display:'flex',gap:8,marginTop:3,flexWrap:'wrap'}}>
-                  {et.deadline && !et.completada && (
-                    <span style={{fontSize:11,color:vencido?'#B45309':'#8a8a8a',fontWeight:vencido?600:400}}>
-                      {vencido?'⚠️ ':''}Vence {formatFecha(et.deadline)}
-                    </span>
-                  )}
-                  {et.completada && et.fecha_completada && (
-                    <span style={{fontSize:11,color:'#27500A',fontWeight:500}}>✓ Completada {formatFecha(et.fecha_completada)}</span>
-                  )}
+            <div key={et.id} style={{borderBottom:'1px solid #F0EFED'}}>
+              <div style={{display:'flex',alignItems:'flex-start',gap:10,padding:'10px 0'}}>
+                <div onClick={()=>toggleEtapa(et)}
+                  style={{width:16,height:16,borderRadius:4,flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
+                    border:et.completada?'none':'1.5px solid #c9c9c4',background:et.completada?'#2B6CB0':'#fff'}}>
+                  {et.completada?'✓':''}
+                </div>
+                <div style={{flex:1}}>
+                  <input
+                    value={editDesc}
+                    onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],descripcion:e.target.value}}))}
+                    onBlur={e=>actualizarEtapa(et,'descripcion',e.target.value)}
+                    style={{fontSize:13,fontWeight:500,color:et.completada?'#8a8a8a':'#1a1a1a',
+                      textDecoration:et.completada?'line-through':'none',
+                      border:'none',outline:'none',background:'transparent',width:'100%',padding:0,fontFamily:'system-ui'}}
+                  />
+                  <div style={{display:'flex',gap:8,marginTop:3,flexWrap:'wrap',alignItems:'center'}}>
+                    {!et.completada && (
+                      <input type="date"
+                        value={editDeadline}
+                        onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],deadline:e.target.value}}))}
+                        onBlur={e=>actualizarEtapa(et,'deadline',e.target.value)}
+                        style={{fontSize:11,border:'none',outline:'none',background:'transparent',
+                          color:vencido?'#B45309':'#8a8a8a',fontWeight:vencido?600:400,padding:0,fontFamily:'system-ui'}}
+                      />
+                    )}
+                    {et.completada && et.fecha_completada && (
+                      <span style={{fontSize:11,color:'#27500A',fontWeight:500}}>✓ Completada {formatFecha(et.fecha_completada)}</span>
+                    )}
+                    {vencido && <span style={{fontSize:11,color:'#B45309',fontWeight:600}}>⚠️ Vencida</span>}
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:2,flexShrink:0,alignItems:'center'}}>
+                  <button onClick={()=>toggleEtapaPanel(et.id,'anotacion')} title="Anotaciones de esta etapa"
+                    style={{fontSize:14,color:panel==='anotacion'?'#2B6CB0':'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}>📝</button>
+                  <button onClick={()=>toggleEtapaPanel(et.id,'documento')} title="Documentos de esta etapa"
+                    style={{fontSize:14,color:panel==='documento'?'#2B6CB0':'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}>📎</button>
+                  <button onClick={()=>eliminarEtapa(et)} title="Eliminar etapa"
+                    style={{fontSize:13,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'0 4px',lineHeight:1}}>🗑️</button>
                 </div>
               </div>
-              <button onClick={()=>eliminarEtapa(et)}
-                style={{fontSize:13,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'0 4px',lineHeight:1,flexShrink:0}}
-                title="Eliminar etapa">🗑️</button>
+              {panel === 'anotacion' && (
+                <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
+                  {anotEtapa.length > 0 && anotEtapa.map(an=>(
+                    <div key={an.id} style={{padding:'8px 0',borderBottom:'1px solid #EDEDEB'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:12,color:'#1a1a1a',whiteSpace:'pre-wrap'}}>{an.texto}</div>
+                          <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>
+                            {an.autora && <span>{an.autora} · </span>}{formatFecha(an.fecha)}
+                          </div>
+                        </div>
+                        <button onClick={()=>eliminarAnotacion(an)}
+                          style={{fontSize:13,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}
+                          title="Eliminar">🗑️</button>
+                      </div>
+                    </div>
+                  ))}
+                  {anotEtapa.length === 0 && <div style={{fontSize:12,color:'#8a8a8a',marginBottom:10}}>Sin anotaciones para esta etapa.</div>}
+                  <div style={{marginTop:10}}>
+                    <div style={{display:'flex',gap:8,marginBottom:6,flexWrap:'wrap'}}>
+                      <input type="date" style={{...inputStyle,marginBottom:0,flex:'1 1 100px',fontSize:12}} value={formAnotEtapa.fecha}
+                        onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),fecha:e.target.value}}))} />
+                      <input style={{...inputStyle,marginBottom:0,flex:'2 1 120px',fontSize:12}} placeholder="Autora..."
+                        value={formAnotEtapa.autora}
+                        onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),autora:e.target.value}}))} />
+                    </div>
+                    <textarea style={{...inputStyle,minHeight:50,resize:'vertical',marginBottom:6,fontSize:12}} placeholder="Anotación..."
+                      value={formAnotEtapa.texto}
+                      onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),texto:e.target.value}}))} />
+                    <button onClick={()=>agregarAnotacion(et.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>+ Agregar anotación</button>
+                  </div>
+                </div>
+              )}
+              {panel === 'documento' && (
+                <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
+                  {docsEtapa.length > 0 && docsEtapa.map(dc=>(
+                    <div key={dc.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderBottom:'1px solid #EDEDEB'}}>
+                      <span style={{fontSize:13}}>{dc.tipo==='archivo'?'📄':'🔗'}</span>
+                      <a href={dc.url} target="_blank" rel="noopener noreferrer"
+                        style={{flex:1,fontSize:12,color:'#2B6CB0',textDecoration:'none',fontWeight:500}}>{dc.nombre}</a>
+                      <button onClick={()=>eliminarDocumento(dc)}
+                        style={{fontSize:13,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}
+                        title="Eliminar">🗑️</button>
+                    </div>
+                  ))}
+                  {docsEtapa.length === 0 && <div style={{fontSize:12,color:'#8a8a8a',marginBottom:10}}>Sin documentos para esta etapa.</div>}
+                  <div style={{marginTop:10}}>
+                    <div style={{marginBottom:8}}>
+                      <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Subir archivo</label>
+                      <input type="file" disabled={uploadingEtapa[et.id]}
+                        onChange={e=>subirDocumento(e.target.files?.[0],et.id)} style={{fontSize:12}} />
+                      {uploadingEtapa[et.id] && <span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>Subiendo...</span>}
+                    </div>
+                    <div>
+                      <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Agregar enlace</label>
+                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                        <input style={{...inputStyle,marginBottom:0,flex:'2 1 120px',fontSize:12}} placeholder="Nombre..."
+                          value={formLinkEtapa.nombre}
+                          onChange={e=>setNuevoLinkEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),nombre:e.target.value}}))} />
+                        <input style={{...inputStyle,marginBottom:0,flex:'3 1 160px',fontSize:12}} placeholder="URL..."
+                          value={formLinkEtapa.url}
+                          onChange={e=>setNuevoLinkEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),url:e.target.value}}))} />
+                        <button onClick={()=>agregarLink(et.id)} style={{...btnPrimary,padding:'7px 10px',fontSize:12,flexShrink:0}}>+ Agregar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         }) : <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin etapas todavía.</div>}
@@ -4376,8 +4632,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
             </div>
             <div style={{flex:'1 1 120px'}}>
               <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Deadline (opcional)</label>
-              <input type="date" style={{...inputStyle,marginBottom:0}}
-                value={nuevaEtapa.deadline} onChange={e=>setNuevaEtapa({...nuevaEtapa,deadline:e.target.value})} />
+              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaEtapa.deadline} onChange={e=>setNuevaEtapa({...nuevaEtapa,deadline:e.target.value})} />
             </div>
             <button onClick={agregarEtapa} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar etapa</button>
           </div>
@@ -4387,15 +4642,27 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       <Card title="💸 Gastos">
         {gastos.length > 0 && (
           <>
-            {gastos.map(g => (
-              <div key={g.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:500}}>{g.descripcion}</div>
-                  {g.fecha && <div style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(g.fecha)}</div>}
+            {gastos.map(g => {
+              const editDescG = gastoEdits[g.id]?.descripcion ?? g.descripcion;
+              const editMontoG = gastoEdits[g.id]?.monto ?? String(g.monto ?? '');
+              return (
+                <div key={g.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{flex:1}}>
+                    <input value={editDescG}
+                      onChange={e=>setGastoEdits(p=>({...p,[g.id]:{...p[g.id],descripcion:e.target.value}}))}
+                      onBlur={e=>actualizarGasto(g,'descripcion',e.target.value)}
+                      style={{fontSize:13,fontWeight:500,border:'none',outline:'none',background:'transparent',width:'100%',padding:0,fontFamily:'system-ui',color:'#1a1a1a'}} />
+                    {g.fecha && <div style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(g.fecha)}</div>}
+                  </div>
+                  <input type="number" value={editMontoG}
+                    onChange={e=>setGastoEdits(p=>({...p,[g.id]:{...p[g.id],monto:e.target.value}}))}
+                    onBlur={e=>actualizarGasto(g,'monto',e.target.value)}
+                    style={{fontSize:13,fontWeight:600,border:'none',outline:'none',background:'transparent',width:80,padding:0,textAlign:'right',fontFamily:'system-ui',color:'#1a1a1a'}} />
+                  <button onClick={()=>eliminarGasto(g)} title="Eliminar gasto"
+                    style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}>🗑️</button>
                 </div>
-                <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(g.monto)}</span>
-              </div>
-            ))}
+              );
+            })}
             <div style={{display:'flex',justifyContent:'flex-end',paddingTop:10,borderTop:'1px solid #F0EFED',marginTop:2}}>
               <span style={{fontSize:13,fontWeight:700,color:'#1a1a1a'}}>Total: {fmtMoneda(totalGastos)}</span>
             </div>
