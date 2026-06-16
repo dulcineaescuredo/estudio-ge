@@ -1792,7 +1792,6 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
             <ExpCombobox expedientes={expedientes} value={editExpId} onChange={setEditExpId} />
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
             <CliCombobox clientes={clientes} value={editCliId} onChange={setEditCliId} perfil={perfil} recargar={recargar} />
-            </select>
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
             <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
             <div style={{display:'flex',gap:8,marginTop:4}}>
