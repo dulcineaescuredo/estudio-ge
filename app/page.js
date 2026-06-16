@@ -977,13 +977,21 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
     setGuardando(true);
     const etAct = etapasVis.find(et=>!prog.hechas[et.id]);
+    const textoFinal = notaTexto.trim();
     await supabase.from('notas').insert({
       estudio_id: e.estudio_id, expediente_id: e.id, fecha: HOY,
-      autora: perfil?.nombre || 'Equipo', texto: notaTexto.trim(), etapa: etAct?etAct.n:''
+      autora: perfil?.nombre || 'Equipo', texto: textoFinal, etapa: etAct?etAct.n:''
     });
     setNotaTexto('');
     setGuardando(false);
     recargar();
+    if (crearNotificacion) {
+      const mencionados = extraerMenciones(textoFinal, perfilesEstudio);
+      const preview = textoFinal.substring(0, 60);
+      for (const dest of mencionados) {
+        await crearNotificacion({ destinatario_id: dest.id, mensaje: `${perfil.nombre} te mencionó en Expediente ${e.caratula}: "${preview}"`, contexto: `Expediente ${e.caratula}`, link: 'expedientes' });
+      }
+    }
   }
   async function cargarGastos() {
     const { data } = await supabase.from('expediente_gastos').select('*').eq('expediente_id', e.id).order('fecha', { ascending: false });
