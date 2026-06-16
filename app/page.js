@@ -3219,15 +3219,9 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
         <input type="date" style={inputStyle} value={f.deadline} onChange={e=>set('deadline',e.target.value)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Expediente (opcional)</label>
-        <select style={inputStyle} value={vincExpId} onChange={e=>setVincExpId(e.target.value)}>
-          <option value="">— Sin expediente —</option>
-          {expedientes.map(e=><option key={e.id} value={e.id}>{e.caratula}{e.numero?' ('+e.numero+')':''}</option>)}
-        </select>
+        <ExpCombobox key={`exp-${formKey}`} expedientes={expedientes} value={vincExpId} onChange={setVincExpId} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
-        <select style={inputStyle} value={vincCliId} onChange={e=>setVincCliId(e.target.value)}>
-          <option value="">— Sin cliente —</option>
-          {clientes.map(c=><option key={c.id} value={c.id}>{nombreCompleto(c)}</option>)}
-        </select>
+        <CliCombobox key={`cli-${formKey}`} clientes={clientes} value={vincCliId} onChange={setVincCliId} perfil={perfil} recargar={recargar} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
         <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={f.comentario} onChange={e=>set('comentario',e.target.value)} />
         <button onClick={guardar} style={btnPrimary}>Crear tarea</button>
