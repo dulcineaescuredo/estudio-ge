@@ -1502,6 +1502,94 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
   const cntPend = listaFiltrada.filter(t=>t.estado==='pendiente').length;
   const cntEnP = listaFiltrada.filter(t=>t.estado==='en proceso').length;
   const cntTerm = listaFiltrada.filter(t=>t.estado==='terminado').length;
+  const grupos = (() => {
+    const map = {};
+    listaFiltrada.forEach(t => {
+      const resps = (t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean);
+      if (resps.length === 0) {
+        if (!map['__sin__']) map['__sin__'] = [];
+        map['__sin__'].push(t);
+      } else {
+        resps.forEach(r => {
+          if (!map[r]) map[r] = [];
+          map[r].push(t);
+        });
+      }
+    });
+    const keys = Object.keys(map).filter(k=>k!=='__sin__').sort();
+    if (map['__sin__']) keys.push('__sin__');
+    return keys.map(k => ({ nombre: k==='__sin__'?'Sin asignar':k, tareas: map[k] }));
+  })();
+  const renderCard = (t) => {
+    const done = t.estado==='terminado';
+    const esEditando = editandoId===t.id;
+    const verComentario = comentarioId===t.id;
+    const expVinc = t.expediente_id ? expedientes.find(e=>e.id===t.expediente_id) : null;
+    const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
+    const bColor = ESTADO_SOLID[t.estado]||'#E09A3A';
+    return <div key={t.id} style={{marginBottom:12,borderRadius:10,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',background:'#fff',border:'1px solid #EBEBEA',borderLeft:`4px solid ${bColor}`,padding:'14px 16px'}}>
+      {esEditando ? (
+        <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
+          <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
+            style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+          <SocioChips value={editForm.responsable} onChange={v=>setEditForm({...editForm,responsable:v})} />
+          <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
+            style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={()=>guardarEdicion(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+            <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
+          </div>
+        </div>
+      ) : (<>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:4}}>
+          <div style={{fontSize:15,fontWeight:600,color:done?'#8a8a8a':'#1a1a1a',textDecoration:done?'line-through':'none',lineHeight:1.3,flex:1,marginRight:8}}>{t.descripcion}</div>
+          <div style={{display:'flex',gap:2,flexShrink:0}}>
+            {[
+              {emoji:'✏️',title:'Editar',onClick:()=>{setEditandoId(t.id);setEditForm({descripcion:t.descripcion,responsable:t.responsable,deadline:t.deadline||''});}},
+              {emoji:'💬',title:'Agregar comentario',onClick:()=>setComentarioId(verComentario?null:t.id)},
+              {emoji:'🗑️',title:'Eliminar',onClick:()=>eliminarTarea(t)},
+            ].map(({emoji,title,onClick})=>(
+              <button key={title} onClick={onClick} title={title}
+                style={{background:'none',border:'none',cursor:'pointer',fontSize:15,borderRadius:'50%',width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'system-ui'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#F0F0F0'}
+                onMouseLeave={e=>e.currentTarget.style.background='none'}
+              >{emoji}</button>
+            ))}
+          </div>
+        </div>
+        {(expVinc||cliVinc) && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
+        {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
+        <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
+          {(()=>{
+            if(!t.deadline) return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:'normal',background:'#F0F0F0',color:'#888'}}>Sin fecha</span>;
+            const _dd=diasHasta(t.deadline);
+            const _cs=_dd<=2?{bg:'#FDECEA',color:'#C0392B',fw:600}:_dd<=3?{bg:'#FEF0E6',color:'#E67E22',fw:600}:_dd<=7?{bg:'#FAEEDA',color:'#D4A017',fw:400}:{bg:'#EBF6E0',color:'#5A8A4A',fw:400};
+            return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:_cs.fw,background:_cs.bg,color:_cs.color}}>{formatFecha(t.deadline)}</span>;
+          })()}
+          {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+            <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+          ))}
+          <div style={{marginLeft:'auto',display:'flex',gap:4}}>
+            {ESTADOS_TAREA.map(es=>{
+              const sel=t.estado===es;
+              return <button key={es} onClick={()=>cambiarEstado(t,es)}
+                style={{padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',border:'none',background:sel?(ESTADO_SOLID[es]||'#ccc'):'#F0F0F0',color:sel?'#fff':'#888',fontFamily:'system-ui'}}>
+                {es.charAt(0).toUpperCase()+es.slice(1)}
+              </button>;
+            })}
+          </div>
+        </div>
+        {verComentario && (
+          <div style={{marginTop:10,display:'flex',gap:8,alignItems:'flex-start'}}>
+            <textarea value={nuevoComentario} onChange={ev=>setNuevoComentario(ev.target.value)}
+              placeholder="Escribí un comentario..."
+              style={{flex:1,padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
+            <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
+          </div>
+        )}
+      </>)}
+    </div>;
+  };
   return (
     <Card title="✅ Tareas">
       <div style={{fontSize:13,color:'#888',marginBottom:12}}>
@@ -1512,84 +1600,35 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
         onFocus={e=>e.target.style.outline='2px solid #9B4F6A'}
         onBlur={e=>e.target.style.outline='none'}
       />
-      <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
-        <option value="activas">Activas (pendiente + en proceso)</option>
-        <option value="pendiente">Solo pendientes</option>
-        <option value="en proceso">Solo en proceso</option>
-        <option value="terminado">Solo terminadas</option>
-        <option value="todas">Todas</option>
-      </select>
+      <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
+        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
+          <option value="activas">Activas (pendiente + en proceso)</option>
+          <option value="pendiente">Solo pendientes</option>
+          <option value="en proceso">Solo en proceso</option>
+          <option value="terminado">Solo terminadas</option>
+          <option value="todas">Todas</option>
+        </select>
+        <button onClick={()=>setAgrupar(a=>!a)}
+          style={{padding:'7px 14px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #9B4F6A',background:agrupar?'#9B4F6A':'#fff',color:agrupar?'#fff':'#9B4F6A',fontFamily:'system-ui',whiteSpace:'nowrap'}}>
+          {agrupar?'Quitar agrupación':'Agrupar por responsable'}
+        </button>
+      </div>
       <div style={{marginTop:12}}>
-      {listaFiltrada.length ? listaFiltrada.map(t=>{
-        const done = t.estado==='terminado';
-        const esEditando = editandoId===t.id;
-        const verComentario = comentarioId===t.id;
-        const expVinc = t.expediente_id ? expedientes.find(e=>e.id===t.expediente_id) : null;
-        const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
-        const bColor = ESTADO_SOLID[t.estado]||'#E09A3A';
-        return <div key={t.id} style={{marginBottom:12,borderRadius:10,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',background:'#fff',border:'1px solid #EBEBEA',borderLeft:`4px solid ${bColor}`,padding:'14px 16px'}}>
-          {esEditando ? (
-            <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
-              <input value={editForm.descripcion} onChange={ev=>setEditForm({...editForm,descripcion:ev.target.value})}
-                style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
-              <SocioChips value={editForm.responsable} onChange={v=>setEditForm({...editForm,responsable:v})} />
-              <input type="date" value={editForm.deadline||''} onChange={ev=>setEditForm({...editForm,deadline:ev.target.value})}
-                style={{padding:'6px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui'}} />
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={()=>guardarEdicion(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
-                <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
-              </div>
+      {listaFiltrada.length === 0 ? (
+        <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>
+      ) : agrupar ? (
+        grupos.map((grupo, gi) => (
+          <div key={grupo.nombre} style={{marginBottom: gi < grupos.length-1 ? 24 : 0}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <span style={{fontSize:13,fontWeight:600,color:'#9B4F6A',textTransform:'uppercase',letterSpacing:'0.5px',flexShrink:0}}>{grupo.nombre}</span>
+              <div style={{flex:1,height:1,background:'#E8D5DF'}} />
             </div>
-          ) : (<>
-            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:4}}>
-              <div style={{fontSize:15,fontWeight:600,color:done?'#8a8a8a':'#1a1a1a',textDecoration:done?'line-through':'none',lineHeight:1.3,flex:1,marginRight:8}}>{t.descripcion}</div>
-              <div style={{display:'flex',gap:2,flexShrink:0}}>
-                {[
-                  {emoji:'✏️',title:'Editar',onClick:()=>{setEditandoId(t.id);setEditForm({descripcion:t.descripcion,responsable:t.responsable,deadline:t.deadline||''});}},
-                  {emoji:'💬',title:'Agregar comentario',onClick:()=>setComentarioId(verComentario?null:t.id)},
-                  {emoji:'🗑️',title:'Eliminar',onClick:()=>eliminarTarea(t)},
-                ].map(({emoji,title,onClick})=>(
-                  <button key={title} onClick={onClick} title={title}
-                    style={{background:'none',border:'none',cursor:'pointer',fontSize:15,borderRadius:'50%',width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'system-ui'}}
-                    onMouseEnter={e=>e.currentTarget.style.background='#F0F0F0'}
-                    onMouseLeave={e=>e.currentTarget.style.background='none'}
-                  >{emoji}</button>
-                ))}
-              </div>
-            </div>
-            {(expVinc||cliVinc) && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
-            {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
-            <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
-              {(()=>{
-                if(!t.deadline) return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:'normal',background:'#F0F0F0',color:'#888'}}>Sin fecha</span>;
-                const _dd=diasHasta(t.deadline);
-                const _cs=_dd<=2?{bg:'#FDECEA',color:'#C0392B',fw:600}:_dd<=3?{bg:'#FEF0E6',color:'#E67E22',fw:600}:_dd<=7?{bg:'#FAEEDA',color:'#D4A017',fw:400}:{bg:'#EBF6E0',color:'#5A8A4A',fw:400};
-                return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:_cs.fw,background:_cs.bg,color:_cs.color}}>{formatFecha(t.deadline)}</span>;
-              })()}
-              {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
-                <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
-              ))}
-              <div style={{marginLeft:'auto',display:'flex',gap:4}}>
-                {ESTADOS_TAREA.map(es=>{
-                  const sel=t.estado===es;
-                  return <button key={es} onClick={()=>cambiarEstado(t,es)}
-                    style={{padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',border:'none',background:sel?(ESTADO_SOLID[es]||'#ccc'):'#F0F0F0',color:sel?'#fff':'#888',fontFamily:'system-ui'}}>
-                    {es.charAt(0).toUpperCase()+es.slice(1)}
-                  </button>;
-                })}
-              </div>
-            </div>
-            {verComentario && (
-              <div style={{marginTop:10,display:'flex',gap:8,alignItems:'flex-start'}}>
-                <textarea value={nuevoComentario} onChange={ev=>setNuevoComentario(ev.target.value)}
-                  placeholder="Escribí un comentario..."
-                  style={{flex:1,padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
-                <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
-              </div>
-            )}
-          </>)}
-        </div>;
-      }) : <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>}
+            {grupo.tareas.map(t => renderCard(t))}
+          </div>
+        ))
+      ) : (
+        listaFiltrada.map(t => renderCard(t))
+      )}
       </div>
     </Card>
   );
