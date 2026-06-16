@@ -4729,19 +4729,83 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
           );
         }) : <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin etapas todavía.</div>}
         <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
-          <div style={{display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
-            <div style={{flex:'2 1 160px'}}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Descripción</label>
-              <input style={{...inputStyle,marginBottom:0}} placeholder="Nueva etapa..."
-                value={nuevaEtapa.descripcion} onChange={e=>setNuevaEtapa({...nuevaEtapa,descripcion:e.target.value})}
-                onKeyDown={e=>e.key==='Enter'&&agregarEtapa()} />
+          {!showNuevaEtapa ? (
+            <button type="button" onClick={()=>setShowNuevaEtapa(true)}
+              style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',
+                background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500}}>
+              + Nueva etapa
+            </button>
+          ) : (
+            <div style={{background:'#F9F8F5',borderRadius:8,padding:'14px',border:'1px solid #E5E4E0'}}>
+              <div style={{marginBottom:10}}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4,fontWeight:600}}>Descripción *</label>
+                <input style={{...inputStyle,marginBottom:0}} placeholder="Nueva etapa..."
+                  value={nuevaEtapaForm.descripcion}
+                  onChange={e=>setNuevaEtapaForm(p=>({...p,descripcion:e.target.value}))} />
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Vencimiento (opcional)</label>
+                <input type="date" style={{...inputStyle,marginBottom:0}}
+                  value={nuevaEtapaForm.vencimiento}
+                  onChange={e=>setNuevaEtapaForm(p=>({...p,vencimiento:e.target.value}))} />
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Comentario (opcional)</label>
+                <textarea rows={2} style={{...inputStyle,marginBottom:0,resize:'vertical',minHeight:56}}
+                  placeholder="Comentario sobre esta etapa..."
+                  value={nuevaEtapaForm.comentario}
+                  onChange={e=>setNuevaEtapaForm(p=>({...p,comentario:e.target.value}))} />
+              </div>
+              <div style={{marginBottom:10}}>
+                <input type="file" id="file-nueva-etapa" style={{display:'none'}}
+                  onChange={e=>{
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setNuevaEtapaFile(file);
+                    setNuevaEtapaFilePreview(file.name);
+                    e.target.value = '';
+                  }} />
+                <button type="button"
+                  onClick={()=>document.getElementById('file-nueva-etapa').click()}
+                  style={{padding:'8px 16px',borderRadius:6,fontSize:12,cursor:'pointer',
+                    border:'none',fontFamily:'system-ui',fontWeight:500,background:'#9B4F6A',color:'#fff'}}>
+                  📎 Adjuntar archivo
+                </button>
+                {nuevaEtapaFilePreview && (
+                  <span style={{fontSize:11,color:'#8a8a8a',marginLeft:8}}>📄 {nuevaEtapaFilePreview}</span>
+                )}
+              </div>
+              <div style={{marginBottom:14}}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Enlace (opcional)</label>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                  <input style={{...inputStyle,marginBottom:0,flex:'2 1 120px',fontSize:12}} placeholder="Nombre..."
+                    value={nuevaEtapaLink.nombre}
+                    onChange={e=>setNuevaEtapaLink(p=>({...p,nombre:e.target.value}))} />
+                  <input style={{...inputStyle,marginBottom:0,flex:'3 1 160px',fontSize:12}} placeholder="URL..."
+                    value={nuevaEtapaLink.url}
+                    onChange={e=>setNuevaEtapaLink(p=>({...p,url:e.target.value}))} />
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <button type="button" onClick={agregarEtapa} disabled={uploadingNuevaEtapa}
+                  style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:uploadingNuevaEtapa?'not-allowed':'pointer',
+                    border:'none',fontFamily:'system-ui',fontWeight:500,
+                    background:'#9B4F6A',color:'#fff',opacity:uploadingNuevaEtapa?0.6:1}}>
+                  {uploadingNuevaEtapa?'Guardando...':'Guardar etapa'}
+                </button>
+                <button type="button" onClick={()=>{
+                  setShowNuevaEtapa(false);
+                  setNuevaEtapaForm({descripcion:'',vencimiento:'',comentario:''});
+                  setNuevaEtapaFile(null);
+                  setNuevaEtapaFilePreview(null);
+                  setNuevaEtapaLink({nombre:'',url:''});
+                }} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',
+                  border:'1px solid #DDDCDA',background:'#fff',color:'#444441',fontFamily:'system-ui',fontWeight:500}}>
+                  Cancelar
+                </button>
+              </div>
             </div>
-            <div style={{flex:'1 1 120px'}}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Vencimiento (opcional)</label>
-              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaEtapa.vencimiento} onChange={e=>setNuevaEtapa({...nuevaEtapa,vencimiento:e.target.value})} />
-            </div>
-            <button onClick={agregarEtapa} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar etapa</button>
-          </div>
+          )}
         </div>
       </Card>
 
