@@ -1458,14 +1458,30 @@ function SocioChips({ value, onChange }) {
   );
 }
 
-function Tareas({ tareas, recargar, expedientes, clientes }) {
-  const [filtro, setFiltro] = useState('activas');
+function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
+  const [filtro, setFiltro] = useState(() => {
+    if (typeof window === 'undefined') return 'activas';
+    return localStorage.getItem('tareas_filtro_estado') || 'activas';
+  });
+  const [filtroResp, setFiltroResp] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    const s = localStorage.getItem('tareas_filtro_responsable');
+    return s !== null ? s : '';
+  });
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [comentarioId, setComentarioId] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [busqueda, setBusqueda] = useState('');
-  const [agrupar, setAgrupar] = useState(false);
+
+  useEffect(() => {
+    if (perfil?.nombre && typeof window !== 'undefined' && localStorage.getItem('tareas_filtro_responsable') === null) {
+      setFiltroResp(perfil.nombre);
+    }
+  }, [perfil?.nombre]);
+
+  function setFiltroAndSave(v) { setFiltro(v); if (typeof window !== 'undefined') localStorage.setItem('tareas_filtro_estado', v); }
+  function setFiltroRespAndSave(v) { setFiltroResp(v); if (typeof window !== 'undefined') localStorage.setItem('tareas_filtro_responsable', v); }
 
   async function cambiarEstado(t, nuevo) {
     await supabase.from('tareas').update({ estado: nuevo }).eq('id', t.id);
