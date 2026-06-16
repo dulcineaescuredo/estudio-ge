@@ -4142,7 +4142,7 @@ function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoAct
               </Badge>
               <button onClick={(e)=>eliminarAsunto(e,a)}
                 title="Eliminar asunto"
-                style={{background:'none',border:'none',cursor:'pointer',padding:'2px 4px',fontSize:15,color:'#9B7B8B',lineHeight:1}}>
+                style={{background:'none',border:'none',cursor:'pointer',padding:'4px 8px',fontSize:18,color:'#dc2626',lineHeight:1}}>
                 🗑️
               </button>
             </div>
