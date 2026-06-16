@@ -230,34 +230,60 @@ export default function Home() {
           </div>
           <div style={{padding:'10px 10px',flex:1,overflowY:'auto'}}>
             {[
-              ['dashboard','🏠','Inicio',''],
-              ['expedientes','📁','Expedientes',''],
-              ['nuevo-exp','➕','Nuevo expediente','sub'],
-              ['agenda','📅','Agenda',''],
-              ['agenda-vencimientos','⚠️','Vencimientos','sub'],
-              ['agenda-audiencias','⚖️','Audiencias','sub'],
-              ['agenda-turnos','🕐','Turnos','sub'],
-              ['agenda-tareas','✅','Tareas c/vencimiento','sub'],
-              ['consultas','💬','Consultas',''],
-              ['nueva-consulta','➕','Nueva consulta','sub'],
-              ['ver-consultas','📋','Ver consultas','sub'],
-              ['tareas','✅','Tareas',''],
-              ['nueva-tarea','➕','Nueva tarea','sub'],
-              ['honorarios','💰','Honorarios',''],
-              ['clientes','👥','Clientes',''],
-            ].map(([id,emoji,label,tipo])=>{
-              const isSub = tipo==='sub';
-              return <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+              ['dashboard','🏠','Inicio'],
+              ['expedientes','📁','Expedientes'],
+            ].map(([id,emoji,label])=>(
+              <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
                 style={{display:'flex',alignItems:'center',gap:8,
                   width:vista===id?'calc(100% - 8px)':'100%',
                   marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
-                  textAlign:'left',padding:isSub?'6px 10px 6px 28px':'8px 10px',borderRadius:6,fontSize:isSub?13:15,border:'none',
+                  textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
                   background:vista===id?'rgba(255,255,255,0.18)':'transparent',
-                  color:'#FFFFFF',
-                  fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:isSub?36:44}}>
-                <span style={{fontSize:isSub?13:16,flexShrink:0}}>{emoji}</span>{label}
-              </button>;
-            })}
+                  color:'#FFFFFF',fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+                <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>{label}
+              </button>
+            ))}
+            <button onClick={()=>setAgendaAbierta(a=>!a)}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
+                background:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas'].includes(vista)?'rgba(255,255,255,0.18)':'transparent',
+                color:'#FFFFFF',fontWeight:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas'].includes(vista)?600:400,
+                cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+              <span style={{fontSize:16,flexShrink:0}}>📅</span>
+              <span style={{flex:1}}>Agenda</span>
+              <span style={{fontSize:11,opacity:0.8}}>{agendaAbierta?'▼':'▶'}</span>
+            </button>
+            {agendaAbierta && [
+              ['agenda-vencimientos','⚠️','Vencimientos'],
+              ['agenda-audiencias','⚖️','Audiencias'],
+              ['agenda-turnos','🕐','Turnos'],
+              ['agenda-tareas','✅','Tareas c/vencimiento'],
+            ].map(([id,emoji,label])=>(
+              <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+                style={{display:'flex',alignItems:'center',gap:8,
+                  width:vista===id?'calc(100% - 8px)':'100%',
+                  marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
+                  textAlign:'left',padding:'6px 10px 6px 28px',borderRadius:6,fontSize:13,border:'none',
+                  background:vista===id?'rgba(255,255,255,0.18)':'transparent',
+                  color:'#FFFFFF',fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:36}}>
+                <span style={{fontSize:13,flexShrink:0}}>{emoji}</span>{label}
+              </button>
+            ))}
+            {[
+              ['consultas','💬','Consultas'],
+              ['tareas','✅','Tareas'],
+              ['honorarios','💰','Honorarios'],
+              ['clientes','👥','Clientes'],
+            ].map(([id,emoji,label])=>(
+              <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+                style={{display:'flex',alignItems:'center',gap:8,
+                  width:vista===id?'calc(100% - 8px)':'100%',
+                  marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
+                  textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
+                  background:vista===id?'rgba(255,255,255,0.18)':'transparent',
+                  color:'#FFFFFF',fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+                <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>{label}
+              </button>
+            ))}
           </div>
           <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:9}}>
             <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
