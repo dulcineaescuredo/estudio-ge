@@ -1846,7 +1846,11 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
     </div>;
   };
   return (
-    <Card title="✅ Tareas">
+    <Card>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>✅ Tareas</div>
+        <button onClick={()=>setVista('nueva-tarea')} style={btnPrimary}>+ Nueva tarea</button>
+      </div>
       <div style={{fontSize:13,color:'#888',marginBottom:12}}>
         {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':''}`:''}
       </div>
