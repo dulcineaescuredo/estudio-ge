@@ -4357,10 +4357,10 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     await supabase.from('asunto_etapas').insert({
       asunto_id: a.id, estudio_id: perfil.estudio_id,
       descripcion: nuevaEtapa.descripcion.trim(),
-      deadline: nuevaEtapa.deadline||null,
+      deadline: nuevaEtapa.vencimiento||null,
       orden, completada: false,
     });
-    setNuevaEtapa({ descripcion:'', deadline:'' });
+    setNuevaEtapa({ descripcion:'', vencimiento:'' });
     cargarDetalle();
     recargar();
   }
