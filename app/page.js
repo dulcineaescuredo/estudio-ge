@@ -3187,6 +3187,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
   const [msg, setMsg] = useState('');
   const [vincExpId, setVincExpId] = useState('');
   const [vincCliId, setVincCliId] = useState('');
+  const [formKey, setFormKey] = useState(0);
   const set = (k,v)=>setF({...f,[k]:v});
   async function guardar() {
     if (!f.descripcion||!f.responsable) { alert('Completá descripción y responsable (*)'); return; }
