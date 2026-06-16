@@ -125,6 +125,10 @@ export default function Home() {
   const [expActual, setExpActual] = useState(null);
   const [cliActual, setCliActual] = useState(null);
   const [honActual, setHonActual] = useState(null);
+  const [asuntos, setAsuntos] = useState([]);
+  const [asuntoActual, setAsuntoActual] = useState(null);
+  const [asuntoEtapas, setAsuntoEtapas] = useState([]);
+  const [honPreset, setHonPreset] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(false);
   const [sidebarAbierta, setSidebarAbierta] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? false : true);
   const [agendaAbierta, setAgendaAbierta] = useState(false);
