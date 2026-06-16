@@ -2116,7 +2116,7 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   return (
     <div>
       {vistaHon==='estadisticas' ? (
-        <EstadisticasHon cuotas={cuotas} honorarios={honorarios} expedientes={expedientes} clientes={clientes} onVolver={()=>setVistaHon('normal')} />
+        <EstadisticasHon cuotas={cuotas} honorarios={honorarios} expedientes={expedientes} clientes={clientes} valorUhon={valorUhon} onVolver={()=>setVistaHon('normal')} />
       ) : (<>
       <div style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,marginBottom:14,boxShadow:'0 1px 3px rgba(0,0,0,0.06)',overflow:'hidden'}}>
         {/* Header */}
