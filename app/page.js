@@ -4511,24 +4511,35 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       </Card>
 
       <Card title="📋 Etapas">
+        {etapas.length > 0 && !isMobile && (
+          <div style={{display:'grid',gridTemplateColumns:'32px 1fr 130px 60px 60px 40px',gap:'0 8px',padding:'0 0 8px',borderBottom:'2px solid #E5E4E0',marginBottom:4}}>
+            <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600}}>✓</div>
+            <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600}}>Descripción</div>
+            <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600}}>Vencimiento</div>
+            <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600,textAlign:'center'}}>📎</div>
+            <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600,textAlign:'center'}}>💬</div>
+            <div></div>
+          </div>
+        )}
         {etapas.length ? etapas.map(et => {
           const vencido = et.deadline && et.deadline < HOY_LOCAL && !et.completada;
           const editDesc = etapaEdits[et.id]?.descripcion ?? et.descripcion;
           const editDeadline = etapaEdits[et.id]?.deadline ?? (et.deadline||'');
+          const editComentario = etapaEdits[et.id]?.comentario ?? (et.comentario||'');
           const panel = etapaPanels[et.id]||null;
-          const anotEtapa = anotaciones.filter(an=>an.etapa_id===et.id);
           const docsEtapa = documentos.filter(dc=>dc.etapa_id===et.id);
-          const formAnotEtapa = nuevaAnotEtapa[et.id]||{fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''};
           const formLinkEtapa = nuevoLinkEtapa[et.id]||{nombre:'',url:''};
+          const hasDocs = docsEtapa.length > 0;
+          const hasComentario = !!(et.comentario);
           return (
             <div key={et.id} style={{borderBottom:'1px solid #F0EFED'}}>
-              <div style={{display:'flex',alignItems:'flex-start',gap:10,padding:'10px 0'}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'32px 1fr 40px':'32px 1fr 130px 60px 60px 40px',gap:'0 8px',alignItems:'center',padding:'10px 0'}}>
                 <div onClick={()=>toggleEtapa(et)}
-                  style={{width:16,height:16,borderRadius:4,flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
+                  style={{width:16,height:16,borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
                     border:et.completada?'none':'1.5px solid #c9c9c4',background:et.completada?'#2B6CB0':'#fff'}}>
                   {et.completada?'✓':''}
                 </div>
-                <div style={{flex:1}}>
+                <div>
                   <input
                     value={editDesc}
                     onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],descripcion:e.target.value}}))}
@@ -4537,66 +4548,80 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                       textDecoration:et.completada?'line-through':'none',
                       border:'none',outline:'none',background:'transparent',width:'100%',padding:0,fontFamily:'system-ui'}}
                   />
-                  <div style={{display:'flex',gap:8,marginTop:3,flexWrap:'wrap',alignItems:'center'}}>
-                    {!et.completada && (
+                  {et.completada && et.fecha_completada && (
+                    <div style={{fontSize:11,color:'#27500A',fontWeight:500}}>Completada {formatFecha(et.fecha_completada)}</div>
+                  )}
+                  {isMobile && !et.completada && (
+                    <div style={{display:'flex',gap:6,marginTop:4,alignItems:'center',flexWrap:'wrap'}}>
                       <input type="date"
                         value={editDeadline}
                         onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],deadline:e.target.value}}))}
                         onBlur={e=>actualizarEtapa(et,'deadline',e.target.value)}
                         style={{fontSize:11,border:'none',outline:'none',background:'transparent',
-                          color:vencido?'#B45309':'#8a8a8a',fontWeight:vencido?600:400,padding:0,fontFamily:'system-ui'}}
+                          color:vencido?'#dc2626':'#8a8a8a',fontWeight:vencido?600:400,padding:0,fontFamily:'system-ui'}}
                       />
-                    )}
-                    {et.completada && et.fecha_completada && (
-                      <span style={{fontSize:11,color:'#27500A',fontWeight:500}}>✓ Completada {formatFecha(et.fecha_completada)}</span>
-                    )}
-                    {vencido && <span style={{fontSize:11,color:'#B45309',fontWeight:600}}>⚠️ Vencida</span>}
-                  </div>
+                      {vencido && <span style={{fontSize:11,color:'#dc2626',fontWeight:600}}>⚠️</span>}
+                      <button onClick={()=>toggleEtapaPanel(et.id,'documento')}
+                        style={{fontSize:12,padding:'2px 6px',borderRadius:4,border:'1px solid',cursor:'pointer',background:'none',
+                          borderColor:panel==='documento'?'#2B6CB0':'#c9c9c4',
+                          color:panel==='documento'?'#2B6CB0':hasDocs?'#2B6CB0':'#8a8a8a'}}>
+                        📎{hasDocs?` ${docsEtapa.length}`:''}
+                      </button>
+                      <button onClick={()=>toggleEtapaPanel(et.id,'comentario')}
+                        style={{fontSize:12,padding:'2px 6px',borderRadius:4,border:'1px solid',cursor:'pointer',background:'none',
+                          borderColor:panel==='comentario'?'#15803d':'#c9c9c4',
+                          color:panel==='comentario'?'#15803d':hasComentario?'#15803d':'#8a8a8a'}}>
+                        💬
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div style={{display:'flex',gap:2,flexShrink:0,alignItems:'center'}}>
-                  <button onClick={()=>toggleEtapaPanel(et.id,'anotacion')} title="Anotaciones de esta etapa"
-                    style={{fontSize:14,color:panel==='anotacion'?'#2B6CB0':'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}>📝</button>
-                  <button onClick={()=>toggleEtapaPanel(et.id,'documento')} title="Documentos de esta etapa"
-                    style={{fontSize:14,color:panel==='documento'?'#2B6CB0':'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}>📎</button>
+                {!isMobile && (
+                  <div>
+                    {!et.completada ? (
+                      <input type="date"
+                        value={editDeadline}
+                        onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],deadline:e.target.value}}))}
+                        onBlur={e=>actualizarEtapa(et,'deadline',e.target.value)}
+                        style={{fontSize:11,border:'none',outline:'none',background:'transparent',
+                          color:vencido?'#dc2626':'#8a8a8a',fontWeight:vencido?600:400,padding:0,fontFamily:'system-ui',width:'100%'}}
+                      />
+                    ) : (
+                      <span style={{fontSize:11,color:'#8a8a8a'}}>—</span>
+                    )}
+                    {vencido && <div style={{fontSize:10,color:'#dc2626',fontWeight:600}}>⚠️ Vencida</div>}
+                  </div>
+                )}
+                {!isMobile && (
+                  <div style={{textAlign:'center',position:'relative'}}>
+                    <button onClick={()=>toggleEtapaPanel(et.id,'documento')} title="Documentos"
+                      style={{fontSize:16,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',position:'relative',
+                        color:panel==='documento'?'#2B6CB0':hasDocs?'#2B6CB0':'#c9c9c4'}}>
+                      📎
+                      {hasDocs && <span style={{position:'absolute',top:-4,right:-2,background:'#2B6CB0',color:'#fff',borderRadius:8,fontSize:9,padding:'0 4px',minWidth:14,textAlign:'center',lineHeight:'14px'}}>{docsEtapa.length}</span>}
+                    </button>
+                  </div>
+                )}
+                {!isMobile && (
+                  <div style={{textAlign:'center'}}>
+                    <button onClick={()=>toggleEtapaPanel(et.id,'comentario')} title="Comentario"
+                      style={{fontSize:16,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',
+                        color:panel==='comentario'?'#15803d':hasComentario?'#15803d':'#c9c9c4'}}>
+                      💬
+                    </button>
+                  </div>
+                )}
+                <div style={{textAlign:'center'}}>
                   <button onClick={()=>eliminarEtapa(et)} title="Eliminar etapa"
-                    style={{fontSize:13,color:'#8a8a8a',background:'none',border:'none',cursor:'pointer',padding:'0 4px',lineHeight:1}}>🗑️</button>
+                    style={{fontSize:13,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}>🗑️</button>
                 </div>
               </div>
-              {panel === 'anotacion' && (
-                <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
-                  {anotEtapa.length > 0 && anotEtapa.map(an=>(
-                    <div key={an.id} style={{padding:'8px 0',borderBottom:'1px solid #EDEDEB'}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:12,color:'#1a1a1a',whiteSpace:'pre-wrap'}}>{an.texto}</div>
-                          <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>
-                            {an.autora && <span>{an.autora} · </span>}{formatFecha(an.fecha)}
-                          </div>
-                        </div>
-                        <button onClick={()=>eliminarAnotacion(an)}
-                          style={{fontSize:13,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 4px'}}
-                          title="Eliminar">🗑️</button>
-                      </div>
-                    </div>
-                  ))}
-                  {anotEtapa.length === 0 && <div style={{fontSize:12,color:'#8a8a8a',marginBottom:10}}>Sin anotaciones para esta etapa.</div>}
-                  <div style={{marginTop:10}}>
-                    <div style={{display:'flex',gap:8,marginBottom:6,flexWrap:'wrap'}}>
-                      <input type="date" style={{...inputStyle,marginBottom:0,flex:'1 1 100px',fontSize:12}} value={formAnotEtapa.fecha}
-                        onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),fecha:e.target.value}}))} />
-                      <input style={{...inputStyle,marginBottom:0,flex:'2 1 120px',fontSize:12}} placeholder="Autora..."
-                        value={formAnotEtapa.autora}
-                        onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),autora:e.target.value}}))} />
-                    </div>
-                    <textarea style={{...inputStyle,minHeight:50,resize:'vertical',marginBottom:6,fontSize:12}} placeholder="Anotación..."
-                      value={formAnotEtapa.texto}
-                      onChange={e=>setNuevaAnotEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),texto:e.target.value}}))} />
-                    <button onClick={()=>agregarAnotacion(et.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>+ Agregar anotación</button>
-                  </div>
-                </div>
-              )}
               {panel === 'documento' && (
                 <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <span style={{fontSize:12,fontWeight:600,color:'#1a1a1a'}}>Documentos</span>
+                    <button onClick={()=>toggleEtapaPanel(et.id,'documento')} style={{fontSize:14,background:'none',border:'none',cursor:'pointer',color:'#8a8a8a'}}>✕</button>
+                  </div>
                   {docsEtapa.length > 0 && docsEtapa.map(dc=>(
                     <div key={dc.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderBottom:'1px solid #EDEDEB'}}>
                       <span style={{fontSize:13}}>{dc.tipo==='archivo'?'📄':'🔗'}</span>
@@ -4630,6 +4655,22 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                   </div>
                 </div>
               )}
+              {panel === 'comentario' && (
+                <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <span style={{fontSize:12,fontWeight:600,color:'#1a1a1a'}}>Comentario</span>
+                    <button onClick={()=>toggleEtapaPanel(et.id,'comentario')} style={{fontSize:14,background:'none',border:'none',cursor:'pointer',color:'#8a8a8a'}}>✕</button>
+                  </div>
+                  <textarea
+                    style={{...inputStyle,minHeight:70,resize:'vertical',marginBottom:8,fontSize:12}}
+                    placeholder="Comentario sobre esta etapa..."
+                    value={editComentario}
+                    onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:e.target.value}}))}
+                  />
+                  <button onClick={()=>actualizarEtapa(et,'comentario',editComentario)}
+                    style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                </div>
+              )}
             </div>
           );
         }) : <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin etapas todavía.</div>}
@@ -4642,8 +4683,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                 onKeyDown={e=>e.key==='Enter'&&agregarEtapa()} />
             </div>
             <div style={{flex:'1 1 120px'}}>
-              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Deadline (opcional)</label>
-              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaEtapa.deadline} onChange={e=>setNuevaEtapa({...nuevaEtapa,deadline:e.target.value})} />
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Vencimiento (opcional)</label>
+              <input type="date" style={{...inputStyle,marginBottom:0}} value={nuevaEtapa.vencimiento} onChange={e=>setNuevaEtapa({...nuevaEtapa,vencimiento:e.target.value})} />
             </div>
             <button onClick={agregarEtapa} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar etapa</button>
           </div>
