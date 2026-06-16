@@ -2421,9 +2421,23 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, valorUhon,
             </div>
           )}
           {legend}
-          {todasCuotasMes.length>0 && (
+          {(todasCuotasMes.length>0||honSinCuotasMes.length>0) && (
             <div style={{marginTop:16,borderTop:'1px solid #F0EFED',paddingTop:14}}>
-              <div style={{fontSize:12,color:'#6B7280',fontWeight:600,marginBottom:10}}>Cuotas del mes</div>
+              <div style={{fontSize:12,color:'#6B7280',fontWeight:600,marginBottom:10}}>Movimientos del mes</div>
+              {honSinCuotasMes.map(h=>{
+                const exp=h.expediente_id?expedientes.find(e=>e.id===h.expediente_id):null;
+                const cli=h.cliente_id?clientes.find(c=>c.id===h.cliente_id):null;
+                const vincLabel=h.vinculo_tipo==='contraparte'?(h.contraparte_nombre||null):(exp?exp.caratula:(cli?nombreCompleto(cli):null));
+                return <div key={h.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500}}>{h.concepto}</div>
+                    {vincLabel && <div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{vincLabel}</div>}
+                    {h.fecha_pago && <div style={{fontSize:11,color:'#16A34A',marginTop:1}}>pagado el {formatFecha(h.fecha_pago)}</div>}
+                  </div>
+                  <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(montoH(h))}</span>
+                  <Badge bg="#EAF3DE" color="#27500A">pagado</Badge>
+                </div>;
+              })}
               {todasCuotasMes.map(cu=>{
                 const hon=honorarios.find(h=>h.id===cu.honorario_id);
                 const exp=hon?.expediente_id?expedientes.find(e=>e.id===hon.expediente_id):null;
