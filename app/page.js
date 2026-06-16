@@ -1498,8 +1498,20 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
       return a.deadline.localeCompare(b.deadline);
     });
   const ESTADO_SOLID = {'pendiente':'#E09A3A','en proceso':'#5B8FD4','terminado':'#6BAE75'};
+  const listaFiltrada = busqueda ? lista.filter(t=>(t.descripcion||'').toLowerCase().includes(busqueda.toLowerCase())) : lista;
+  const cntPend = listaFiltrada.filter(t=>t.estado==='pendiente').length;
+  const cntEnP = listaFiltrada.filter(t=>t.estado==='en proceso').length;
+  const cntTerm = listaFiltrada.filter(t=>t.estado==='terminado').length;
   return (
     <Card title="✅ Tareas">
+      <div style={{fontSize:13,color:'#888',marginBottom:12}}>
+        {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':'`'}`:''`}
+      </div>
+      <input type="text" placeholder="Buscar tarea..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}
+        style={{width:'100%',maxWidth:400,padding:'8px 12px',border:'1px solid #E0E0E0',borderRadius:8,fontSize:14,outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'}}
+        onFocus={e=>e.target.style.outline='2px solid #9B4F6A'}
+        onBlur={e=>e.target.style.outline='none'}
+      />
       <select style={{...inputStyle,width:'auto'}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
         <option value="activas">Activas (pendiente + en proceso)</option>
         <option value="pendiente">Solo pendientes</option>
@@ -1508,7 +1520,7 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
         <option value="todas">Todas</option>
       </select>
       <div style={{marginTop:12}}>
-      {lista.length ? lista.map(t=>{
+      {listaFiltrada.length ? listaFiltrada.map(t=>{
         const done = t.estado==='terminado';
         const esEditando = editandoId===t.id;
         const verComentario = comentarioId===t.id;
