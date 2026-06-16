@@ -1258,10 +1258,13 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
   const [clienteId, setClienteId] = useState('');
   const [clienteNombre, setClienteNombre] = useState('');
   const [clienteAbierto, setClienteAbierto] = useState(false);
+  const [modoNuevoCliente, setModoNuevoCliente] = useState(false);
   const [clienteDni, setClienteDni] = useState('');
   const [clienteTelefono, setClienteTelefono] = useState('');
   const [clienteDomicilio, setClienteDomicilio] = useState('');
   const [clienteEmail, setClienteEmail] = useState('');
+  const [clienteNotas, setClienteNotas] = useState('');
+  const [clienteResponsable, setClienteResponsable] = useState('');
   const [msg, setMsg] = useState('');
   const [estadoPago, setEstadoPago] = useState('pendiente');
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, abogada: prev.abogada||perfil.nombre})); }, [perfil]);
@@ -1272,28 +1275,35 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
     : [];
 
   function seleccionarCliente(cl) {
-    setClienteId(cl.id); setClienteNombre(nombreCompleto(cl)); setClienteQ(''); setClienteAbierto(false);
-    setClienteDni(cl.dni||''); setClienteTelefono(cl.telefono||''); setClienteDomicilio(cl.domicilio||''); setClienteEmail(cl.email||'');
+    setClienteId(cl.id); setClienteNombre(nombreCompleto(cl)); setClienteQ(''); setClienteAbierto(false); setModoNuevoCliente(false);
+  }
+
+  function iniciarNuevoCliente() {
+    setClienteId(''); setClienteAbierto(false); setModoNuevoCliente(true);
+    setClienteDni(''); setClienteTelefono(''); setClienteDomicilio(''); setClienteEmail(''); setClienteNotas(''); setClienteResponsable('');
+  }
+
+  function limpiarCliente() {
+    setClienteId(''); setClienteNombre(''); setClienteQ(''); setModoNuevoCliente(false);
+    setClienteDni(''); setClienteTelefono(''); setClienteDomicilio(''); setClienteEmail(''); setClienteNotas(''); setClienteResponsable('');
   }
 
   async function guardar() {
     const nombreFinal = clienteId ? clienteNombre : clienteQ;
     if (!nombreFinal||!f.fecha||!f.abogada||!f.motivo) { alert('Completá los obligatorios (*)'); return; }
+    if (!clienteId && !modoNuevoCliente) { alert('Seleccioná un cliente existente o elegí "Crear nuevo cliente" del desplegable.'); return; }
     if (!perfil) { alert('Esperá un segundo a que cargue tu perfil y probá de nuevo.'); return; }
     let resolvedId = clienteId;
-    if (!clienteId && clienteQ) {
+    if (!clienteId && modoNuevoCliente) {
       const { data: nc, error: ce } = await supabase.from('clientes').insert({
         nombre: clienteQ, dni: clienteDni||null, telefono: clienteTelefono||null,
         domicilio: clienteDomicilio||null, email: clienteEmail||null,
+        notas: clienteNotas||null, responsable: clienteResponsable||null,
         notas_primer_consulta: f.tipo==='primera' ? (f.notas_consulta||null) : null,
         estudio_id: perfil.estudio_id
       }).select('id').single();
       if (ce) { alert('Error al crear cliente: '+ce.message); return; }
       resolvedId = nc.id;
-    } else if (clienteId) {
-      const upd = { dni: clienteDni||null, telefono: clienteTelefono||null, domicilio: clienteDomicilio||null, email: clienteEmail||null };
-      if (f.tipo==='primera' && f.notas_consulta) upd.notas_primer_consulta = f.notas_consulta;
-      await supabase.from('clientes').update(upd).eq('id', clienteId);
     }
     const { error } = await supabase.from('consultas').insert({
       tipo: f.tipo, cliente: nombreFinal, cliente_id: resolvedId||null,
@@ -1326,8 +1336,7 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
       ? `Consulta de ${nombreFinal} guardada.`
       : `Consulta de ${nombreFinal} guardada. No se pudo crear el honorario automáticamente. Podés cargarlo manualmente.`);
     setF({ tipo:'primera', fecha:HOY, abogada:f.abogada, motivo:'', comentario:'', valor_consulta:'', notas_consulta:'' });
-    setClienteQ(''); setClienteId(''); setClienteNombre('');
-    setClienteDni(''); setClienteTelefono(''); setClienteDomicilio(''); setClienteEmail('');
+    limpiarCliente();
     setEstadoPago('pendiente');
     recargar();
     setTimeout(()=>setMsg(''), honOk ? 3000 : 6000);
@@ -1345,39 +1354,95 @@ function NuevaConsulta({ perfil, recargar, clientes }) {
               <button key={v} onClick={()=>{ set('tipo',v); if(v!=='primera') setEstadoPago('pendiente'); }} style={{flex:1,padding:9,border:f.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:f.tipo===v?'#E6F1FB':'#f9f8f5',color:f.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
             ))}
           </div>
+
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente *</label>
-          <div style={{position:'relative'}}>
-            <input style={{...inputStyle,marginBottom:0}}
-              placeholder="Nombre del cliente..."
-              value={clienteId ? clienteNombre : clienteQ}
-              onChange={ev=>{setClienteQ(ev.target.value);setClienteId('');setClienteNombre('');setClienteAbierto(true);setClienteDni('');setClienteTelefono('');setClienteDomicilio('');setClienteEmail('');}}
-              onFocus={()=>setClienteAbierto(true)}
-              onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
-            />
-            {clienteAbierto&&sugsCliente.length>0&&(
-              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
-                {sugsCliente.map(cl=>(
-                  <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
-                    style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
-                    {nombreCompleto(cl)}{cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
+
+          {/* Cliente existente seleccionado */}
+          {clienteId && (
+            <div style={{display:'flex',alignItems:'center',gap:10,background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',marginBottom:12}}>
+              <span style={{fontSize:18,color:'#27500A',flexShrink:0}}>✓</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:600,color:'#27500A',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{clienteNombre}</div>
+                <div style={{fontSize:11,color:'#4a8a3a',marginTop:1}}>Cliente existente seleccionado</div>
+              </div>
+              <button onClick={limpiarCliente} title="Cambiar cliente"
+                style={{background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:4,flexShrink:0}}>×</button>
+            </div>
+          )}
+
+          {/* Campo de búsqueda (solo si no hay cliente seleccionado) */}
+          {!clienteId && (
+            <div style={{position:'relative',marginBottom:0}}>
+              <input
+                style={{...inputStyle,marginBottom:0}}
+                placeholder="Buscar cliente por nombre o DNI..."
+                value={clienteQ}
+                onChange={ev=>{setClienteQ(ev.target.value);setModoNuevoCliente(false);setClienteAbierto(true);}}
+                onFocus={()=>setClienteAbierto(true)}
+                onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
+              />
+              {clienteAbierto && clienteQ && (
+                <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:240,overflowY:'auto',marginTop:2}}>
+                  {sugsCliente.map(cl=>(
+                    <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
+                      style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}
+                      onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
+                      onMouseLeave={e=>e.currentTarget.style.background=''}>
+                      <span style={{fontWeight:500}}>{nombreCompleto(cl)}</span>
+                      {cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
+                      {cl.telefono&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>· {cl.telefono}</span>}
+                    </div>
+                  ))}
+                  <div
+                    onMouseDown={e=>e.preventDefault()}
+                    onClick={iniciarNuevoCliente}
+                    style={{padding:'9px 12px',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontWeight:600,
+                      borderTop:sugsCliente.length>0?'1px solid #F0EFED':undefined,
+                      display:'flex',alignItems:'center',gap:6}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
+                    onMouseLeave={e=>e.currentTarget.style.background=''}>
+                    + Crear nuevo cliente: "{clienteQ}"
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Bloque de nuevo cliente */}
+          {!clienteId && modoNuevoCliente && (
+            <div style={{background:'#FEF9EE',border:'1px solid #F0D070',borderRadius:8,padding:'14px 16px',marginTop:8,marginBottom:12}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+                <span style={{fontSize:15,flexShrink:0}}>⚠️</span>
+                <span style={{fontSize:13,fontWeight:600,color:'#92400E'}}>Se creará un nuevo cliente</span>
+                <button onClick={limpiarCliente}
+                  style={{marginLeft:'auto',background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:12,fontFamily:'system-ui',padding:'2px 6px',borderRadius:4}}>
+                  ✕ cancelar
+                </button>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Email',clienteEmail,setClienteEmail],['Domicilio',clienteDomicilio,setClienteDomicilio]].map(([label,val,setter])=>(
+                  <div key={label}>
+                    <label style={{fontSize:11,color:'#4a4a4a',fontWeight:500,display:'block',marginBottom:3}}>{label}</label>
+                    <input style={{...inputStyle,marginBottom:0,fontSize:12,background:'#fff'}} value={val} onChange={e=>setter(e.target.value)} />
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-          {clienteId && <div style={{fontSize:11,color:'#27500A',marginTop:4,marginBottom:8}}>✓ Cliente existente</div>}
-          {!clienteId && clienteQ && <div style={{fontSize:11,color:'#8a8a8a',marginTop:4,marginBottom:8}}>Se creará como cliente nuevo al guardar</div>}
-          {!clienteId && !clienteQ && <div style={{marginBottom:8}}/>}
-          {f.tipo==='primera'&&(
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-              {[['DNI',clienteDni,setClienteDni],['Teléfono',clienteTelefono,setClienteTelefono],['Domicilio',clienteDomicilio,setClienteDomicilio],['Email',clienteEmail,setClienteEmail]].map(([label,val,setter])=>(
-                <div key={label}>
-                  <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:3}}>{label}</label>
-                  <input style={{...inputStyle,marginBottom:0,fontSize:12}} value={val} onChange={e=>setter(e.target.value)} />
-                </div>
-              ))}
+              <div style={{marginTop:8}}>
+                <label style={{fontSize:11,color:'#4a4a4a',fontWeight:500,display:'block',marginBottom:3}}>Notas (opcional)</label>
+                <textarea style={{...inputStyle,marginBottom:0,minHeight:48,resize:'vertical',fontSize:12,background:'#fff'}} value={clienteNotas} onChange={e=>setClienteNotas(e.target.value)} placeholder="Anotaciones sobre el cliente..." />
+              </div>
+              <div style={{marginTop:8}}>
+                <label style={{fontSize:11,color:'#4a4a4a',fontWeight:500,display:'block',marginBottom:3}}>Responsable</label>
+                <select style={{...inputStyle,marginBottom:0,fontSize:12,background:'#fff'}} value={clienteResponsable} onChange={e=>setClienteResponsable(e.target.value)}>
+                  <option value="">Seleccioná</option>
+                  {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+                </select>
+              </div>
             </div>
           )}
+
+          {!clienteId && !modoNuevoCliente && <div style={{marginBottom:8}}/>}
+
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
           <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
           <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Abogada/o *</label>
