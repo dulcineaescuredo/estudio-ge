@@ -4315,15 +4315,13 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
 
   async function cargarDetalle() {
     if (!a?.id) return;
-    const [{ data: et },{ data: gs },{ data: an },{ data: dc }] = await Promise.all([
+    const [{ data: et },{ data: gs },{ data: dc }] = await Promise.all([
       supabase.from('asunto_etapas').select('*').eq('asunto_id', a.id).order('orden', { ascending: true }),
       supabase.from('asunto_gastos').select('*').eq('asunto_id', a.id).order('fecha', { ascending: false }),
-      supabase.from('asunto_anotaciones').select('*').eq('asunto_id', a.id).order('fecha', { ascending: false }),
       supabase.from('asunto_documentos').select('*').eq('asunto_id', a.id).order('id', { ascending: true }),
     ]);
     setEtapas(et||[]);
     setGastos(gs||[]);
-    setAnotaciones(an||[]);
     setDocumentos(dc||[]);
   }
 
