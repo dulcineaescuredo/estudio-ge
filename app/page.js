@@ -305,6 +305,35 @@ export default function Home() {
             {[
               ['consultas','💬','Consultas'],
               ['tareas','✅','Tareas'],
+            ].map(([id,emoji,label])=>(
+              <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+                style={{display:'flex',alignItems:'center',gap:8,
+                  width:vista===id?'calc(100% - 8px)':'100%',
+                  marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
+                  textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
+                  background:vista===id?'rgba(255,255,255,0.18)':'transparent',
+                  color:'#FFFFFF',fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+                <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>{label}
+              </button>
+            ))}
+            <button onClick={()=>{setVista('notificaciones');setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+              style={{display:'flex',alignItems:'center',gap:8,position:'relative',
+                width:vista==='notificaciones'?'calc(100% - 8px)':'100%',
+                marginLeft:vista==='notificaciones'?4:0,marginRight:vista==='notificaciones'?4:0,
+                textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
+                background:vista==='notificaciones'?'rgba(255,255,255,0.18)':'transparent',
+                color:'#FFFFFF',fontWeight:vista==='notificaciones'?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+              <span style={{fontSize:16,flexShrink:0,position:'relative'}}>
+                🔔
+                {notifNoLeidas > 0 && (
+                  <span style={{position:'absolute',top:-6,right:-8,background:'#DC2626',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>
+                    {notifNoLeidas > 9 ? '9+' : notifNoLeidas}
+                  </span>
+                )}
+              </span>
+              Notificaciones
+            </button>
+            {[
               ['honorarios','💰','Honorarios'],
               ['clientes','👥','Clientes'],
             ].map(([id,emoji,label])=>(
