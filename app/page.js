@@ -1127,7 +1127,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           }
         </Card>
         <Card title="📋 Anotaciones">
-          <textarea style={{...inputStyle,minHeight:64,resize:'vertical'}} placeholder="Escribí una nota: lo que pasó en la audiencia, algo para el próximo escrito..." value={notaTexto} onChange={e=>setNotaTexto(e.target.value)} />
+          <MentionTextarea style={{...inputStyle,minHeight:64,resize:'vertical'}} placeholder="Escribí una nota: lo que pasó en la audiencia, algo para el próximo escrito..." value={notaTexto} onChange={setNotaTexto} perfiles={perfilesEstudio} />
           <button onClick={agregarNota} disabled={guardando} style={{...btnPrimary,width:'100%',marginBottom:14}}>{guardando?'Guardando...':'+ Agregar nota'}</button>
           {notasExp.length ? notasExp.map(n=>(
             <div key={n.id} style={{background:'#F7F6F3',borderRadius:8,padding:'11px 13px',marginBottom:8}}>
