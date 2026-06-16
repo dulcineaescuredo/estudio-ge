@@ -1533,12 +1533,6 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
   const cntPend = listaFiltrada.filter(t=>t.estado==='pendiente').length;
   const cntEnP = listaFiltrada.filter(t=>t.estado==='en proceso').length;
   const cntTerm = listaFiltrada.filter(t=>t.estado==='terminado').length;
-  const editSugsExp = editVinculo==='expediente' && editVincQ
-    ? expedientes.filter(e=>(e.caratula||'').toLowerCase().includes(editVincQ.toLowerCase())||(e.numero||'').toLowerCase().includes(editVincQ.toLowerCase())).slice(0,8)
-    : [];
-  const editSugsCli = editVinculo==='cliente' && editVincQ
-    ? clientes.filter(cl=>(nombreCompleto(cl)||'').toLowerCase().includes(editVincQ.toLowerCase())).slice(0,8)
-    : [];
   const renderCard = (t) => {
     const done = t.estado==='terminado';
     const verComentario = comentarioId===t.id;
