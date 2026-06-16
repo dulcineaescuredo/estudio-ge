@@ -1607,7 +1607,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
             <button onClick={()=>agregarComentario(t)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Agregar</button>
           </div>
         )}
-      </>)}
+      </>
     </div>;
   };
   return (
