@@ -4415,7 +4415,12 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       nombre: file.name, tipo: 'archivo', url: publicUrl, estudio_id: perfil.estudio_id,
     });
     if (insErr) alert('Error INSERT documento: ' + JSON.stringify(insErr));
-    if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:false})); else setUploading(false);
+    if (etapaId) {
+      setUploadingEtapa(prev=>({...prev,[etapaId]:false}));
+      setFilePreviewEtapa(prev=>({...prev,[etapaId]:null}));
+    } else {
+      setUploading(false);
+    }
     cargarDetalle();
   }
 
