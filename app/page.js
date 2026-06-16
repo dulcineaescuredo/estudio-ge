@@ -355,6 +355,9 @@ function Contenido(props) {
   if (vista === 'expedientes') return <Expedientes {...props} />;
   if (vista === 'detalle') return <Detalle {...props} />;
   if (vista === 'nuevo-exp') return <NuevoExpediente {...props} />;
+  if (vista === 'extrajudicial') return <Extrajudicial {...props} />;
+  if (vista === 'nuevo-asunto') return <NuevoAsunto {...props} />;
+  if (vista === 'detalle-asunto') return <DetalleAsunto {...props} />;
   if (vista === 'notas') return <Notas {...props} />;
   if (vista === 'consultas') return <Consultas {...props} />;
   if (vista === 'nueva-consulta') return <NuevaConsulta {...props} />;
