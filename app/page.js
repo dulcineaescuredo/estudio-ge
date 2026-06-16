@@ -750,6 +750,16 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
 function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, clientes }) {
   const [guardando, setGuardando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
+  const [gastosExp, setGastosExp] = useState([]);
+  const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
+
+  useEffect(()=>{
+    if (!expActual?.id) return;
+    supabase.from('expediente_gastos').select('*').eq('expediente_id', expActual.id).order('fecha', { ascending: false })
+      .then(({data}) => setGastosExp(data||[]));
+  // eslint-disable-next-line
+  }, [expActual?.id]);
+
   const e = expActual;
   if (!e) return null;
   const mapa = PROCESOS[e.tipo_proceso];
@@ -814,7 +824,29 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     setGuardando(false);
     recargar();
   }
+  async function cargarGastos() {
+    const { data } = await supabase.from('expediente_gastos').select('*').eq('expediente_id', e.id).order('fecha', { ascending: false });
+    setGastosExp(data||[]);
+  }
+  async function agregarGasto() {
+    if (!nuevoGasto.descripcion.trim() || !nuevoGasto.monto) { alert('Completá descripción y monto.'); return; }
+    await supabase.from('expediente_gastos').insert({
+      expediente_id: e.id, estudio_id: e.estudio_id,
+      descripcion: nuevoGasto.descripcion.trim(),
+      monto: Number(nuevoGasto.monto),
+      fecha: nuevoGasto.fecha||HOY_LOCAL,
+    });
+    setNuevoGasto({ descripcion:'', monto:'', fecha:HOY_LOCAL });
+    cargarGastos();
+  }
+  async function eliminarGasto(g) {
+    if (!confirm('¿Eliminar este gasto?')) return;
+    await supabase.from('expediente_gastos').delete().eq('id', g.id);
+    cargarGastos();
+  }
+
   const notasExp = notas.filter(n=>n.expediente_id===e.id);
+  const totalGastos = gastosExp.reduce((s,g)=>s+(Number(g.monto)||0),0);
 
   return (
     <div>
@@ -940,6 +972,51 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           )) : <div style={{color:'#8a8a8a',fontSize:12,textAlign:'center',padding:18}}>Sin anotaciones todavía.</div>}
         </Card>
       </div>
+
+      <Card title="💸 Gastos">
+        {gastosExp.length > 0 && (
+          <>
+            {gastosExp.map(g => (
+              <div key={g.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:500}}>{g.descripcion}</div>
+                  {g.fecha && <div style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(g.fecha)}</div>}
+                </div>
+                <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(g.monto)}</span>
+                <button onClick={()=>eliminarGasto(g)} title="Eliminar gasto"
+                  style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}>🗑️</button>
+              </div>
+            ))}
+            <div style={{display:'flex',justifyContent:'flex-end',paddingTop:10,borderTop:'1px solid #F0EFED',marginTop:2}}>
+              <span style={{fontSize:13,fontWeight:700,color:'#1a1a1a'}}>Total: {fmtMoneda(totalGastos)}</span>
+            </div>
+          </>
+        )}
+        {gastosExp.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin gastos cargados.</div>}
+        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
+          <div style={{display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
+            <div style={{flex:'2 1 160px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Descripción</label>
+              <input style={{...inputStyle,marginBottom:0}} placeholder="Ej: Sellado, tasa, pericia..."
+                value={nuevoGasto.descripcion} onChange={ev=>setNuevoGasto({...nuevoGasto,descripcion:ev.target.value})} />
+            </div>
+            <div style={{flex:'1 1 100px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Monto ($)</label>
+              <input type="number" style={{...inputStyle,marginBottom:0}} placeholder="0"
+                value={nuevoGasto.monto} onChange={ev=>setNuevoGasto({...nuevoGasto,monto:ev.target.value})} />
+            </div>
+            <div style={{flex:'1 1 120px'}}>
+              <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Fecha</label>
+              <input type="date" style={{...inputStyle,marginBottom:0}}
+                value={nuevoGasto.fecha} onChange={ev=>setNuevoGasto({...nuevoGasto,fecha:ev.target.value})} />
+            </div>
+            <button onClick={agregarGasto}
+              style={{padding:'9px 14px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,flexShrink:0}}>
+              + Agregar
+            </button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
