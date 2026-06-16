@@ -4365,15 +4365,48 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   }
 
   async function agregarEtapa() {
-    if (!nuevaEtapa.descripcion.trim()) { alert('La descripción es obligatoria.'); return; }
+    if (!nuevaEtapaForm.descripcion.trim()) { alert('La descripción es obligatoria.'); return; }
+    setUploadingNuevaEtapa(true);
     const orden = etapas.length > 0 ? Math.max(...etapas.map(e=>e.orden||0)) + 1 : 1;
-    await supabase.from('asunto_etapas').insert({
+    const { data: etapaData, error: etapaErr } = await supabase.from('asunto_etapas').insert({
       asunto_id: a.id, estudio_id: perfil.estudio_id,
-      descripcion: nuevaEtapa.descripcion.trim(),
-      deadline: nuevaEtapa.vencimiento||null,
+      descripcion: nuevaEtapaForm.descripcion.trim(),
+      deadline: nuevaEtapaForm.vencimiento||null,
+      comentario: nuevaEtapaForm.comentario||null,
       orden, completada: false,
-    });
-    setNuevaEtapa({ descripcion:'', vencimiento:'' });
+    }).select().single();
+    if (etapaErr) { alert('Error al crear etapa: ' + JSON.stringify(etapaErr)); setUploadingNuevaEtapa(false); return; }
+    const etapaId = etapaData.id;
+    if (nuevaEtapaFile) {
+      const safeName = nuevaEtapaFile.name
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${perfil.estudio_id}/${a.id}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, nuevaEtapaFile, { upsert: false });
+      if (upErr) {
+        alert('Error Storage: ' + JSON.stringify(upErr));
+      } else {
+        const publicUrl = supabase.storage.from('asunto-documentos').getPublicUrl(path).data.publicUrl;
+        await supabase.from('asunto_documentos').insert({
+          asunto_id: a.id, etapa_id: etapaId,
+          nombre: nuevaEtapaFile.name, tipo: 'archivo', url: publicUrl, estudio_id: perfil.estudio_id,
+        });
+      }
+    }
+    if (nuevaEtapaLink.nombre.trim() && nuevaEtapaLink.url.trim()) {
+      await supabase.from('asunto_documentos').insert({
+        asunto_id: a.id, etapa_id: etapaId,
+        nombre: nuevaEtapaLink.nombre.trim(), tipo: 'url', url: nuevaEtapaLink.url.trim(),
+        estudio_id: perfil.estudio_id,
+      });
+    }
+    setUploadingNuevaEtapa(false);
+    setNuevaEtapaForm({ descripcion:'', vencimiento:'', comentario:'' });
+    setNuevaEtapaFile(null);
+    setNuevaEtapaFilePreview(null);
+    setNuevaEtapaLink({ nombre:'', url:'' });
+    setShowNuevaEtapa(false);
     cargarDetalle();
     recargar();
   }
