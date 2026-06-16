@@ -4340,7 +4340,11 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   }
 
   async function actualizarEtapa(et, campo, valor) {
-    await supabase.from('asunto_etapas').update({ [campo]: valor||null }).eq('id', et.id);
+    const { error } = await supabase.from('asunto_etapas').update({ [campo]: valor||null }).eq('id', et.id);
+    if (error) { alert('Error comentario: ' + JSON.stringify(error)); return; }
+    if (campo === 'comentario') {
+      setEtapas(prev => prev.map(e => e.id === et.id ? {...e, comentario: valor||null} : e));
+    }
     cargarDetalle();
   }
 
