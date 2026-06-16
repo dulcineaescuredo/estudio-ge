@@ -4536,66 +4536,6 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
         <button onClick={()=>actualizarAsunto('notas', notaTexto)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
       </Card>
 
-      <Card title="📎 Documentos">
-        {docsAsunto.length > 0 && docsAsunto.map(dc=>(
-          <div key={dc.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
-            <span style={{fontSize:15}}>{dc.tipo==='archivo'?'📄':'🔗'}</span>
-            <a href={dc.url} target="_blank" rel="noopener noreferrer"
-              style={{flex:1,fontSize:13,color:'#2B6CB0',textDecoration:'none',fontWeight:500}}>{dc.nombre}</a>
-            <button onClick={()=>eliminarDocumento(dc)}
-              style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}
-              title="Eliminar documento">🗑️</button>
-          </div>
-        ))}
-        {docsAsunto.length === 0 && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:14}}>Sin documentos adjuntos.</div>}
-        <div style={{marginTop:14,borderTop:'1px solid #F0EFED',paddingTop:14}}>
-          <div style={{marginBottom:10}}>
-            <input
-              type="file"
-              id="file-asunto-general"
-              style={{display:'none'}}
-              disabled={uploading}
-              onChange={e=>{
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setFilePreview(file.name);
-                subirDocumento(file, null);
-                e.target.value = '';
-              }}
-            />
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={()=>document.getElementById('file-asunto-general').click()}
-              onMouseEnter={()=>setHoverUpload(true)}
-              onMouseLeave={()=>setHoverUpload(false)}
-              style={{padding:'8px 16px',borderRadius:6,fontSize:12,cursor:uploading?'not-allowed':'pointer',
-                border:'none',fontFamily:'system-ui',fontWeight:500,
-                background:hoverUpload&&!uploading?'#7d3d55':'#9B4F6A',
-                color:'#fff',opacity:uploading?0.6:1,transition:'background 0.15s'}}
-            >
-              📎 Adjuntar archivo
-            </button>
-            {uploading && filePreview && (
-              <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreview} — Subiendo...</div>
-            )}
-            {!uploading && filePreview && (
-              <div style={{fontSize:11,color:'#8a8a8a',marginTop:5}}>📄 {filePreview}</div>
-            )}
-          </div>
-          <div>
-            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:6,fontWeight:600}}>AGREGAR ENLACE</label>
-            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              <input style={{...inputStyle,marginBottom:0,flex:'2 1 160px'}} placeholder="Nombre del enlace..."
-                value={nuevoLink.nombre} onChange={e=>setNuevoLink(p=>({...p,nombre:e.target.value}))} />
-              <input style={{...inputStyle,marginBottom:0,flex:'3 1 200px'}} placeholder="URL..."
-                value={nuevoLink.url} onChange={e=>setNuevoLink(p=>({...p,url:e.target.value}))} />
-              <button type="button" onClick={()=>agregarLink(null)} style={{...btnPrimary,padding:'9px 14px',flexShrink:0}}>+ Agregar</button>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       <Card title="📋 Etapas">
         {etapas.length > 0 && !isMobile && (
           <div style={{display:'grid',gridTemplateColumns:'32px 1fr 130px 60px 60px 40px',gap:'0 8px',padding:'0 0 8px',borderBottom:'2px solid #E5E4E0',marginBottom:4}}>
