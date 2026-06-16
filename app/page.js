@@ -2390,7 +2390,7 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
   );
 }
 
-function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar, perfil }) {
+function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setVista, setHonActual, recargar, perfil, asuntos }) {
   const [q, setQ] = useState('');
   const [editUhon, setEditUhon] = useState(false);
   const [uhonInput, setUhonInput] = useState(valorUhon||'');
