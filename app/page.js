@@ -3098,7 +3098,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
     if (error) { alert('Error: '+error.message); return; }
     setMsg(`Tarea asignada a ${f.responsable} creada.`);
     setF({ descripcion:'', responsable:'', deadline:'', comentario:'' });
-    setVinculo('ninguno'); setVincQ(''); setVincId(''); setVincNombre(''); setVincAbierto(false);
+    setVincExpId(''); setVincCliId('');
     recargar();
     setTimeout(()=>setMsg(''),3000);
   }
