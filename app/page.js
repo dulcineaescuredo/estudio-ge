@@ -4416,7 +4416,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     if (!file) return;
     if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:true}));
     else setUploading(true);
-    const path = `${a.id}/${Date.now()}_${file.name}`;
+    const path = `${perfil.estudio_id}/${a.id}/${Date.now()}_${file.name}`;
     const { error: upErr } = await supabase.storage.from('asunto-documentos').upload(path, file);
     if (upErr) {
       alert('Error al subir archivo.');
