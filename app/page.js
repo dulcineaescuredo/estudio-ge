@@ -317,6 +317,9 @@ export default function Home() {
           expActual={expActual} setExpActual={setExpActual}
           cliActual={cliActual} setCliActual={setCliActual}
           honActual={honActual} setHonActual={setHonActual}
+          asuntos={asuntos} asuntoActual={asuntoActual} setAsuntoActual={setAsuntoActual}
+          asuntoEtapas={asuntoEtapas}
+          honPreset={honPreset} setHonPreset={setHonPreset}
           recargar={cargarDatos}
         />
       </div>
