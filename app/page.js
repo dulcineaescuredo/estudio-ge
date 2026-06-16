@@ -1505,9 +1505,13 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
     setComentarioId(null);
     recargar();
   }
+  const responsablesUnicos = [...new Set(
+    tareas.flatMap(t=>(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean))
+  )].sort();
   const lista = tareas
     .map(t=>({...t, estado: normEstado(t.estado)}))
     .filter(t=> filtro==='todas' ? true : (filtro==='activas' ? t.estado!=='terminado' : t.estado===filtro))
+    .filter(t=> !filtroResp || (t.responsable||'').split(',').map(s=>s.trim()).includes(filtroResp))
     .sort((a,b)=>{
       const orden = { 'pendiente':0, 'en proceso':1, 'terminado':2 };
       if(orden[a.estado]!==orden[b.estado]) return orden[a.estado]-orden[b.estado];
