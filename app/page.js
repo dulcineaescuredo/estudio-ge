@@ -623,7 +623,11 @@ function Expedientes({ expedientes, setVista, setExpActual }) {
   const listaPag = listaFiltrada.slice(desde, hasta);
 
   return (
-    <Card title="📁 Expedientes">
+    <Card>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>📁 Expedientes</div>
+        <button onClick={()=>setVista('nuevo-exp')} style={btnPrimary}>+ Nuevo expediente</button>
+      </div>
       <input style={inputStyle} placeholder="Buscar expediente..." value={q} onChange={e=>{setQ(e.target.value);resetPag();}} />
 
       <div style={{display:'flex',gap:10,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
