@@ -4388,30 +4388,6 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     cargarDetalle();
   }
 
-  async function agregarAnotacion(etapaId) {
-    const form = etapaId ? (nuevaAnotEtapa[etapaId]||{fecha:HOY_LOCAL,autora:'',texto:''}) : nuevaAnotAsunto;
-    if (!form.texto.trim()) { alert('Escribí el texto de la anotación.'); return; }
-    await supabase.from('asunto_anotaciones').insert({
-      asunto_id: a.id, estudio_id: perfil.estudio_id,
-      etapa_id: etapaId||null,
-      fecha: form.fecha||HOY_LOCAL,
-      autora: form.autora||null,
-      texto: form.texto.trim(),
-    });
-    if (etapaId) {
-      setNuevaAnotEtapa(prev=>({...prev,[etapaId]:{fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''}}));
-    } else {
-      setNuevaAnotAsunto({fecha:HOY_LOCAL,autora:perfil?.nombre||'',texto:''});
-    }
-    cargarDetalle();
-  }
-
-  async function eliminarAnotacion(an) {
-    if (!confirm('¿Eliminar esta anotación?')) return;
-    await supabase.from('asunto_anotaciones').delete().eq('id', an.id);
-    cargarDetalle();
-  }
-
   async function subirDocumento(file, etapaId) {
     if (!file) return;
     if (etapaId) setUploadingEtapa(prev=>({...prev,[etapaId]:true}));
