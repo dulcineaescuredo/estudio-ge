@@ -1640,6 +1640,62 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
         listaFiltrada.map(t => renderCard(t))
       )}
       </div>
+      {modalEditTarea && (
+        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.4)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#fff',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.18)',padding:28,maxWidth:520,width:'100%',maxHeight:'90vh',overflowY:'auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
+              <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>✅ Editar tarea</div>
+              <button onClick={()=>setModalEditTarea(null)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#888',lineHeight:1}}>×</button>
+            </div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción *</label>
+            <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={editModalForm.descripcion} onChange={e=>setEditModalForm({...editModalForm,descripcion:e.target.value})} />
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
+            <SocioChips value={editModalForm.responsable} onChange={v=>setEditModalForm({...editModalForm,responsable:v})} />
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
+            <input type="date" style={inputStyle} value={editModalForm.deadline} onChange={e=>setEditModalForm({...editModalForm,deadline:e.target.value})} />
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a (opcional)</label>
+            <div style={{display:'flex',gap:8,marginBottom:12}}>
+              {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente']].map(([v,l])=>(
+                <button key={v} onClick={()=>{setEditVinculo(v);setEditVincQ('');setEditVincId('');setEditVincNombre('');setEditVincAbierto(false);}}
+                  style={{flex:1,padding:'7px 6px',border:editVinculo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:editVinculo===v?'#E6F1FB':'#f9f8f5',color:editVinculo===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
+              ))}
+            </div>
+            {(editVinculo==='expediente'||editVinculo==='cliente') && (
+              <div style={{position:'relative',marginBottom:12}}>
+                <input
+                  style={{...inputStyle,marginBottom:0}}
+                  placeholder={editVinculo==='expediente'?'N° o carátula del expediente...':'Nombre del cliente...'}
+                  value={editVincNombre||editVincQ}
+                  onChange={ev=>{setEditVincQ(ev.target.value);setEditVincId('');setEditVincNombre('');setEditVincAbierto(true);}}
+                  onFocus={()=>setEditVincAbierto(true)}
+                  onBlur={()=>setTimeout(()=>setEditVincAbierto(false),150)}
+                />
+                {editVincId && <div style={{fontSize:11,color:'#27500A',marginTop:4}}>✓ {editVincNombre}</div>}
+                {editVincAbierto && (editVinculo==='expediente'?editSugsExp:editSugsCli).length>0 && (
+                  <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:220,overflowY:'auto',marginTop:2}}>
+                    {(editVinculo==='expediente'?editSugsExp:editSugsCli).map(item=>(
+                      <div key={item.id}
+                        onMouseDown={ev=>ev.preventDefault()}
+                        onClick={()=>{setEditVincId(item.id);setEditVincNombre(editVinculo==='expediente'?item.caratula:nombreCompleto(item));setEditVincQ('');setEditVincAbierto(false);}}
+                        style={{padding:'9px 12px',cursor:'pointer',fontSize:12,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
+                        {editVinculo==='expediente'
+                          ? <><span style={{color:'#6B7280',fontSize:11}}>{item.numero} — </span>{item.caratula}</>
+                          : nombreCompleto(item)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
+            <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
+            <div style={{display:'flex',gap:8,marginTop:4}}>
+              <button onClick={guardarEdicion} style={btnPrimary}>Guardar cambios</button>
+              <button onClick={()=>setModalEditTarea(null)} style={{padding:'10px 20px',borderRadius:8,fontSize:14,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
