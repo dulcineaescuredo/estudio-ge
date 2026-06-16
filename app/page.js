@@ -3587,11 +3587,19 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes, perfilesEstudio =
     };
     const { error } = await supabase.from('tareas').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
+    const descFinal = f.descripcion;
     setMsg(`Tarea asignada a ${f.responsable} creada.`);
     setF({ descripcion:'', responsable:'', deadline:'', comentario:'' });
     setVincExpId(''); setVincCliId(''); setFormKey(k=>k+1);
     recargar();
     setTimeout(()=>setMsg(''),3000);
+    if (crearNotificacion) {
+      const mencionados = extraerMenciones(descFinal, perfilesEstudio);
+      const preview = descFinal.substring(0, 60);
+      for (const dest of mencionados) {
+        await crearNotificacion({ destinatario_id: dest.id, mensaje: `${perfil.nombre} te mencionó en una tarea: "${preview}"`, contexto: `Tarea: ${descFinal.substring(0,40)}`, link: 'tareas' });
+      }
+    }
   }
   return (
     <Card title="✅ Nueva tarea">
