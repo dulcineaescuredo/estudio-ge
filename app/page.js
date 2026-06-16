@@ -3566,7 +3566,7 @@ function CambiarPassword({ setVista }) {
   );
 }
 
-function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
+function NuevaTarea({ perfil, recargar, expedientes, clientes, perfilesEstudio = [], crearNotificacion }) {
   const [f, setF] = useState({ descripcion:'', responsable:'', deadline:'', comentario:'' });
   useEffect(()=>{ if(perfil?.nombre) setF(prev=>({...prev, responsable: prev.responsable||perfil.nombre})); }, [perfil]);
   const [msg, setMsg] = useState('');
