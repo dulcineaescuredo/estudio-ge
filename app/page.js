@@ -1639,40 +1639,16 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
             <SocioChips value={editModalForm.responsable} onChange={v=>setEditModalForm({...editModalForm,responsable:v})} />
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
             <input type="date" style={inputStyle} value={editModalForm.deadline} onChange={e=>setEditModalForm({...editModalForm,deadline:e.target.value})} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vincular a (opcional)</label>
-            <div style={{display:'flex',gap:8,marginBottom:12}}>
-              {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente']].map(([v,l])=>(
-                <button key={v} onClick={()=>{setEditVinculo(v);setEditVincQ('');setEditVincId('');setEditVincNombre('');setEditVincAbierto(false);}}
-                  style={{flex:1,padding:'7px 6px',border:editVinculo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',background:editVinculo===v?'#E6F1FB':'#f9f8f5',color:editVinculo===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
-              ))}
-            </div>
-            {(editVinculo==='expediente'||editVinculo==='cliente') && (
-              <div style={{position:'relative',marginBottom:12}}>
-                <input
-                  style={{...inputStyle,marginBottom:0}}
-                  placeholder={editVinculo==='expediente'?'N° o carátula del expediente...':'Nombre del cliente...'}
-                  value={editVincNombre||editVincQ}
-                  onChange={ev=>{setEditVincQ(ev.target.value);setEditVincId('');setEditVincNombre('');setEditVincAbierto(true);}}
-                  onFocus={()=>setEditVincAbierto(true)}
-                  onBlur={()=>setTimeout(()=>setEditVincAbierto(false),150)}
-                />
-                {editVincId && <div style={{fontSize:11,color:'#27500A',marginTop:4}}>✓ {editVincNombre}</div>}
-                {editVincAbierto && (editVinculo==='expediente'?editSugsExp:editSugsCli).length>0 && (
-                  <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:220,overflowY:'auto',marginTop:2}}>
-                    {(editVinculo==='expediente'?editSugsExp:editSugsCli).map(item=>(
-                      <div key={item.id}
-                        onMouseDown={ev=>ev.preventDefault()}
-                        onClick={()=>{setEditVincId(item.id);setEditVincNombre(editVinculo==='expediente'?item.caratula:nombreCompleto(item));setEditVincQ('');setEditVincAbierto(false);}}
-                        style={{padding:'9px 12px',cursor:'pointer',fontSize:12,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
-                        {editVinculo==='expediente'
-                          ? <><span style={{color:'#6B7280',fontSize:11}}>{item.numero} — </span>{item.caratula}</>
-                          : nombreCompleto(item)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Expediente (opcional)</label>
+            <select style={inputStyle} value={editExpId} onChange={e=>setEditExpId(e.target.value)}>
+              <option value="">— Sin expediente —</option>
+              {expedientes.map(e=><option key={e.id} value={e.id}>{e.caratula}{e.numero?' ('+e.numero+')':''}</option>)}
+            </select>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
+            <select style={inputStyle} value={editCliId} onChange={e=>setEditCliId(e.target.value)}>
+              <option value="">— Sin cliente —</option>
+              {clientes.map(c=><option key={c.id} value={c.id}>{nombreCompleto(c)}</option>)}
+            </select>
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
             <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
             <div style={{display:'flex',gap:8,marginTop:4}}>
