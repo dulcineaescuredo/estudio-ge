@@ -1954,8 +1954,10 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
   }
   async function eliminarCliente() {
     if (!confirm(`¿Seguro que querés eliminar a ${nombreCompleto(cl)}? Esta acción no se puede deshacer.`)) return;
-    await supabase.from('clientes').delete().eq('id', cl.id);
-    recargar();
+    const { error } = await supabase.from('clientes').delete().eq('id', cl.id);
+    if (error) { alert('Error al eliminar: ' + error.message); return; }
+    setMsgEliminar(`${nombreCompleto(cl)} eliminado correctamente.`);
+    await recargar();
     setVista('clientes');
   }
   async function guardarNotasPrimer() {
