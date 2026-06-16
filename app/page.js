@@ -4084,7 +4084,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   );
 }
 
-function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoActual }) {
+function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoActual, recargar }) {
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
   const listaFiltrada = (asuntos||[]).filter(a => {
@@ -4092,6 +4092,14 @@ function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoAct
     if (filtroEstado === 'finalizados') return a.estado === 'finalizado';
     return true;
   });
+
+  async function eliminarAsunto(e, a) {
+    e.stopPropagation();
+    if (!window.confirm('¿Eliminar este asunto? Esta acción no se puede deshacer.')) return;
+    const { error } = await supabase.from('asuntos').delete().eq('id', a.id);
+    if (error) { alert('Error al eliminar: ' + error.message); return; }
+    recargar();
+  }
 
   return (
     <Card>
