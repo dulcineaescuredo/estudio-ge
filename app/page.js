@@ -1937,6 +1937,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
   const [f, setF] = useState(cl);
   const [editandoNotasPrimer, setEditandoNotasPrimer] = useState(false);
   const [notasPrimerEdit, setNotasPrimerEdit] = useState('');
+  const [msgEliminar, setMsgEliminar] = useState('');
   if (!cl) return null;
   const exps = expedientes.filter(e=>e.cliente_id===cl.id);
   const histConsultas = (consultas||[]).filter(c=>c.cliente_id===cl.id).sort((a,b)=>b.fecha.localeCompare(a.fecha));
