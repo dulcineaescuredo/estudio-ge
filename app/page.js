@@ -4709,8 +4709,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       </Card>
 
       <Card title="📝 Notas">
-        <textarea style={{...inputStyle,minHeight:80,resize:'vertical'}} value={notaTexto} onChange={e=>setNotaTexto(e.target.value)} placeholder="Notas sobre este asunto..." />
-        <button onClick={()=>actualizarAsunto('notas', notaTexto)} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
+        <MentionTextarea style={{...inputStyle,minHeight:80,resize:'vertical'}} value={notaTexto} onChange={setNotaTexto} placeholder="Notas sobre este asunto..." perfiles={perfilesEstudio} />
+        <button onClick={async()=>{await actualizarAsunto('notas',notaTexto);if(crearNotificacion){const mens=extraerMenciones(notaTexto,perfilesEstudio);const prv=notaTexto.substring(0,60);for(const d of mens)await crearNotificacion({destinatario_id:d.id,mensaje:`${perfil.nombre} te mencionó en "${a.titulo}": "${prv}"`,contexto:`Asunto: ${a.titulo}`,link:'extrajudicial'});}}} style={{...btnPrimary,padding:'7px 14px',fontSize:12}}>Guardar notas</button>
       </Card>
 
       <Card title="📋 Etapas">
