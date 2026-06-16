@@ -163,7 +163,7 @@ export default function Home() {
       supabase.from('honorarios').select('*').order('creado_en', { ascending: false }),
       supabase.from('cuotas').select('*').order('numero', { ascending: true }),
       supabase.from('config').select('*').maybeSingle(),
-      supabase.from('asuntos').select('*').order('creado_en', { ascending: false }),
+      supabase.from('asuntos').select('*').order('created_at', { ascending: false }),
       supabase.from('asunto_etapas').select('*').order('orden', { ascending: true }),
     ]);
     setExpedientes(e.data || []);
