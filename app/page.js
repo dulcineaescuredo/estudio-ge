@@ -2825,8 +2825,8 @@ function EstadisticasHon({ cuotas, honorarios, expedientes, clientes, valorUhon,
   );
 }
 
-function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes }) {
-  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
+function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asuntos, honPreset, setHonPreset }) {
+  const [f, setF] = useState({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', asunto_id:'', en_cuotas:false, notas:'', fecha:HOY });
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [distribSocios, setDistribSocios] = useState([]);
   const [gastosPorc, setGastosPorc] = useState(3);
