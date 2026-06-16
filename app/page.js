@@ -1497,9 +1497,17 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
     await supabase.from('tareas').delete().eq('id', t.id);
     recargar();
   }
-  async function guardarEdicion(t) {
-    await supabase.from('tareas').update({ descripcion: editForm.descripcion, responsable: editForm.responsable, deadline: editForm.deadline||null }).eq('id', t.id);
-    setEditandoId(null);
+  async function guardarEdicion() {
+    if (!editModalForm.descripcion || !editModalForm.responsable) { alert('Completá descripción y responsable (*)'); return; }
+    await supabase.from('tareas').update({
+      descripcion: editModalForm.descripcion,
+      responsable: editModalForm.responsable,
+      deadline: editModalForm.deadline || null,
+      comentario: editModalForm.comentario || null,
+      expediente_id: editVinculo === 'expediente' ? editVincId || null : null,
+      cliente_id: editVinculo === 'cliente' ? editVincId || null : null,
+    }).eq('id', modalEditTarea.id);
+    setModalEditTarea(null);
     recargar();
   }
   async function agregarComentario(t) {
