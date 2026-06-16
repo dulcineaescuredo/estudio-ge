@@ -4860,7 +4860,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
 
       <Card title="💰 Honorarios">
         <button onClick={()=>{setHonPreset&&setHonPreset({vinculo_tipo:'asunto',asunto_id:a.id});setVista('nuevo-honorario');}}
-          style={{...btnPrimary,marginBottom:14}}>+ Nuevo honorario</button>
+          style={{...btnPrimary,marginBottom:14,background:'#9B4F6A',borderColor:'#9B4F6A'}}>+ Nuevo honorario</button>
         {honAsunto.length > 0 ? (
           <HonorariosTable lista={honAsunto} expedientes={[]} clientes={clientes||[]} cuotas={cuotas||[]}
             valorUhon={valorUhon} setHonActual={setHonActual||(() =>{})} setVista={setVista} recargar={recargar} asuntos={asuntos||[]} />
