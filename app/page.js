@@ -3606,7 +3606,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes, perfilesEstudio =
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
       <div style={{maxWidth:520}}>
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción *</label>
-        <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} />
+        <MentionTextarea style={{...inputStyle,minHeight:72,resize:'vertical'}} placeholder="Describí la tarea..." value={f.descripcion} onChange={v=>set('descripcion',v)} perfiles={perfilesEstudio} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
         <SocioChips value={f.responsable} onChange={v=>set('responsable',v)} />
         <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
