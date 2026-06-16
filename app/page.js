@@ -2833,6 +2833,13 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asu
   const [msg, setMsg] = useState('');
   const set = (k,v)=>setF({...f,[k]:v});
   useEffect(()=>{
+    if (honPreset?.vinculo_tipo==='asunto' && honPreset?.asunto_id) {
+      setF(prev=>({...prev, vinculo_tipo:'asunto', asunto_id: honPreset.asunto_id}));
+      if (setHonPreset) setHonPreset(null);
+    }
+  // eslint-disable-next-line
+  }, []);
+  useEffect(()=>{
     if (!perfil?.estudio_id) return;
     Promise.all([
       supabase.from('perfiles').select('*').eq('estudio_id', perfil.estudio_id).order('nombre'),
