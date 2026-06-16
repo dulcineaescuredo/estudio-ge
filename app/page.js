@@ -1789,14 +1789,9 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
             <input type="date" style={inputStyle} value={editModalForm.deadline} onChange={e=>setEditModalForm({...editModalForm,deadline:e.target.value})} />
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Expediente (opcional)</label>
-            <select style={inputStyle} value={editExpId} onChange={e=>setEditExpId(e.target.value)}>
-              <option value="">— Sin expediente —</option>
-              {expedientes.map(e=><option key={e.id} value={e.id}>{e.caratula}{e.numero?' ('+e.numero+')':''}</option>)}
-            </select>
+            <ExpCombobox expedientes={expedientes} value={editExpId} onChange={setEditExpId} />
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
-            <select style={inputStyle} value={editCliId} onChange={e=>setEditCliId(e.target.value)}>
-              <option value="">— Sin cliente —</option>
-              {clientes.map(c=><option key={c.id} value={c.id}>{nombreCompleto(c)}</option>)}
+            <CliCombobox clientes={clientes} value={editCliId} onChange={setEditCliId} perfil={perfil} recargar={recargar} />
             </select>
             <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
             <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
