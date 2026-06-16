@@ -1458,7 +1458,7 @@ function SocioChips({ value, onChange }) {
   );
 }
 
-function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
+function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, setExpActual, setCliActual }) {
   const [filtro, setFiltro] = useState(() => {
     if (typeof window === 'undefined') return 'activas';
     return localStorage.getItem('tareas_filtro_estado') || 'activas';
