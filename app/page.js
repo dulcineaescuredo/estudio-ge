@@ -4459,7 +4459,7 @@ function NuevoAsunto({ perfil, recargar, setVista, clientes }) {
   );
 }
 
-function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, honorarios, cuotas, valorUhon, perfil, recargar, asuntos, honPreset, setHonPreset, setHonActual }) {
+function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, honorarios, cuotas, valorUhon, perfil, recargar, asuntos, honPreset, setHonPreset, setHonActual, perfilesEstudio = [], crearNotificacion }) {
   const a = asuntoActual;
   const [etapas, setEtapas] = useState([]);
   const [gastos, setGastos] = useState([]);
