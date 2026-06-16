@@ -1470,11 +1470,8 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
   });
   const [modalEditTarea, setModalEditTarea] = useState(null);
   const [editModalForm, setEditModalForm] = useState({});
-  const [editVinculo, setEditVinculo] = useState('ninguno');
-  const [editVincQ, setEditVincQ] = useState('');
-  const [editVincId, setEditVincId] = useState('');
-  const [editVincNombre, setEditVincNombre] = useState('');
-  const [editVincAbierto, setEditVincAbierto] = useState(false);
+  const [editExpId, setEditExpId] = useState('');
+  const [editCliId, setEditCliId] = useState('');
   const [comentarioId, setComentarioId] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [busqueda, setBusqueda] = useState('');
