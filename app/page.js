@@ -2886,7 +2886,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asu
       if (rows.length) await supabase.from('honorarios_socios').insert(rows);
     }
     setMsg(`Honorario "${f.concepto}" guardado.` + (f.en_cuotas?' Ahora podés cargarle las cuotas desde su detalle.':''));
-    setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', en_cuotas:false, notas:'', fecha:HOY });
+    setF({ concepto:'', tipo_trabajo:'', forma:'uhon', valor:'', monto_base:'', vinculo_tipo:'ninguno', expediente_id:'', cliente_id:'', contraparte_nombre:'', asunto_id:'', en_cuotas:false, notas:'', fecha:HOY });
     setDistribSocios(distribSocios.map(ds=>({...ds,porcentaje:0})));
     recargar();
     setTimeout(()=>setMsg(''),4000);
