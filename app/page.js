@@ -4722,7 +4722,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                     onChange={e=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:e.target.value}}))}
                   />
                   <button onClick={()=>actualizarEtapa(et,'comentario',editComentario)}
-                    style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                    style={{...btnPrimary,padding:'6px 12px',fontSize:12,background:'#9B4F6A',borderColor:'#9B4F6A'}}>Guardar</button>
                 </div>
               )}
             </div>
