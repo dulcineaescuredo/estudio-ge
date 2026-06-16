@@ -1969,6 +1969,7 @@ function DetalleCliente({ cliActual, setCliActual, expedientes, consultas, setVi
   return (
     <div>
       <button onClick={()=>setVista('clientes')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver a clientes</button>
+      {msgEliminar && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msgEliminar}</div>}
       <Card>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
           <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>{nombreCompleto(cl)}</div>
