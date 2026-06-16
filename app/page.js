@@ -2266,7 +2266,7 @@ const HON_ESTADO_COLOR = {
   'pagado': { bg:'#EAF3DE', color:'#27500A' }
 };
 
-function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setHonActual, setVista, recargar }) {
+function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setHonActual, setVista, recargar, asuntos }) {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [orden, setOrden] = useState({ col: null, dir: null });
   const [panelAbierto, setPanelAbierto] = useState(null);
