@@ -1092,7 +1092,7 @@ function Notas({ notas, expedientes, setVista, setExpActual, recargar }) {
   );
 }
 
-function Consultas({ consultas, recargar }) {
+function Consultas({ consultas, recargar, setVista }) {
   const [q, setQ] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
