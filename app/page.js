@@ -1562,7 +1562,8 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
             ))}
           </div>
         </div>
-        {(expVinc||cliVinc) && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>{expVinc?'📁':'👤'} {expVinc?expVinc.caratula:nombreCompleto(cliVinc)}</div>}
+        {expVinc && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:2}}>📁 {expVinc.caratula}</div>}
+        {cliVinc && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>👤 {nombreCompleto(cliVinc)}</div>}
         {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
         <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
           {(()=>{
