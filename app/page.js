@@ -1603,32 +1603,22 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil }) {
         onFocus={e=>e.target.style.outline='2px solid #9B4F6A'}
         onBlur={e=>e.target.style.outline='none'}
       />
-      <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
-        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtro} onChange={e=>setFiltro(e.target.value)}>
+      <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
+        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtro} onChange={e=>setFiltroAndSave(e.target.value)}>
           <option value="activas">Activas (pendiente + en proceso)</option>
           <option value="pendiente">Solo pendientes</option>
           <option value="en proceso">Solo en proceso</option>
           <option value="terminado">Solo terminadas</option>
           <option value="todas">Todas</option>
         </select>
-        <button onClick={()=>setAgrupar(a=>!a)}
-          style={{padding:'7px 14px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #9B4F6A',background:agrupar?'#9B4F6A':'#fff',color:agrupar?'#fff':'#9B4F6A',fontFamily:'system-ui',whiteSpace:'nowrap'}}>
-          {agrupar?'Quitar agrupación':'Agrupar por responsable'}
-        </button>
+        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtroResp} onChange={e=>setFiltroRespAndSave(e.target.value)}>
+          <option value="">Responsable: Todas</option>
+          {responsablesUnicos.map(r=><option key={r} value={r}>{r}</option>)}
+        </select>
       </div>
       <div style={{marginTop:12}}>
       {listaFiltrada.length === 0 ? (
         <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>
-      ) : agrupar ? (
-        grupos.map((grupo, gi) => (
-          <div key={grupo.nombre} style={{marginBottom: gi < grupos.length-1 ? 24 : 0}}>
-            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-              <span style={{fontSize:13,fontWeight:600,color:'#9B4F6A',textTransform:'uppercase',letterSpacing:'0.5px',flexShrink:0}}>{grupo.nombre}</span>
-              <div style={{flex:1,height:1,background:'#E8D5DF'}} />
-            </div>
-            {grupo.tareas.map(t => renderCard(t))}
-          </div>
-        ))
       ) : (
         listaFiltrada.map(t => renderCard(t))
       )}
