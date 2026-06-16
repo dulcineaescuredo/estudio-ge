@@ -4136,9 +4136,16 @@ function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoAct
                 {totalEtapas > 0 && <span style={{fontSize:12,color:'#6B7280'}}>{completadas}/{totalEtapas} etapas</span>}
               </div>
             </div>
-            <Badge bg={esFinalizado?'#F3F4F6':'#EAF3DE'} color={esFinalizado?'#6B7280':'#27500A'}>
-              {esFinalizado?'Finalizado':'Activo'}
-            </Badge>
+            <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+              <Badge bg={esFinalizado?'#F3F4F6':'#EAF3DE'} color={esFinalizado?'#6B7280':'#27500A'}>
+                {esFinalizado?'Finalizado':'Activo'}
+              </Badge>
+              <button onClick={(e)=>eliminarAsunto(e,a)}
+                title="Eliminar asunto"
+                style={{background:'none',border:'none',cursor:'pointer',padding:'2px 4px',fontSize:15,color:'#9B7B8B',lineHeight:1}}>
+                🗑️
+              </button>
+            </div>
           </div>
         );
       }) : (
