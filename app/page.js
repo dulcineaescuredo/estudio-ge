@@ -1505,7 +1505,7 @@ function Tareas({ tareas, recargar, expedientes, clientes }) {
   return (
     <Card title="✅ Tareas">
       <div style={{fontSize:13,color:'#888',marginBottom:12}}>
-        {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':'`'}`:''`}
+        {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':''}`:''}
       </div>
       <input type="text" placeholder="Buscar tarea..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}
         style={{width:'100%',maxWidth:400,padding:'8px 12px',border:'1px solid #E0E0E0',borderRadius:8,fontSize:14,outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'}}
