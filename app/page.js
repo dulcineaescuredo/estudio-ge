@@ -3091,8 +3091,8 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes }) {
       estudio_id: perfil.estudio_id,
       estado: 'pendiente',
       deadline: f.deadline||null,
-      expediente_id: vinculo==='expediente' ? vincId||null : null,
-      cliente_id: vinculo==='cliente' ? vincId||null : null,
+      expediente_id: vincExpId||null,
+      cliente_id: vincCliId||null,
     };
     const { error } = await supabase.from('tareas').insert(payload);
     if (error) { alert('Error: '+error.message); return; }
