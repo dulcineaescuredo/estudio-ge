@@ -1562,8 +1562,18 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
             ))}
           </div>
         </div>
-        {expVinc && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:2}}>📁 {expVinc.caratula}</div>}
-        {cliVinc && <div style={{fontSize:12,color:'#8a8a8a',fontStyle:'italic',marginBottom:4}}>👤 {nombreCompleto(cliVinc)}</div>}
+        {expVinc && <div style={{fontSize:12,fontStyle:'italic',marginBottom:2}}>📁 <span
+          onClick={()=>{setExpActual(expVinc);setVista('detalle');}}
+          style={{color:'#9B4F6A',cursor:'pointer',textDecoration:'none'}}
+          onMouseEnter={e=>e.target.style.textDecoration='underline'}
+          onMouseLeave={e=>e.target.style.textDecoration='none'}
+        >{expVinc.caratula}</span></div>}
+        {cliVinc && <div style={{fontSize:12,fontStyle:'italic',marginBottom:4}}>👤 <span
+          onClick={()=>{setCliActual(cliVinc);setVista('detalle-cliente');}}
+          style={{color:'#9B4F6A',cursor:'pointer',textDecoration:'none'}}
+          onMouseEnter={e=>e.target.style.textDecoration='underline'}
+          onMouseLeave={e=>e.target.style.textDecoration='none'}
+        >{nombreCompleto(cliVinc)}</span></div>}
         {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
         <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
           {(()=>{
