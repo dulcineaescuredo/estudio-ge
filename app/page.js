@@ -4657,7 +4657,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                         <input style={{...inputStyle,marginBottom:0,flex:'3 1 160px',fontSize:12}} placeholder="URL..."
                           value={formLinkEtapa.url}
                           onChange={e=>setNuevoLinkEtapa(p=>({...p,[et.id]:{...(p[et.id]||{}),url:e.target.value}}))} />
-                        <button onClick={()=>agregarLink(et.id)} style={{...btnPrimary,padding:'7px 10px',fontSize:12,flexShrink:0}}>+ Agregar</button>
+                        <button type="button" onClick={()=>agregarLink(et.id)} style={{...btnPrimary,padding:'7px 10px',fontSize:12,flexShrink:0}}>+ Agregar</button>
                       </div>
                     </div>
                   </div>
