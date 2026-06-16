@@ -4782,10 +4782,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                       style={{fontSize:13,fontWeight:500,border:'none',outline:'none',background:'transparent',width:'100%',padding:0,fontFamily:'system-ui',color:'#1a1a1a'}} />
                     {g.fecha && <div style={{fontSize:11,color:'#8a8a8a'}}>{formatFecha(g.fecha)}</div>}
                   </div>
-                  <input type="number" value={editMontoG}
-                    onChange={e=>setGastoEdits(p=>({...p,[g.id]:{...p[g.id],monto:e.target.value}}))}
-                    onBlur={e=>actualizarGasto(g,'monto',e.target.value)}
-                    style={{fontSize:13,fontWeight:600,border:'none',outline:'none',background:'transparent',width:80,padding:0,textAlign:'right',fontFamily:'system-ui',color:'#1a1a1a'}} />
+                  <span style={{fontSize:13,fontWeight:600,color:'#1a1a1a',flexShrink:0}}>{fmtMoneda(g.monto)}</span>
                   <button onClick={()=>eliminarGasto(g)} title="Eliminar gasto"
                     style={{fontSize:14,color:'#dc2626',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0}}>🗑️</button>
                 </div>
