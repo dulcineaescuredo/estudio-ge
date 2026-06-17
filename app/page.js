@@ -973,6 +973,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const etapasVis = mapa ? mapa.etapas
     .filter(et => !et.req || prog.dec[et.req[0]] === et.req[1])
     .filter(et => !(esDemandada && et.id === 'dem'))
+    .filter(et => !prog.etapasOcultas.includes(et.id))
     .map(et => {
       if (esDemandada && et.id === 'con') return { ...et, n: 'Contestar demanda' };
       return et;
@@ -980,6 +981,13 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
 
   const motivoEsOtro = !etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||''));
   const [motivoOtro, setMotivoOtro] = useState(motivoEsOtro ? (e.motivo_vencimiento||'') : '');
+
+  const etapasConCustom = [...etapasVis];
+  for (const c of prog.etapasCustom) {
+    if (prog.etapasOcultas.includes(c.id)) continue;
+    const idx = etapasConCustom.findIndex(et=>et.id===c.afterId);
+    if (idx>=0) etapasConCustom.splice(idx+1,0,c); else etapasConCustom.push(c);
+  }
 
   async function guardarProg(nuevoProg) {
     setExpActual({...e, progreso: nuevoProg});
