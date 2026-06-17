@@ -4638,6 +4638,35 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     }
   }
 
+  async function publicarComentarioEtapa(et) {
+    const texto = (nuevoComentarioEtapa[et.id] || '').trim();
+    if (!texto) return;
+    setEnviandoComentarioEtapa(prev => ({ ...prev, [et.id]: true }));
+    await supabase.from('etapa_comentarios').insert({
+      etapa_id: et.id,
+      autor_id: perfil.id,
+      autor_nombre: perfil.nombre,
+      texto,
+      estudio_id: perfil.estudio_id,
+    });
+    const mencionados = extraerMenciones(texto, perfilesEstudio);
+    if (crearNotificacion) {
+      const preview = texto.substring(0, 60);
+      const linkNotif = `extrajudicial:${a.id}:${et.id}`;
+      for (const dest of mencionados) {
+        await crearNotificacion({
+          destinatario_id: dest.id,
+          mensaje: `${perfil.nombre} te mencionó en un comentario: "${preview}"`,
+          contexto: a.titulo,
+          link: linkNotif,
+        });
+      }
+    }
+    setNuevoComentarioEtapa(prev => ({ ...prev, [et.id]: '' }));
+    await cargarComentariosEtapa(et.id);
+    setEnviandoComentarioEtapa(prev => ({ ...prev, [et.id]: false }));
+  }
+
   async function eliminarEtapa(et) {
     if (!confirm('¿Eliminar esta etapa?')) return;
     await supabase.from('asunto_etapas').delete().eq('id', et.id);
