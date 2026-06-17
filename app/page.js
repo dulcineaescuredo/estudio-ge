@@ -414,20 +414,38 @@ function MentionTextarea({ value, onChange, onSave, placeholder, rows, style = {
   const [query, setQuery] = useState('');
   const [atPos, setAtPos] = useState(-1);
   const [selIdx, setSelIdx] = useState(0);
+  const [dropRect, setDropRect] = useState(null);
   const taRef = useRef(null);
   const mirrorRef = useRef(null);
+  const outerRef = useRef(null);
+
+  useEffect(() => {
+    console.log('[MentionTextarea] perfiles al montar:', perfiles.length, perfiles.map(p=>p.nombre));
+  // eslint-disable-next-line
+  }, []);
 
   const filtered = perfiles
     .filter(p => !query || p.nombre.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 5);
+
+  useEffect(() => {
+    if (showDrop && outerRef.current) {
+      const r = outerRef.current.getBoundingClientRect();
+      setDropRect({ top: r.bottom, left: r.left, width: r.width });
+    }
+  }, [showDrop]);
 
   function handleChange(e) {
     const val = e.target.value;
     const cur = e.target.selectionStart;
     const before = val.slice(0, cur);
     const m = before.match(/@([\wáéíóúÁÉÍÓÚüÜñÑ]*)$/);
-    if (m) { setQuery(m[1]); setAtPos(before.lastIndexOf('@')); setShowDrop(true); setSelIdx(0); }
-    else setShowDrop(false);
+    if (m) {
+      console.log('[MentionTextarea] @ detectado, query:', JSON.stringify(m[1]), 'perfiles disponibles:', perfiles.length);
+      setQuery(m[1]); setAtPos(before.lastIndexOf('@')); setShowDrop(true); setSelIdx(0);
+    } else {
+      setShowDrop(false);
+    }
     onChange(val);
   }
 
@@ -471,7 +489,7 @@ function MentionTextarea({ value, onChange, onSave, placeholder, rows, style = {
   const base = { padding:'9px 12px', fontSize:fs, fontFamily:'system-ui', lineHeight:'1.5', boxSizing:'border-box', whiteSpace:'pre-wrap', wordBreak:'break-word' };
 
   return (
-    <div style={{ position:'relative', marginBottom:mb }}>
+    <div ref={outerRef} style={{ position:'relative', marginBottom:mb }}>
       <div style={{ position:'relative', background:'#F7F6F3', borderRadius:8, border:'1px solid #DDDCDA', minHeight:mh }}>
         <div ref={mirrorRef} aria-hidden style={{ ...base, position:'absolute', top:0, left:0, right:0, bottom:0, overflow:'hidden', pointerEvents:'none', color:'#1a1a1a', zIndex:0 }}
           dangerouslySetInnerHTML={{ __html: buildHtml(value) }} />
@@ -482,8 +500,8 @@ function MentionTextarea({ value, onChange, onSave, placeholder, rows, style = {
           onBlur={()=>setTimeout(()=>setShowDrop(false),150)} rows={rows}
           style={{ ...base, display:'block', width:'100%', border:'none', outline:'none', background:'transparent', color:'transparent', caretColor:'#1a1a1a', resize:rsz, minHeight:mh, position:'relative', zIndex:1 }} />
       </div>
-      {showDrop && filtered.length > 0 && (
-        <div style={{ position:'absolute',top:'100%',left:0,background:'#fff',border:'1px solid #E0E0E0',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:200,minWidth:200,maxHeight:220,overflowY:'auto',marginTop:2 }}>
+      {showDrop && filtered.length > 0 && dropRect && (
+        <div style={{ position:'fixed', top:dropRect.top+2, left:dropRect.left, width:dropRect.width, background:'#fff', border:'1px solid #E0E0E0', borderRadius:8, boxShadow:'0 4px 16px rgba(0,0,0,0.13)', zIndex:9999, maxHeight:220, overflowY:'auto' }}>
           {filtered.map((p,i) => (
             <div key={p.id} onMouseDown={e=>{e.preventDefault();insertMention(p.nombre);}} onMouseEnter={()=>setSelIdx(i)}
               style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 12px',cursor:'pointer',background:i===selIdx?'#FDF4F7':'#fff',borderBottom:i<filtered.length-1?'1px solid #F0EFED':'none' }}>
