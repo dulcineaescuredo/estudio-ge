@@ -3704,7 +3704,7 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
   const h = honActual;
   const [nuevaCuota, setNuevaCuota] = useState({ monto:'', vencimiento:'' });
   const [editando, setEditando] = useState(false);
-  const [editForm, setEditForm] = useState({ concepto: h?.concepto||'', tipo_trabajo: h?.tipo_trabajo||'', forma: h?.forma||'uhon', valor: h?.valor||0 });
+  const [editForm, setEditForm] = useState({ concepto: h?.concepto||'', tipo_trabajo: h?.tipo_trabajo||'', forma: h?.forma||'uhon', valor: h?.valor||0, monto_base: h?.monto_base||'', en_cuotas: h?.en_cuotas||false, vinculo_tipo: h?.vinculo_tipo||'ninguno', expediente_id: h?.expediente_id||'', cliente_id: h?.cliente_id||'', contraparte_nombre: h?.contraparte_nombre||'', asunto_id: h?.asunto_id||'', periodo: h?.periodo||'' });
   const [confirmandoPagoId, setConfirmandoPagoId] = useState(null);
   const [fechaPago, setFechaPago] = useState(HOY);
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
