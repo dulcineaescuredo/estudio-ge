@@ -2139,7 +2139,8 @@ function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
   const [open, setOpen] = useState(false);
   const [creando, setCreando] = useState(false);
   const [pendNombre, setPendNombre] = useState('');
-  const [nf, setNf] = useState({nombre:'',dni:'',telefono:'',email:'',domicilio:''});
+  const nfVacio = {apellido:'',nombre_pila:'',dni:'',telefono:'',email:'',domicilio:''};
+  const [nf, setNf] = useState(nfVacio);
   const selected = value ? clientes.find(c=>c.id===value) : null;
   const dispNombre = selected ? nombreCompleto(selected) : pendNombre;
   const sugs = !selected && q
@@ -2147,24 +2148,26 @@ function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
     : [];
   const mostrarCrear = !!(q && !selected && !sugs.some(c=>nombreCompleto(c).toLowerCase()===q.toLowerCase()));
   async function crearYVincular() {
-    if (!nf.nombre.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!nf.apellido.trim() && !nf.nombre_pila.trim()) { alert('El apellido o nombre es obligatorio'); return; }
     if (!perfil) { alert('Esperá que cargue el perfil'); return; }
-    const nn = nf.nombre.trim().toUpperCase();
-    const partes = nn.split(' ');
+    const apellido = nf.apellido.trim();
+    const nombre_pila = nf.nombre_pila.trim();
+    const nombre = (apellido+' '+nombre_pila).trim();
     const payload = {
-      nombre: nn, apellido: partes[0]||'', nombre_pila: partes.slice(1).join(' ')||'',
+      apellido, nombre_pila, nombre,
       dni: nf.dni||null, telefono: nf.telefono||null, email: nf.email||null, domicilio: nf.domicilio||null,
       estudio_id: perfil.estudio_id,
     };
     const { data, error } = await supabase.from('clientes').insert(payload).select().single();
     if (error) { alert('Error: '+error.message); return; }
-    setPendNombre(nn);
+    setPendNombre(nombreCompleto(data));
     onChange(data.id);
     setCreando(false);
-    setNf({nombre:'',dni:'',telefono:'',email:'',domicilio:''});
+    setNf(nfVacio);
     setQ(''); setOpen(false);
     recargar();
   }
+  const inputNf = {width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:12,fontFamily:'system-ui',marginBottom:8,boxSizing:'border-box',background:'#fff',outline:'none'};
   return (
     <div style={{marginBottom:12}}>
       <div style={{position:'relative'}}>
@@ -2195,7 +2198,7 @@ function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
             )}
             {mostrarCrear && (
               <div onMouseDown={ev=>ev.preventDefault()}
-                onClick={()=>{setNf({...nf,nombre:q});setCreando(true);setOpen(false);}}
+                onClick={()=>{setNf({...nfVacio,apellido:q.toUpperCase()});setCreando(true);setOpen(false);}}
                 style={{padding:'10px 14px',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontWeight:600,borderTop:sugs.length>0?'1px solid #F0EFED':undefined}}
                 onMouseEnter={ev=>ev.currentTarget.style.background='#F5F5F5'}
                 onMouseLeave={ev=>ev.currentTarget.style.background=''}
@@ -2207,11 +2210,16 @@ function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
       {creando && (
         <div style={{background:'#F9F7FF',border:'1px solid #E0D5F0',borderRadius:8,padding:14,marginTop:6}}>
           <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:10}}>Nuevo cliente</div>
-          {[['nombre','Nombre *'],['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
+          <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>Apellido *</label>
+          <input value={nf.apellido} onChange={e=>setNf({...nf,apellido:e.target.value.toUpperCase()})}
+            style={{...inputNf,textTransform:'uppercase'}} />
+          <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>Nombre</label>
+          <input value={nf.nombre_pila} onChange={e=>setNf({...nf,nombre_pila:e.target.value.toUpperCase()})}
+            style={{...inputNf,textTransform:'uppercase'}} />
+          {[['dni','DNI'],['telefono','Teléfono'],['email','Email'],['domicilio','Domicilio']].map(([k,l])=>(
             <div key={k}>
               <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>{l}</label>
-              <input value={nf[k]} onChange={e=>setNf({...nf,[k]:e.target.value})}
-                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:12,fontFamily:'system-ui',marginBottom:8,boxSizing:'border-box',background:'#fff',outline:'none'}} />
+              <input value={nf[k]} onChange={e=>setNf({...nf,[k]:e.target.value})} style={inputNf} />
             </div>
           ))}
           <div style={{display:'flex',gap:8,marginTop:2}}>
@@ -2219,7 +2227,7 @@ function CliCombobox({ clientes, value, onChange, perfil, recargar }) {
               style={{padding:'7px 14px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #9B4F6A',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500}}>
               Crear y vincular
             </button>
-            <button onClick={()=>{setCreando(false);setNf({nombre:'',dni:'',telefono:'',email:'',domicilio:''});setQ('');}}
+            <button onClick={()=>{setCreando(false);setNf(nfVacio);setQ('');}}
               style={{padding:'7px 14px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
               Cancelar
             </button>
