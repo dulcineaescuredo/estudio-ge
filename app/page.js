@@ -4583,7 +4583,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
           destinatario_id: dest.id,
           mensaje: `${perfil.nombre} te mencionó en un comentario: "${preview}"`,
           contexto: a.titulo,
-          link: 'extrajudicial',
+          link: `extrajudicial:${a.id}:${et.id}`,
         });
         console.log('[guardarComentario] notificación creada para:', dest.nombre);
       }
