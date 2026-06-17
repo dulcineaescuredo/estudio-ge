@@ -4568,6 +4568,19 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     setEtapas(et||[]);
     setGastos(gs||[]);
     setDocumentos(dc||[]);
+    const ids = (et||[]).map(e => e.id);
+    if (ids.length > 0) {
+      const { data: coms } = await supabase.from('etapa_comentarios').select('etapa_id').in('etapa_id', ids);
+      const conteo = {};
+      (coms||[]).forEach(c => { conteo[c.etapa_id] = (conteo[c.etapa_id]||0) + 1; });
+      setComentariosConteo(conteo);
+    }
+  }
+
+  async function cargarComentariosEtapa(etapaId) {
+    const { data } = await supabase.from('etapa_comentarios').select('*').eq('etapa_id', etapaId).order('created_at', { ascending: true });
+    setEtapaComentarios(prev => ({ ...prev, [etapaId]: data || [] }));
+    setComentariosConteo(prev => ({ ...prev, [etapaId]: (data||[]).length }));
   }
 
   async function actualizarAsunto(campo, valor) {
