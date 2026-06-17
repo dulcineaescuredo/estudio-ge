@@ -4503,6 +4503,7 @@ function NuevoAsunto({ perfil, recargar, setVista, clientes }) {
         <button onClick={guardar} style={btnPrimary}>Guardar asunto</button>
       </div>
     </Card>
+    </div>
   );
 }
 
