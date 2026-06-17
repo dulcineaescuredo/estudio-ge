@@ -4515,6 +4515,12 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     setCliId(a.cliente_id||'');
     setResponsable(a.responsable||'');
     setEstado(a.estado||'activo');
+    if (etapaPanelId) {
+      setEtapaPanels({ [etapaPanelId]: 'comentario' });
+      if (setEtapaPanelId) setEtapaPanelId(null);
+    } else {
+      setEtapaPanels({});
+    }
     cargarDetalle();
   // eslint-disable-next-line
   }, [a?.id]);
