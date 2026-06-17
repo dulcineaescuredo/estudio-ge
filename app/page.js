@@ -668,7 +668,7 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
   );
 }
 
-function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, cuotas, honorarios, clientes }) {
+function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, setHonActual, cuotas, honorarios, clientes }) {
   const mes = HOY.substring(0,7);
   const activos = expedientes.filter(e=>(e.estado||'').toLowerCase()==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
