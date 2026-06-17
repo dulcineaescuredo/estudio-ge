@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react'; // app
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 const ABOGADAS = ['Claudia', 'Dolores', 'Candela', 'Sergio', 'Dulcinea'];
