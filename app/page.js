@@ -1818,6 +1818,7 @@ function NuevaConsulta({ perfil, recargar, clientes, setVista }) {
         </div>
       </div>
     </Card>
+    </div>
   );
 }
 
