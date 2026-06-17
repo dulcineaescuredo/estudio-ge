@@ -3230,16 +3230,39 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
             const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||null):(exp?exp.caratula:(cli?nombreCompleto(cli):null));
             const formaStr=hon?formaLabel(hon,valorUhon):null;
             const detalleDesc=[vincLabel,formaStr,cu.vencimiento?`vence ${formatFecha(cu.vencimiento)}`:null].filter(Boolean).join(' · ');
-            return <div key={cu.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED'}}>
+            const cuEstado = localEstadosCuota[cu.id] || cu.estado;
+            const cuEcBg = cuEstado==='pagada'?'#F0FBF0':'#FEF9EE';
+            const cuEcColor = cuEstado==='pagada'?'#16A34A':'#B45309';
+            return <div key={cu.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}}
+              onClick={()=>{ if(hon){ setHonActual(hon); setVista('detalle-honorario'); } }}>
               <div style={{flex:1}}>
                 <div style={{fontSize:13,fontWeight:500}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
                 {detalleDesc&&<div style={{fontSize:11,color:'#8a8a8a',marginTop:1}}>{detalleDesc}</div>}
-                {cu.estado==='pagada'&&cu.fecha_pago&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>✓ Pagada el {formatFecha(cu.fecha_pago)}</div>}
-                {cu.estado!=='pagada'&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>Recordar al cliente antes del {formatFecha(hon?.fecha_limite_pago||cu.vencimiento)}</div>}
+                {cuEstado==='pagada'&&cu.fecha_pago&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>✓ Pagada el {formatFecha(cu.fecha_pago)}</div>}
+                {cuEstado!=='pagada'&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>Recordar al cliente antes del {formatFecha(hon?.fecha_limite_pago||cu.vencimiento)}</div>}
               </div>
               <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
                 <span style={{fontSize:13,fontWeight:600}}>{fmtMoneda(cu.monto)}</span>
-                <Badge bg={cu.estado==='pagada'?'#F0FBF0':'#FEF9EE'} color={cu.estado==='pagada'?'#16A34A':'#B45309'}>{cu.estado}</Badge>
+                <div style={{position:'relative'}}>
+                  <span onClick={ev=>{ev.stopPropagation();setDropdownCuota(dropdownCuota===cu.id?null:cu.id);}}
+                    style={{display:'inline-block',fontSize:11,padding:'3px 10px',borderRadius:20,fontWeight:600,background:cuEcBg,color:cuEcColor,whiteSpace:'nowrap',cursor:'pointer'}}>
+                    {cuEstado}
+                  </span>
+                  {dropdownCuota===cu.id && (<>
+                    <div style={{position:'fixed',inset:0,zIndex:99}} onClick={ev=>{ev.stopPropagation();setDropdownCuota(null);}} />
+                    <div style={{position:'absolute',top:'100%',right:0,marginTop:4,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.12)',zIndex:100,minWidth:110,overflow:'hidden'}}>
+                      {['pendiente','pagada'].map(es=>{
+                        const esBg=es==='pagada'?'#F0FBF0':'#FEF9EE', esColor=es==='pagada'?'#16A34A':'#B45309';
+                        const sel=cuEstado===es;
+                        return <div key={es} onClick={ev=>{ev.stopPropagation();cambiarEstadoCuota(cu,es);}}
+                          style={{padding:'9px 14px',cursor:'pointer',fontSize:12,background:sel?esBg:'#fff',color:sel?esColor:'#1a1a1a',fontWeight:sel?600:400,display:'flex',alignItems:'center',gap:7}}>
+                          <span style={{width:8,height:8,borderRadius:'50%',background:esColor,flexShrink:0,display:'inline-block'}} />
+                          {es.charAt(0).toUpperCase()+es.slice(1)}
+                        </div>;
+                      })}
+                    </div>
+                  </>)}
+                </div>
               </div>
             </div>;
           }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:'0 0 16px'}}>Sin cuotas con vencimiento en {MESES[mesHist.getMonth()]} {mesHist.getFullYear()}.</div>}
