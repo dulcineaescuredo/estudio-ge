@@ -1175,30 +1175,62 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
       <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr',gap:14,alignItems:'start'}}>
         <Card title="🗺️ Etapas del proceso">
           {!mapa || !mapa.etapas.length ? <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>Sin mapa de proceso asignado.</div> :
-            etapasVis.map((et,i)=>{
+            etapasConCustom.map((et,i)=>{
               const hecha = prog.hechas[et.id];
-              const esActual = !hecha && etapasVis.slice(0,i).every(x=>prog.hechas[x.id]);
-              return <div key={et.id} style={{display:'flex',gap:12,padding:'9px 0',alignItems:'flex-start'}}>
-                <div onClick={()=>tildar(et.id)} style={{width:16,height:16,borderRadius:4,border:hecha?'none':'1.5px solid #c9c9c4',background:hecha?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{hecha?'✓':''}</div>
-                <div style={{flex:1}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                    <span style={{fontSize:13,fontWeight:500,color:hecha?'#8a8a8a':'#1a1a1a'}}>{et.n}</span>
-                    {hecha && <span style={{fontSize:11,color:'#639922',fontWeight:500}}>✓ {formatFecha(hecha)}</span>}
-                    {esActual && <Badge bg="#2B6CB0" color="#fff">ACTUAL</Badge>}
+              const esActual = !hecha && etapasConCustom.slice(0,i).every(x=>prog.hechas[x.id]);
+              const nombreEfectivo = prog.nombresCustom[et.id] || et.n;
+              const hover = etapaHover===et.id;
+              return <div key={et.id}>
+                <div style={{display:'flex',gap:12,padding:'9px 0',alignItems:'flex-start',borderLeft:et.custom?'2px solid #E8C4D4':'2px solid transparent',paddingLeft:et.custom?6:0}}
+                  onMouseEnter={()=>setEtapaHover(et.id)} onMouseLeave={()=>setEtapaHover(null)}>
+                  <div onClick={()=>tildar(et.id)} style={{width:16,height:16,borderRadius:4,border:hecha?'none':'1.5px solid #c9c9c4',background:hecha?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10}}>{hecha?'✓':''}</div>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                      {etapaEditandoId===et.id
+                        ? <input autoFocus value={etapaEditNombre}
+                            onChange={ev=>setEtapaEditNombre(ev.target.value)}
+                            onBlur={()=>editarNombreEtapa(et.id,etapaEditNombre)}
+                            onKeyDown={ev=>{ if(ev.key==='Enter') editarNombreEtapa(et.id,etapaEditNombre); if(ev.key==='Escape'){setEtapaEditandoId(null);setEtapaEditNombre('');} }}
+                            style={{fontSize:13,fontWeight:500,border:'1px solid #E8C4D4',borderRadius:4,padding:'1px 6px',fontFamily:'system-ui',color:'#1a1a1a',outline:'none'}} />
+                        : <span style={{fontSize:13,fontWeight:500,color:hecha?'#8a8a8a':'#1a1a1a'}}>{nombreEfectivo}{et.custom&&<span style={{fontSize:9,color:'#9B4F6A',marginLeft:4,verticalAlign:'middle'}}>✦</span>}</span>
+                      }
+                      {hecha && <span style={{fontSize:11,color:'#639922',fontWeight:500}}>✓ {formatFecha(hecha)}</span>}
+                      {esActual && <Badge bg="#2B6CB0" color="#fff">ACTUAL</Badge>}
+                      <span style={{opacity:hover&&etapaEditandoId!==et.id?1:0,transition:'opacity 0.15s',display:'flex',gap:3,marginLeft:4}}>
+                        <button title="Agregar etapa después" onClick={()=>{setEtapaAddingAfter(etapaAddingAfter===et.id?null:et.id);setEtapaAddNombre('');}}
+                          style={{fontSize:11,background:'none',border:'1px solid #9B4F6A',borderRadius:4,cursor:'pointer',color:'#9B4F6A',padding:'1px 5px',lineHeight:1.4,fontFamily:'system-ui'}}>➕</button>
+                        <button title="Editar nombre" onClick={()=>{setEtapaEditandoId(et.id);setEtapaEditNombre(nombreEfectivo);}}
+                          style={{fontSize:11,background:'none',border:'1px solid #9B4F6A',borderRadius:4,cursor:'pointer',color:'#9B4F6A',padding:'1px 5px',lineHeight:1.4,fontFamily:'system-ui'}}>✏️</button>
+                        <button title="Eliminar etapa" onClick={()=>eliminarEtapaLocal(et.id,!!et.custom)}
+                          style={{fontSize:11,background:'none',border:'1px solid #9B4F6A',borderRadius:4,cursor:'pointer',color:'#9B4F6A',padding:'1px 5px',lineHeight:1.4,fontFamily:'system-ui'}}>🗑️</button>
+                      </span>
+                    </div>
+                    {et.sub && <div style={{marginTop:5}}>
+                      {et.sub.map((s,si)=>{
+                        const sh = prog.subs[et.id]&&prog.subs[et.id][si];
+                        return <div key={si} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0',fontSize:12,color:'#4a4a4a'}}>
+                          <div onClick={()=>tildarSub(et.id,si)} style={{width:13,height:13,borderRadius:3,border:sh?'none':'1.5px solid #c9c9c4',background:sh?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:8}}>{sh?'✓':''}</div>
+                          <span style={{textDecoration:sh?'line-through':'none',color:sh?'#8a8a8a':'#4a4a4a'}}>{s}</span>
+                        </div>;
+                      })}
+                    </div>}
+                    {et.op && <div style={{display:'flex',gap:6,marginTop:7,flexWrap:'wrap'}}>
+                      {et.op.map(o=><button key={o} onClick={()=>elegir(et.id,o)} style={{padding:'7px 12px',border:prog.dec[et.id]===o?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:prog.dec[et.id]===o?'#185FA5':'#fff',color:prog.dec[et.id]===o?'#fff':'#1a1a1a',fontWeight:500}}>{o}</button>)}
+                    </div>}
                   </div>
-                  {et.sub && <div style={{marginTop:5}}>
-                    {et.sub.map((s,si)=>{
-                      const sh = prog.subs[et.id]&&prog.subs[et.id][si];
-                      return <div key={si} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0',fontSize:12,color:'#4a4a4a'}}>
-                        <div onClick={()=>tildarSub(et.id,si)} style={{width:13,height:13,borderRadius:3,border:sh?'none':'1.5px solid #c9c9c4',background:sh?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:8}}>{sh?'✓':''}</div>
-                        <span style={{textDecoration:sh?'line-through':'none',color:sh?'#8a8a8a':'#4a4a4a'}}>{s}</span>
-                      </div>;
-                    })}
-                  </div>}
-                  {et.op && <div style={{display:'flex',gap:6,marginTop:7,flexWrap:'wrap'}}>
-                    {et.op.map(o=><button key={o} onClick={()=>elegir(et.id,o)} style={{padding:'7px 12px',border:prog.dec[et.id]===o?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:prog.dec[et.id]===o?'#185FA5':'#fff',color:prog.dec[et.id]===o?'#fff':'#1a1a1a',fontWeight:500}}>{o}</button>)}
-                  </div>}
                 </div>
+                {etapaAddingAfter===et.id && (
+                  <div style={{display:'flex',gap:6,alignItems:'center',padding:'6px 0 6px 28px',marginBottom:2}}>
+                    <input autoFocus value={etapaAddNombre} onChange={ev=>setEtapaAddNombre(ev.target.value)}
+                      onKeyDown={ev=>{ if(ev.key==='Enter') agregarEtapaCustom(et.id,etapaAddNombre); if(ev.key==='Escape'){setEtapaAddingAfter(null);setEtapaAddNombre('');} }}
+                      placeholder="Nombre de la nueva etapa..."
+                      style={{flex:1,fontSize:12,padding:'5px 8px',border:'1px solid #E8C4D4',borderRadius:6,fontFamily:'system-ui',outline:'none'}} />
+                    <button onClick={()=>agregarEtapaCustom(et.id,etapaAddNombre)}
+                      style={{fontSize:12,background:'#9B4F6A',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',padding:'5px 10px',fontFamily:'system-ui',fontWeight:500}}>Agregar</button>
+                    <button onClick={()=>{setEtapaAddingAfter(null);setEtapaAddNombre('');}}
+                      style={{fontSize:12,background:'none',color:'#8a8a8a',border:'1px solid #DDDCDA',borderRadius:6,cursor:'pointer',padding:'5px 8px',fontFamily:'system-ui'}}>✕</button>
+                  </div>
+                )}
               </div>;
             })
           }
