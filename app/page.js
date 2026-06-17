@@ -3664,6 +3664,7 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes, perfilesEstudio =
         <button onClick={guardar} style={btnPrimary}>Crear tarea</button>
       </div>
     </Card>
+    </div>
   );
 }
 
