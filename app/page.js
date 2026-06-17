@@ -1263,11 +1263,43 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                       </span>
                     </div>
                     {et.sub && <div style={{marginTop:5}}>
-                      {et.sub.map((s,si)=>{
+                      {getSubList(et.id).map((s,si)=>{
                         const sh = prog.subs[et.id]&&prog.subs[et.id][si];
-                        return <div key={si} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0',fontSize:12,color:'#4a4a4a'}}>
-                          <div onClick={()=>tildarSub(et.id,si)} style={{width:13,height:13,borderRadius:3,border:sh?'none':'1.5px solid #c9c9c4',background:sh?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:8}}>{sh?'✓':''}</div>
-                          <span style={{textDecoration:sh?'line-through':'none',color:sh?'#8a8a8a':'#4a4a4a'}}>{s}</span>
+                        const esSubCustom = !!(prog.subsCustomIdx[et.id]&&prog.subsCustomIdx[et.id][si]);
+                        const subHovering = subHover&&subHover.etId===et.id&&subHover.si===si;
+                        const esSubEditando = subEditando&&subEditando.etId===et.id&&subEditando.si===si;
+                        return <div key={si}>
+                          <div style={{display:'flex',alignItems:'center',gap:8,padding:'3px 0',fontSize:12,color:'#4a4a4a',borderLeft:esSubCustom?'2px solid #E8C4D4':'none',paddingLeft:esSubCustom?4:0}}
+                            onMouseEnter={()=>setSubHover({etId:et.id,si})} onMouseLeave={()=>setSubHover(null)}>
+                            <div onClick={()=>tildarSub(et.id,si)} style={{width:13,height:13,borderRadius:3,border:sh?'none':'1.5px solid #c9c9c4',background:sh?'#2B6CB0':'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:8}}>{sh?'✓':''}</div>
+                            {esSubEditando
+                              ? <input autoFocus value={subEditNombre} onChange={ev=>setSubEditNombre(ev.target.value)}
+                                  onBlur={()=>editarSubNombre(et.id,si,subEditNombre)}
+                                  onKeyDown={ev=>{ if(ev.key==='Enter') editarSubNombre(et.id,si,subEditNombre); if(ev.key==='Escape'){setSubEditando(null);setSubEditNombre('');} }}
+                                  style={{fontSize:12,border:'1px solid #E8C4D4',borderRadius:3,padding:'0 4px',fontFamily:'system-ui',outline:'none',flex:1}} />
+                              : <span style={{textDecoration:sh?'line-through':'none',color:sh?'#8a8a8a':'#4a4a4a',flex:1}}>{s}{esSubCustom&&<span style={{fontSize:8,color:'#9B4F6A',marginLeft:3}}>✦</span>}</span>
+                            }
+                            <span style={{opacity:subHovering&&!esSubEditando?1:0,transition:'opacity 0.15s',display:'flex',gap:2}}>
+                              <button title="Agregar sub-ítem después" onClick={()=>{setSubAddingAfter({etId:et.id,si});setSubAddNombre('');}}
+                                style={{fontSize:10,background:'none',border:'1px solid #9B4F6A',borderRadius:3,cursor:'pointer',color:'#9B4F6A',padding:'0 3px',lineHeight:1.5,fontFamily:'system-ui'}}>➕</button>
+                              <button title="Editar" onClick={()=>{setSubEditando({etId:et.id,si});setSubEditNombre(s);}}
+                                style={{fontSize:10,background:'none',border:'1px solid #9B4F6A',borderRadius:3,cursor:'pointer',color:'#9B4F6A',padding:'0 3px',lineHeight:1.5,fontFamily:'system-ui'}}>✏️</button>
+                              <button title="Eliminar" onClick={()=>eliminarSub(et.id,si)}
+                                style={{fontSize:10,background:'none',border:'1px solid #9B4F6A',borderRadius:3,cursor:'pointer',color:'#9B4F6A',padding:'0 3px',lineHeight:1.5,fontFamily:'system-ui'}}>🗑️</button>
+                            </span>
+                          </div>
+                          {subAddingAfter&&subAddingAfter.etId===et.id&&subAddingAfter.si===si&&(
+                            <div style={{display:'flex',gap:5,alignItems:'center',padding:'4px 0 4px 21px',marginBottom:1}}>
+                              <input autoFocus value={subAddNombre} onChange={ev=>setSubAddNombre(ev.target.value)}
+                                onKeyDown={ev=>{ if(ev.key==='Enter') agregarSubCustom(et.id,si,subAddNombre); if(ev.key==='Escape'){setSubAddingAfter(null);setSubAddNombre('');} }}
+                                placeholder="Nuevo sub-ítem..."
+                                style={{flex:1,fontSize:11,padding:'3px 6px',border:'1px solid #E8C4D4',borderRadius:4,fontFamily:'system-ui',outline:'none'}} />
+                              <button onClick={()=>agregarSubCustom(et.id,si,subAddNombre)}
+                                style={{fontSize:11,background:'#9B4F6A',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',padding:'3px 8px',fontFamily:'system-ui'}}>+</button>
+                              <button onClick={()=>{setSubAddingAfter(null);setSubAddNombre('');}}
+                                style={{fontSize:11,background:'none',color:'#8a8a8a',border:'1px solid #DDDCDA',borderRadius:4,cursor:'pointer',padding:'3px 6px',fontFamily:'system-ui'}}>✕</button>
+                            </div>
+                          )}
                         </div>;
                       })}
                     </div>}
