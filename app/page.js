@@ -3001,22 +3001,22 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
           const vinc = h.vinculo_tipo==='contraparte' ? (h.contraparte_nombre||'—') : h.vinculo_tipo==='asunto' ? (asunto_?asunto_.titulo:'—') : (exp?exp.caratula : (cli?nombreCompleto(cli) : '—'));
           const cuotasH = cuotas.filter(cu=>cu.honorario_id===h.id);
           const pagadas = cuotasH.filter(cu=>cu.estado==='pagada').length;
-          const ec = HON_ESTADO_COLOR[h.estado] || HON_ESTADO_COLOR['pendiente'];
-          const isOpen = panelAbierto === h.id;
+          const displayEstado = localEstados[h.id] || h.estado;
+          const ec = HON_ESTADO_COLOR[displayEstado] || HON_ESTADO_COLOR['pendiente'];
           const ultimoPago = cuotasH.filter(cu=>cu.estado==='pagada').sort((a,b)=>(b.fecha_pago||'').localeCompare(a.fecha_pago||''))[0]?.fecha_pago;
-          const rows = [
-            <tr key={h.id} style={{cursor:'pointer',background:isOpen?'#F0EEE8':hoveredRow===h.id?'#F7F6F3':'transparent'}}
+          return (
+            <tr key={h.id} style={{cursor:'pointer',background:hoveredRow===h.id?'#F7F6F3':'transparent'}}
               onMouseEnter={()=>setHoveredRow(h.id)} onMouseLeave={()=>setHoveredRow(null)}
-              onClick={()=>{if(isOpen){setPanelAbierto(null);}else{setPanelAbierto(h.id);setFechaLimiteEdit(h.fecha_limite_pago||'');}}}>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>
+              onClick={()=>{ setHonActual(h); setVista('detalle-honorario'); }}>
+              <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{h.concepto}</td>
+              <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>
                 {vinc}
                 {(!h.en_cuotas&&h.estado==='pagado'&&h.fecha_pago)&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>pagado el {formatFecha(h.fecha_pago)}</div>}
                 {(h.en_cuotas&&ultimoPago)&&<div style={{fontSize:11,color:'#16A34A',marginTop:2}}>último pago: {formatFecha(ultimoPago)}</div>}
                 {(h.estado!=='pagado'&&!ultimoPago&&h.fecha_limite_pago)&&<div style={{fontSize:11,color:'#B45309',marginTop:2}}>límite {formatFecha(h.fecha_limite_pago)}</div>}
               </td>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED',fontSize:12}}>
+              <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{formaLabel(h, valorUhon)}</td>
+              <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>
                 {h.en_cuotas ? (
                   <div>
                     <span>{pagadas}/{cuotasH.length}</span>
@@ -3028,27 +3028,30 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
                   </div>
                 ) : '—'}
               </td>
-              <td style={{padding:'12px 10px',borderBottom:isOpen?'none':'1px solid #F0EFED'}}><Badge bg={ec.bg} color={ec.color}>{h.estado}</Badge></td>
+              <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>
+                <div style={{position:'relative',display:'inline-block'}}>
+                  <span onClick={ev=>{ev.stopPropagation();setDropdownHon(dropdownHon===h.id?null:h.id);}}
+                    style={{display:'inline-block',fontSize:11,padding:'3px 10px',borderRadius:20,fontWeight:600,background:ec.bg,color:ec.color,whiteSpace:'nowrap',cursor:'pointer'}}>
+                    {displayEstado}
+                  </span>
+                  {dropdownHon===h.id && (<>
+                    <div style={{position:'fixed',inset:0,zIndex:99}} onClick={ev=>{ev.stopPropagation();setDropdownHon(null);}} />
+                    <div style={{position:'absolute',top:'100%',right:0,marginTop:4,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.12)',zIndex:100,minWidth:130,overflow:'hidden'}}>
+                      {['pendiente','en proceso','pagado'].map(es=>{
+                        const ecc=HON_ESTADO_COLOR[es];
+                        const sel=displayEstado===es;
+                        return <div key={es} onClick={ev=>{ev.stopPropagation();cambiarEstadoHon(h,es);}}
+                          style={{padding:'9px 14px',cursor:'pointer',fontSize:12,background:sel?ecc.bg:'#fff',color:sel?ecc.color:'#1a1a1a',fontWeight:sel?600:400,display:'flex',alignItems:'center',gap:7}}>
+                          <span style={{width:8,height:8,borderRadius:'50%',background:ecc.color,flexShrink:0,display:'inline-block'}} />
+                          {es.charAt(0).toUpperCase()+es.slice(1)}
+                        </div>;
+                      })}
+                    </div>
+                  </>)}
+                </div>
+              </td>
             </tr>
-          ];
-          if (isOpen) {
-            rows.push(
-              <tr key={`panel-${h.id}`}>
-                <td colSpan={5} style={{padding:'12px 14px 16px',borderBottom:'1px solid #F0EFED',background:'#FAFAF9'}}>
-                  <div style={{fontSize:10,fontWeight:600,color:'#6B7280',letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:10}}>Recordatorio de cobro</div>
-                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                    <label style={{fontSize:12,color:'#4a4a4a',fontWeight:500,whiteSpace:'nowrap'}}>Fecha límite de pago</label>
-                    <input type="date" value={fechaLimiteEdit} onChange={e=>setFechaLimiteEdit(e.target.value)}
-                      style={{padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:7,fontSize:12,fontFamily:'system-ui'}} />
-                    <button onClick={async ev=>{ev.stopPropagation();await supabase.from('honorarios').update({fecha_limite_pago:fechaLimiteEdit||null}).eq('id',h.id);setPanelAbierto(null);recargar();}}
-                      style={{...btnPrimary,padding:'5px 12px',fontSize:12}}>Guardar</button>
-                  </div>
-                  <div style={{fontSize:11,color:'#8a8a8a',marginTop:8}}>Los socios verán un aviso en el Inicio 3 días antes y el día del vencimiento</div>
-                </td>
-              </tr>
-            );
-          }
-          return rows;
+          );
         })}
       </tbody>
     </table>
