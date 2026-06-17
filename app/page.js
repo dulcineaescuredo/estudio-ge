@@ -1104,6 +1104,37 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     }
     guardarProg(np);
   }
+  function toggleComentariosEtapa(etId) {
+    setEtapaComOpen(prev=>({...prev,[etId]:!prev[etId]}));
+  }
+  function agregarComentarioEtapa(etId) {
+    const texto = (etapaComText[etId]||'').trim();
+    if (!texto) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    if (!np.comentariosEtapa[etId]) np.comentariosEtapa[etId] = [];
+    np.comentariosEtapa[etId].push({
+      id: Date.now().toString(36),
+      autor: perfil?.nombre || 'Usuario',
+      texto,
+      fecha: new Date().toISOString()
+    });
+    guardarProg(np);
+    setEtapaComText(prev=>({...prev,[etId]:''}));
+  }
+  function eliminarComentarioEtapa(etId, cId) {
+    if (!confirm('¿Eliminar este comentario?')) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    if (np.comentariosEtapa[etId]) {
+      np.comentariosEtapa[etId] = np.comentariosEtapa[etId].filter(c=>c.id!==cId);
+    }
+    guardarProg(np);
+  }
+  function fmtFechaHora(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return `${d.getDate()} ${meses[d.getMonth()]} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
   async function actualizarVencimiento(campo, valor) {
     setExpActual({...e, [campo]: valor});
     await supabase.from('expedientes').update({ [campo]: valor||null }).eq('id', e.id);
