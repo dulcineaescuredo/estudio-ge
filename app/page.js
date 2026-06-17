@@ -2957,6 +2957,12 @@ function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setH
     if (!ch.length) return -1;
     return ch.filter(cu=>cu.estado==='pagada').length/ch.length;
   }
+  async function cambiarEstadoHon(h, nuevo) {
+    setLocalEstados(prev=>({...prev,[h.id]:nuevo}));
+    setDropdownHon(null);
+    await supabase.from('honorarios').update({estado:nuevo}).eq('id',h.id);
+    recargar();
+  }
 
   const sorted = orden.col ? [...lista].sort((a,b)=>{
     const d = orden.dir==='asc' ? 1 : -1;
