@@ -703,9 +703,11 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
       <Card title="📅 Próximos vencimientos">
         {vencProximos.length ? vencProximos.map(e=>{
           const vc = vencColor(e.proximo_vencimiento);
-          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}} onClick={()=>{setExpActual(e);setVista('detalle');}}
-            onMouseEnter={ev=>ev.currentTarget.style.background='#F7F6F3'}
-            onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+          const d = diasHasta(e.proximo_vencimiento);
+          const urgente = d !== null && d >= 0 && d <= 1;
+          return <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',background:urgente?'#FDECEA':'transparent'}} onClick={()=>{setExpActual(e);setVista('detalle');}}
+            onMouseEnter={ev=>ev.currentTarget.style.background=urgente?'#F0D8D5':'#F7F6F3'}
+            onMouseLeave={ev=>ev.currentTarget.style.background=urgente?'#FDECEA':'transparent'}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{e.caratula}</div>
               <div style={{fontSize:11,color:'#8a8a8a'}}>{e.numero} · {e.motivo_vencimiento||'Vencimiento'}</div>
