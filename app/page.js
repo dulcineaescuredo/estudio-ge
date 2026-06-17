@@ -3070,6 +3070,8 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const [mesHist, setMesHist] = useState(()=>new Date(Number(HOY.substring(0,4)), Number(HOY.substring(5,7))-1, 1));
   const [vistaHon, setVistaHon] = useState('normal');
   const [honSocios, setHonSocios] = useState([]);
+  const [dropdownCuota, setDropdownCuota] = useState(null);
+  const [localEstadosCuota, setLocalEstadosCuota] = useState({});
   useEffect(()=>{
     if (!perfil?.estudio_id) return;
     supabase.from('honorarios_socios').select('*').eq('estudio_id', perfil.estudio_id)
