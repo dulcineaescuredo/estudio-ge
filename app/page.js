@@ -719,7 +719,9 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
           const ec = ESTADO_COLOR[normEstado(t.estado)] || ESTADO_COLOR['pendiente'];
           const dp = t.deadline ? t.deadline.split('-') : null;
           const deadlineStr = dp ? `${dp[2]}/${dp[1]}/${dp[0]}` : null;
-          return <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+          return <div key={t.id} onClick={()=>setVista('tareas')} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}}
+            onMouseEnter={e=>e.currentTarget.style.background='#F7F6F3'}
+            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:4}}>{t.descripcion}</div>
               {deadlineStr && <div style={{fontSize:11,color:'#8a8a8a'}}>Vence: {deadlineStr}</div>}
