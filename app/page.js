@@ -134,6 +134,7 @@ export default function Home() {
   const [agendaAbierta, setAgendaAbierta] = useState(false);
   const [notifNoLeidas, setNotifNoLeidas] = useState(0);
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
+  const [etapaPanelId, setEtapaPanelId] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
