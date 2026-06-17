@@ -1340,6 +1340,44 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                     {et.op && <div style={{display:'flex',gap:6,marginTop:7,flexWrap:'wrap'}}>
                       {et.op.map(o=><button key={o} onClick={()=>elegir(et.id,o)} style={{padding:'7px 12px',border:prog.dec[et.id]===o?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:prog.dec[et.id]===o?'#185FA5':'#fff',color:prog.dec[et.id]===o?'#fff':'#1a1a1a',fontWeight:500}}>{o}</button>)}
                     </div>}
+                    {(()=>{
+                      const coms = prog.comentariosEtapa[et.id]||[];
+                      const open = etapaComOpen[et.id];
+                      return <div style={{marginTop:6}}>
+                        <button onClick={()=>toggleComentariosEtapa(et.id)}
+                          style={{fontSize:11,background:'none',border:'none',cursor:'pointer',color:coms.length?'#9B4F6A':'#c9c9c4',padding:0,fontFamily:'system-ui',display:'flex',alignItems:'center',gap:3}}>
+                          💬{coms.length>0&&<span style={{fontWeight:600}}>{coms.length}</span>}
+                          <span style={{color:'#8a8a8a'}}>{open?'▲':'▼'}</span>
+                        </button>
+                        {open&&<div style={{marginTop:6,background:'#F9F8F5',borderRadius:8,padding:'10px 12px',borderLeft:'2px solid #E8C4D4'}}>
+                          {coms.length===0&&<div style={{fontSize:12,color:'#8a8a8a',marginBottom:8}}>Sin comentarios todavía.</div>}
+                          {coms.map(c=>(
+                            <div key={c.id} style={{display:'flex',gap:7,marginBottom:8,alignItems:'flex-start'}}>
+                              <div style={{width:24,height:24,borderRadius:'50%',background:'#9B4F6A',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0}}>
+                                {(c.autor||'?')[0].toUpperCase()}
+                              </div>
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:2,flexWrap:'wrap'}}>
+                                  <span style={{fontSize:11,fontWeight:700,color:'#1a1a1a'}}>{c.autor}</span>
+                                  <span style={{fontSize:10,color:'#8a8a8a'}}>{fmtFechaHora(c.fecha)}</span>
+                                  <button onClick={()=>eliminarComentarioEtapa(et.id,c.id)}
+                                    style={{fontSize:10,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:0,marginLeft:'auto'}}>✕</button>
+                                </div>
+                                <div style={{fontSize:12,color:'#1a1a1a',lineHeight:1.5,whiteSpace:'pre-wrap'}}>{c.texto}</div>
+                              </div>
+                            </div>
+                          ))}
+                          <div style={{display:'flex',gap:6,alignItems:'flex-end',marginTop:4}}>
+                            <textarea value={etapaComText[et.id]||''} onChange={ev=>setEtapaComText(prev=>({...prev,[et.id]:ev.target.value}))}
+                              onKeyDown={ev=>{ if((ev.ctrlKey||ev.metaKey)&&ev.key==='Enter'){ev.preventDefault();agregarComentarioEtapa(et.id);} }}
+                              placeholder="Escribí un comentario... (Ctrl+Enter para enviar)"
+                              style={{flex:1,fontSize:12,padding:'5px 8px',border:'1px solid #DDDCDA',borderRadius:6,fontFamily:'system-ui',outline:'none',resize:'vertical',minHeight:48}} />
+                            <button onClick={()=>agregarComentarioEtapa(et.id)}
+                              style={{fontSize:12,background:'#9B4F6A',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',padding:'6px 10px',fontFamily:'system-ui',fontWeight:500,flexShrink:0}}>Comentar</button>
+                          </div>
+                        </div>}
+                      </div>;
+                    })()}
                   </div>
                 </div>
                 {etapaAddingAfter===et.id && (
