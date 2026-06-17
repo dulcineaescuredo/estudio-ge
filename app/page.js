@@ -5028,18 +5028,49 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
               {panel === 'comentario' && (
                 <div style={{background:'#F9F8F5',borderRadius:8,padding:'12px 14px',marginBottom:10,marginLeft:26}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                    <span style={{fontSize:12,fontWeight:600,color:'#1a1a1a'}}>Comentario</span>
+                    <span style={{fontSize:12,fontWeight:600,color:'#1a1a1a'}}>Comentarios</span>
                     <button onClick={()=>toggleEtapaPanel(et.id,'comentario')} style={{fontSize:14,background:'none',border:'none',cursor:'pointer',color:'#8a8a8a'}}>✕</button>
                   </div>
+                  {et.comentario && (
+                    <div style={{marginBottom:10,padding:'8px 10px',background:'#F0EFED',borderRadius:6}}>
+                      <div style={{fontSize:11,color:'#8a8a8a',fontWeight:600,marginBottom:4}}>Comentario anterior</div>
+                      <div style={{fontSize:13,color:'#4a4a4a',whiteSpace:'pre-wrap'}}>{et.comentario}</div>
+                    </div>
+                  )}
+                  <div style={{maxHeight:260,overflowY:'auto',marginBottom:10}}>
+                    {!etapaComentarios[et.id] ? (
+                      <div style={{fontSize:12,color:'#8a8a8a',textAlign:'center',padding:'12px 0'}}>Cargando...</div>
+                    ) : etapaComentarios[et.id].length === 0 ? (
+                      <div style={{fontSize:12,color:'#8a8a8a'}}>Sin comentarios todavía.</div>
+                    ) : etapaComentarios[et.id].map(com => (
+                      <div key={com.id} style={{display:'flex',gap:8,marginBottom:10}}>
+                        <div style={{width:32,height:32,borderRadius:'50%',background:'#9B4F6A',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>
+                          {(com.autor_nombre||'?').charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:2}}>
+                            <span style={{fontSize:12,fontWeight:700,color:'#1a1a1a'}}>{com.autor_nombre||'Usuario'}</span>
+                            <span style={{fontSize:11,color:'#8a8a8a'}}>{formatFechaHoraComentario(com.created_at)}</span>
+                          </div>
+                          <div style={{fontSize:13,color:'#1a1a1a',lineHeight:1.5,whiteSpace:'pre-wrap'}}>
+                            {renderTextoConMenciones(com.texto||'')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                   <MentionTextarea
-                    style={{...inputStyle,minHeight:70,resize:'vertical',marginBottom:8,fontSize:12}}
-                    placeholder="Comentario sobre esta etapa..."
-                    value={editComentario}
-                    onChange={v=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:v}}))}
+                    style={{...inputStyle,minHeight:60,resize:'vertical',marginBottom:6,fontSize:12}}
+                    placeholder="Escribí un comentario..."
+                    value={nuevoComentarioEtapa[et.id]||''}
+                    onChange={v=>setNuevoComentarioEtapa(p=>({...p,[et.id]:v}))}
                     perfiles={perfilesEstudio}
                   />
-                  <button onClick={()=>guardarComentario(et,editComentario)}
-                    style={{...btnPrimary,padding:'6px 12px',fontSize:12,background:'#9B4F6A',borderColor:'#9B4F6A'}}>Guardar</button>
+                  <button onClick={()=>publicarComentarioEtapa(et)}
+                    disabled={enviandoComentarioEtapa[et.id]}
+                    style={{...btnPrimary,padding:'6px 12px',fontSize:12,background:'#9B4F6A',borderColor:'#9B4F6A',opacity:enviandoComentarioEtapa[et.id]?0.6:1}}>
+                    Comentar
+                  </button>
                 </div>
               )}
             </div>
