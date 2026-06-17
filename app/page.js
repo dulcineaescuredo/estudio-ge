@@ -1000,6 +1000,15 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   // eslint-disable-next-line
   }, [expActual?.id]);
 
+  useEffect(()=>{
+    if (!expActual) return;
+    const _p=(()=>{try{return expActual.progreso?(typeof expActual.progreso==='string'?JSON.parse(expActual.progreso):expActual.progreso):{}}catch{return{}}})();
+    const tieneOtro = _p.vencimientoOtro !== undefined;
+    setOtroFechaLocal(tieneOtro ? (_p.vencimientoOtro?.fecha||'') : (expActual.proximo_vencimiento||''));
+    setOtroMotivoLocal(tieneOtro ? (_p.vencimientoOtro?.motivo||'') : (expActual.motivo_vencimiento||''));
+  // eslint-disable-next-line
+  }, [expActual?.id]);
+
   const e = expActual;
   if (!e) return null;
   const mapa = PROCESOS[e.tipo_proceso];
