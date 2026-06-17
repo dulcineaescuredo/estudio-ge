@@ -3700,7 +3700,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asu
   );
 }
 
-function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuotas, valorUhon, perfil, setVista, recargar }) {
+function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuotas, valorUhon, perfil, setVista, recargar, asuntos }) {
   const h = honActual;
   const [nuevaCuota, setNuevaCuota] = useState({ monto:'', vencimiento:'' });
   const [editando, setEditando] = useState(false);
