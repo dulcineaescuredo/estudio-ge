@@ -3644,6 +3644,8 @@ function NuevaTarea({ perfil, recargar, expedientes, clientes, perfilesEstudio =
     }
   }
   return (
+    <div>
+    <button onClick={()=>setVista('tareas')} style={{padding:'7px 13px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',marginBottom:12}}>← Volver</button>
     <Card title="✅ Nueva tarea">
       {msg && <div style={{background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#27500A',marginBottom:14}}>✓ {msg}</div>}
       <div style={{maxWidth:520}}>
