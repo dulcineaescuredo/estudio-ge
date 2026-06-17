@@ -4523,6 +4523,10 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [hoverUpload, setHoverUpload] = useState(false);
   const [filePreviewEtapa, setFilePreviewEtapa] = useState({});
   const [hoverUploadEtapa, setHoverUploadEtapa] = useState({});
+  const [etapaComentarios, setEtapaComentarios] = useState({});
+  const [nuevoComentarioEtapa, setNuevoComentarioEtapa] = useState({});
+  const [enviandoComentarioEtapa, setEnviandoComentarioEtapa] = useState({});
+  const [comentariosConteo, setComentariosConteo] = useState({});
   const pendingScrollRef = useRef(null);
 
   useEffect(()=>{
