@@ -1324,6 +1324,7 @@ function NuevoExpediente({ perfil, recargar, setVista, clientes }) {
         <button onClick={guardar} style={btnPrimary}>Guardar expediente</button>
       </div>
     </Card>
+    </div>
   );
 }
 
