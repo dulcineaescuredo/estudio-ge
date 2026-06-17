@@ -3780,8 +3780,22 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
     recargar();
   }
   async function guardarEdicion() {
-    await supabase.from('honorarios').update({ concepto: editForm.concepto, tipo_trabajo: editForm.tipo_trabajo, forma: editForm.forma, valor: Number(editForm.valor) }).eq('id', h.id);
-    setHonActual({...h, concepto: editForm.concepto, tipo_trabajo: editForm.tipo_trabajo, forma: editForm.forma, valor: Number(editForm.valor)});
+    const updates = {
+      concepto: editForm.concepto,
+      tipo_trabajo: editForm.tipo_trabajo,
+      forma: editForm.forma,
+      valor: Number(editForm.valor),
+      monto_base: editForm.monto_base ? Number(editForm.monto_base) : null,
+      en_cuotas: editForm.en_cuotas,
+      vinculo_tipo: editForm.vinculo_tipo,
+      expediente_id: editForm.vinculo_tipo==='expediente' ? (editForm.expediente_id||null) : null,
+      cliente_id: editForm.vinculo_tipo==='cliente' ? (editForm.cliente_id||null) : null,
+      contraparte_nombre: editForm.vinculo_tipo==='contraparte' ? (editForm.contraparte_nombre||null) : null,
+      asunto_id: editForm.vinculo_tipo==='asunto' ? (editForm.asunto_id||null) : null,
+      periodo: editForm.periodo||null,
+    };
+    await supabase.from('honorarios').update(updates).eq('id', h.id);
+    setHonActual({...h, ...updates});
     setEditando(false);
     recargar();
   }
