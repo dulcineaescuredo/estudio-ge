@@ -3279,6 +3279,7 @@ function NuevoHonorario({ perfil, recargar, setVista, expedientes, clientes, asu
         <button onClick={guardar} style={btnPrimary}>Guardar honorario</button>
       </div>
     </Card>
+    </div>
   );
 }
 
