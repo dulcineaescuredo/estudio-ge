@@ -4479,6 +4479,22 @@ function NuevoAsunto({ perfil, recargar, setVista, clientes }) {
   );
 }
 
+function formatFechaHoraComentario(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${d.getDate()} ${meses[d.getMonth()]} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function renderTextoConMenciones(texto) {
+  const parts = texto.split(/(@[\wáéíóúÁÉÍÓÚüÜñÑ]+)/g);
+  return parts.map((p, i) =>
+    /^@[\wáéíóúÁÉÍÓÚüÜñÑ]+$/.test(p)
+      ? <span key={i} style={{color:'#9B4F6A',fontWeight:600}}>{p}</span>
+      : p
+  );
+}
+
 function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, honorarios, cuotas, valorUhon, perfil, recargar, asuntos, honPreset, setHonPreset, setHonActual, perfilesEstudio = [], crearNotificacion, etapaPanelId = null, setEtapaPanelId }) {
   const a = asuntoActual;
   const [etapas, setEtapas] = useState([]);
