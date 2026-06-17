@@ -739,7 +739,9 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
             const vincLabel=hon?.vinculo_tipo==='contraparte'?(hon.contraparte_nombre||'—'):(exp?exp.caratula:(cli?nombreCompleto(cli):'—'));
             const esHoy=cu.vencimiento===HOY;
             const badge=esHoy?{bg:'#FDECEA',color:'#C53030',label:'vence hoy'}:{bg:'#FCEBEB',color:'#791F1F',label:'vencida'};
-            return <div key={cu.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+            return <div key={cu.id} onClick={()=>{if(hon){setHonActual(hon);setVista('detalle-honorario');}else{setVista('honorarios');}}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer'}}
+              onMouseEnter={ev=>ev.currentTarget.style.background='#F7F6F3'}
+              onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <div style={{flex:1}}>
                 <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{hon?hon.concepto:'Honorario'} <span style={{fontSize:11,color:'#8a8a8a'}}>· Cuota {cu.numero}</span></div>
                 <div style={{fontSize:11,color:'#8a8a8a'}}>{vincLabel} · vence {formatFecha(cu.vencimiento)}</div>
