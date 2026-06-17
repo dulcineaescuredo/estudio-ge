@@ -4870,7 +4870,8 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
           const docsEtapa = documentos.filter(dc=>dc.etapa_id===et.id);
           const formLinkEtapa = nuevoLinkEtapa[et.id]||{nombre:'',url:''};
           const hasDocs = docsEtapa.length > 0;
-          const hasComentario = !!(et.comentario);
+          const conteoComentarios = comentariosConteo[et.id] || 0;
+          const hasComentario = conteoComentarios > 0 || !!(et.comentario);
           return (
             <div key={et.id} id={`etapa-${et.id}`} style={{borderBottom:'1px solid #F0EFED'}}>
               <div style={{display:'grid',gridTemplateColumns:isMobile?'32px 1fr 40px':'32px 1fr 130px 60px 60px 40px',gap:'0 8px',alignItems:'center',padding:'10px 0'}}>
