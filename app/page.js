@@ -1017,6 +1017,33 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     if (np.dec[etId]===op) delete np.dec[etId]; else { np.dec[etId]=op; if(!np.hechas[etId]) np.hechas[etId]=HOY; }
     guardarProg(np);
   }
+  function agregarEtapaCustom(afterId, nombre) {
+    if (!nombre.trim()) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    np.etapasCustom.push({id:'c'+Date.now().toString(36), n:nombre.trim(), afterId, custom:true});
+    guardarProg(np);
+    setEtapaAddingAfter(null); setEtapaAddNombre('');
+  }
+  function editarNombreEtapa(etId, nombre) {
+    if (!nombre.trim()) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    np.nombresCustom[etId] = nombre.trim();
+    const ci = np.etapasCustom.findIndex(c=>c.id===etId);
+    if (ci>=0) np.etapasCustom[ci].n = nombre.trim();
+    guardarProg(np);
+    setEtapaEditandoId(null); setEtapaEditNombre('');
+  }
+  function eliminarEtapaLocal(etId, esCustom) {
+    if (!confirm('¿Eliminar esta etapa del expediente?')) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    if (esCustom) {
+      np.etapasCustom = np.etapasCustom.filter(c=>c.id!==etId);
+    } else {
+      np.etapasOcultas.push(etId);
+    }
+    delete np.hechas[etId]; delete np.subs[etId]; delete np.nombresCustom[etId];
+    guardarProg(np);
+  }
   async function actualizarVencimiento(campo, valor) {
     setExpActual({...e, [campo]: valor});
     await supabase.from('expedientes').update({ [campo]: valor||null }).eq('id', e.id);
