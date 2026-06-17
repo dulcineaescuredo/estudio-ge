@@ -949,6 +949,11 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const [notaTexto, setNotaTexto] = useState('');
   const [gastosExp, setGastosExp] = useState([]);
   const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
+  const [etapaHover, setEtapaHover] = useState(null);
+  const [etapaAddingAfter, setEtapaAddingAfter] = useState(null);
+  const [etapaAddNombre, setEtapaAddNombre] = useState('');
+  const [etapaEditandoId, setEtapaEditandoId] = useState(null);
+  const [etapaEditNombre, setEtapaEditNombre] = useState('');
 
   useEffect(()=>{
     if (!expActual?.id) return;
