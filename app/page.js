@@ -1374,6 +1374,18 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                           style={{fontSize:11,background:'none',border:'1px solid #9B4F6A',borderRadius:4,cursor:'pointer',color:'#9B4F6A',padding:'1px 5px',lineHeight:1.4,fontFamily:'system-ui'}}>🗑️</button>
                       </span>
                     </div>
+                    {esActual && !hecha && (
+                      <div style={{display:'flex',alignItems:'center',gap:6,marginTop:5,marginBottom:2}}>
+                        <span style={{fontSize:11,color:'#B45309'}}>📅</span>
+                        <input type="date" value={prog.fechasEtapa[et.id]||''}
+                          onChange={ev=>actualizarFechaEtapa(et.id, ev.target.value)}
+                          style={{padding:'2px 6px',fontSize:11,border:'1px solid #DDDCDA',borderRadius:5,background:'#FFFDF5',fontFamily:'system-ui',color:'#B45309'}} />
+                        {prog.fechasEtapa[et.id] && (
+                          <button onClick={()=>actualizarFechaEtapa(et.id,'')}
+                            style={{background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:13,lineHeight:1,padding:'0 2px'}}>×</button>
+                        )}
+                      </div>
+                    )}
                     {et.sub && <div style={{marginTop:5}}>
                       {getSubList(et.id).map((s,si)=>{
                         const sh = prog.subs[et.id]&&prog.subs[et.id][si];
