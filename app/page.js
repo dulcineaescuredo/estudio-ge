@@ -4563,10 +4563,13 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     if (error) { alert('Error al guardar comentario: ' + JSON.stringify(error)); return; }
     setEtapas(prev => prev.map(e => e.id === et.id ? {...e, comentario: texto||null} : e));
     setEtapaEdits(prev => { const n = {...prev}; if (n[et.id]) delete n[et.id].comentario; return n; });
+    toggleEtapaPanel(et.id, 'comentario');
     cargarDetalle();
-    if (crearNotificacion && texto) {
-      const mencionados = extraerMenciones(texto, perfilesEstudio);
-      const preview = texto.substring(0, 60);
+    console.log('[guardarComentario] texto a analizar para menciones:', texto);
+    const mencionados = extraerMenciones(texto || '', perfilesEstudio);
+    console.log('[guardarComentario] menciones encontradas:', mencionados);
+    if (crearNotificacion) {
+      const preview = (texto || '').substring(0, 60);
       for (const dest of mencionados) {
         await crearNotificacion({
           destinatario_id: dest.id,
@@ -4574,6 +4577,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
           contexto: a.titulo,
           link: 'extrajudicial',
         });
+        console.log('[guardarComentario] notificación creada para:', dest.nombre);
       }
     }
   }
