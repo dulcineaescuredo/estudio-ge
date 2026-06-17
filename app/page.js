@@ -595,7 +595,9 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
     const color = tipo==='audiencia' ? '#9B4F6A' : '#2B6CB0';
     return (
       <div key={ev.id} onClick={onClick}
-        style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}>
+        style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}
+        onMouseEnter={e=>e.currentTarget.style.background='#F7F3F5'}
+        onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
         <span style={{fontSize:12,fontWeight:700,color,minWidth:40,flexShrink:0}}>{fmtH(ev.hora)||'—'}</span>
         <span style={{background:color,color:'#fff',borderRadius:5,padding:'2px 8px',fontSize:11,fontWeight:500,flexShrink:0,whiteSpace:'nowrap'}}>
           {ev.tipo||(tipo==='audiencia'?'Audiencia':'Turno')}
