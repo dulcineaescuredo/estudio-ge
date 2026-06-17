@@ -4944,11 +4944,12 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                   </div>
                 )}
                 {!isMobile && (
-                  <div style={{textAlign:'center'}}>
+                  <div style={{textAlign:'center',position:'relative'}}>
                     <button onClick={()=>toggleEtapaPanel(et.id,'comentario')} title="Comentario"
-                      style={{fontSize:16,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',
-                        color:panel==='comentario'?'#15803d':hasComentario?'#15803d':'#c9c9c4'}}>
+                      style={{fontSize:16,background:'none',border:'none',cursor:'pointer',padding:'2px 4px',position:'relative',
+                        color:panel==='comentario'?'#9B4F6A':hasComentario?'#9B4F6A':'#c9c9c4'}}>
                       💬
+                      {conteoComentarios > 0 && <span style={{position:'absolute',top:-4,right:-2,background:'#9B4F6A',color:'#fff',borderRadius:8,fontSize:9,padding:'0 4px',minWidth:14,textAlign:'center',lineHeight:'14px'}}>{conteoComentarios}</span>}
                     </button>
                   </div>
                 )}
