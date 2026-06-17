@@ -1581,7 +1581,7 @@ function VerConsultas({ consultas, recargar }) {
   );
 }
 
-function NuevaConsulta({ perfil, recargar, clientes }) {
+function NuevaConsulta({ perfil, recargar, clientes, setVista }) {
   const [f, setF] = useState({ tipo:'primera', fecha:HOY, abogada:'', motivo:'', comentario:'', valor_consulta:'', notas_consulta:'' });
   const [clienteQ, setClienteQ] = useState('');
   const [clienteId, setClienteId] = useState('');
