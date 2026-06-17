@@ -2929,8 +2929,8 @@ const HON_ESTADO_COLOR = {
 function HonorariosTable({ lista, expedientes, clientes, cuotas, valorUhon, setHonActual, setVista, recargar, asuntos }) {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [orden, setOrden] = useState({ col: null, dir: null });
-  const [panelAbierto, setPanelAbierto] = useState(null);
-  const [fechaLimiteEdit, setFechaLimiteEdit] = useState('');
+  const [dropdownHon, setDropdownHon] = useState(null);
+  const [localEstados, setLocalEstados] = useState({});
 
   function toggleOrden(col) {
     setOrden(prev => {
