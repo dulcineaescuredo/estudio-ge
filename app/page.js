@@ -5210,10 +5210,14 @@ function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asu
   async function clickFila(n) {
     await marcarLeida(n);
     if (!n.link) return;
+    console.log('[Notif] link recibido:', n.link, 'split:', n.link.split(':'));
     if (n.link.includes(':')) {
       const [seccion, asuntoId, etapaId] = n.link.split(':');
+      console.log('[Notif] buscando asunto con id:', asuntoId, 'en lista de', (asuntos||[]).length, 'asuntos');
       const asunto = (asuntos || []).find(a => a.id === asuntoId);
+      console.log('[Notif] asunto encontrado:', asunto);
       if (asunto) {
+        console.log('[Notif] seteando detalle con asunto:', asunto?.id);
         setAsuntoActual(asunto);
         if (etapaId && setEtapaPanelId) setEtapaPanelId(etapaId);
         setVista('detalle-asunto');
