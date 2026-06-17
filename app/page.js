@@ -4591,12 +4591,14 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     console.log('[guardarComentario] menciones encontradas:', mencionados);
     if (crearNotificacion) {
       const preview = (texto || '').substring(0, 60);
+      const linkNotif = `extrajudicial:${a.id}:${et.id}`;
+      console.log('[guardarComentario] link que se va a guardar:', linkNotif);
       for (const dest of mencionados) {
         await crearNotificacion({
           destinatario_id: dest.id,
           mensaje: `${perfil.nombre} te mencionó en un comentario: "${preview}"`,
           contexto: a.titulo,
-          link: `extrajudicial:${a.id}:${et.id}`,
+          link: linkNotif,
         });
         console.log('[guardarComentario] notificación creada para:', dest.nombre);
       }
