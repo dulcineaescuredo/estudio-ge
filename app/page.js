@@ -1239,6 +1239,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
         <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
           <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+            {!['activo','espera','apelado','archivado'].includes(e.estado||'activo') && <option value={e.estado}>{e.estado}</option>}
             <option value="activo">Activo</option>
             <option value="espera">En espera</option>
             <option value="apelado">Apelado</option>
