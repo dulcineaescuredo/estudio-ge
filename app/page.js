@@ -4578,9 +4578,23 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   }
 
   async function cargarComentariosEtapa(etapaId) {
-    const { data } = await supabase.from('etapa_comentarios').select('*').eq('etapa_id', etapaId).order('created_at', { ascending: true });
-    setEtapaComentarios(prev => ({ ...prev, [etapaId]: data || [] }));
-    setComentariosConteo(prev => ({ ...prev, [etapaId]: (data||[]).length }));
+    console.log('[Comentarios] iniciando fetch para etapa:', etapaId);
+    let data = null;
+    try {
+      const resultado = await supabase.from('etapa_comentarios').select('*').eq('etapa_id', etapaId).order('created_at', { ascending: true });
+      data = resultado.data;
+      const error = resultado.error;
+      console.log('[Comentarios] resultado:', data, error);
+      if (error) {
+        alert('Error al cargar comentarios: ' + JSON.stringify(error));
+      }
+    } catch (ex) {
+      console.log('[Comentarios] excepción:', ex);
+      alert('Error al cargar comentarios: ' + String(ex));
+    } finally {
+      setEtapaComentarios(prev => ({ ...prev, [etapaId]: data || [] }));
+      setComentariosConteo(prev => ({ ...prev, [etapaId]: (data||[]).length }));
+    }
   }
 
   async function actualizarAsunto(campo, valor) {
