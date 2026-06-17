@@ -4553,9 +4553,13 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   }
 
   async function guardarComentario(et, texto) {
-    const { error } = await supabase.from('asunto_etapas')
+    console.log('guardarComentario llamada con:', et, texto);
+    console.log('[guardarComentario] Enviando UPDATE a Supabase — id:', et.id, 'comentario:', texto);
+    const { data: updData, error } = await supabase.from('asunto_etapas')
       .update({ comentario: texto || null })
-      .eq('id', et.id);
+      .eq('id', et.id)
+      .select();
+    console.log('[guardarComentario] Resultado UPDATE — data:', updData, 'error:', error);
     if (error) { alert('Error al guardar comentario: ' + JSON.stringify(error)); return; }
     setEtapas(prev => prev.map(e => e.id === et.id ? {...e, comentario: texto||null} : e));
     setEtapaEdits(prev => { const n = {...prev}; if (n[et.id]) delete n[et.id].comentario; return n; });
