@@ -5160,7 +5160,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   );
 }
 
-function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas }) {
+function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asuntos, setAsuntoActual, setEtapaPanelId }) {
   const [notifs, setNotifs] = useState([]);
   const [perfilesMap, setPerfilesMap] = useState({});
   const [cargando, setCargando] = useState(true);
