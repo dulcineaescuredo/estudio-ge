@@ -1202,7 +1202,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
           <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
             style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Sin asignar</option>
+            <option value="">Responsable</option>
             {ABOGADAS.map(a=><option key={a}>{a}</option>)}
           </select>
           <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
