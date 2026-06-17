@@ -577,8 +577,8 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
   }, [perfil?.nombre]);
 
   const vencimientosHoy = (expedientes||[])
-    .filter(e => e.proximo_vencimiento === HOY_LOCAL &&
-      (e.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre));
+    .filter(e => e.proximo_vencimiento && diasHasta(e.proximo_vencimiento) === 0 &&
+      (e.estado||'').toLowerCase() !== 'archivado');
 
   const tareasHoy = (tareas||[])
     .filter(t => t.deadline === HOY_LOCAL && normEstado(t.estado) !== 'terminado'
