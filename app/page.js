@@ -3145,6 +3145,14 @@ function Honorarios({ honorarios, cuotas, expedientes, clientes, valorUhon, setV
   const totalMesHist = pagadasMesHist + pendientesMesHist;
   const pctCobradoMesHist = totalMesHist > 0 ? Math.round(pagadasMesHist / totalMesHist * 100) : 0;
 
+  async function cambiarEstadoCuota(cu, nuevo) {
+    setLocalEstadosCuota(prev=>({...prev,[cu.id]:nuevo}));
+    setDropdownCuota(null);
+    const updates = nuevo==='pagada' ? {estado:'pagada', fecha_pago:HOY} : {estado:'pendiente', fecha_pago:null};
+    await supabase.from('cuotas').update(updates).eq('id',cu.id);
+    recargar();
+  }
+
   return (
     <div>
       {vistaHon==='estadisticas' ? (
