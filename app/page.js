@@ -1051,6 +1051,56 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     delete np.hechas[etId]; delete np.subs[etId]; delete np.nombresCustom[etId];
     guardarProg(np);
   }
+  function getSubList(etId) {
+    const et = etapasConCustom.find(x=>x.id===etId);
+    return prog.subsMapa[etId] || et?.sub || [];
+  }
+  function agregarSubCustom(etId, afterSi, nombre) {
+    if (!nombre.trim()) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    const lista = [...getSubList(etId)];
+    lista.splice(afterSi+1, 0, nombre.trim());
+    np.subsMapa[etId] = lista;
+    if (!np.subsCustomIdx[etId]) np.subsCustomIdx[etId] = {};
+    const oldC = np.subsCustomIdx[etId]; const newC = {};
+    for (const [k,v] of Object.entries(oldC)) { const ki=Number(k); newC[ki>=afterSi+1?ki+1:ki]=v; }
+    newC[afterSi+1] = true;
+    np.subsCustomIdx[etId] = newC;
+    if (np.subs[etId]) {
+      const oldS=np.subs[etId]; const newS={};
+      for (const [k,v] of Object.entries(oldS)) { const ki=Number(k); newS[ki>=afterSi+1?ki+1:ki]=v; }
+      np.subs[etId] = newS;
+    }
+    guardarProg(np);
+    setSubAddingAfter(null); setSubAddNombre('');
+  }
+  function editarSubNombre(etId, si, nombre) {
+    if (!nombre.trim()) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    const lista = [...getSubList(etId)];
+    lista[si] = nombre.trim();
+    np.subsMapa[etId] = lista;
+    guardarProg(np);
+    setSubEditando(null); setSubEditNombre('');
+  }
+  function eliminarSub(etId, si) {
+    if (!confirm('¿Eliminar este sub-ítem?')) return;
+    const np = JSON.parse(JSON.stringify(prog));
+    const lista = [...getSubList(etId)];
+    lista.splice(si, 1);
+    np.subsMapa[etId] = lista;
+    if (np.subsCustomIdx[etId]) {
+      const oldC=np.subsCustomIdx[etId]; const newC={};
+      for (const [k,v] of Object.entries(oldC)) { const ki=Number(k); if(ki===si) continue; newC[ki>si?ki-1:ki]=v; }
+      np.subsCustomIdx[etId] = newC;
+    }
+    if (np.subs[etId]) {
+      const oldS=np.subs[etId]; const newS={};
+      for (const [k,v] of Object.entries(oldS)) { const ki=Number(k); if(ki===si) continue; newS[ki>si?ki-1:ki]=v; }
+      np.subs[etId] = newS;
+    }
+    guardarProg(np);
+  }
   async function actualizarVencimiento(campo, valor) {
     setExpActual({...e, [campo]: valor});
     await supabase.from('expedientes').update({ [campo]: valor||null }).eq('id', e.id);
