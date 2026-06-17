@@ -974,6 +974,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const prog = (() => { try { return e.progreso ? (typeof e.progreso==='string'?JSON.parse(e.progreso):e.progreso) : {hechas:{},subs:{},dec:{}}; } catch { return {hechas:{},subs:{},dec:{}}; } })();
   if (!prog.hechas) prog.hechas = {}; if (!prog.subs) prog.subs = {}; if (!prog.dec) prog.dec = {};
   if (!prog.etapasCustom) prog.etapasCustom = []; if (!prog.nombresCustom) prog.nombresCustom = {}; if (!prog.etapasOcultas) prog.etapasOcultas = [];
+  if (!prog.subsMapa) prog.subsMapa = {}; if (!prog.subsCustomIdx) prog.subsCustomIdx = {};
 
   const esDemandada = e.rol === 'demandada';
   const etapasVis = mapa ? mapa.etapas
