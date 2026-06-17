@@ -388,6 +388,7 @@ export default function Home() {
           recargar={cargarDatos}
           crearNotificacion={crearNotificacion}
           perfilesEstudio={perfilesEstudio}
+          etapaPanelId={etapaPanelId} setEtapaPanelId={setEtapaPanelId}
         />
       </div>
     </div>
