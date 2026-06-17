@@ -4910,9 +4910,9 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                       </button>
                       <button onClick={()=>toggleEtapaPanel(et.id,'comentario')}
                         style={{fontSize:12,padding:'2px 6px',borderRadius:4,border:'1px solid',cursor:'pointer',background:'none',
-                          borderColor:panel==='comentario'?'#15803d':'#c9c9c4',
-                          color:panel==='comentario'?'#15803d':hasComentario?'#15803d':'#8a8a8a'}}>
-                        💬
+                          borderColor:panel==='comentario'?'#9B4F6A':'#c9c9c4',
+                          color:panel==='comentario'?'#9B4F6A':hasComentario?'#9B4F6A':'#8a8a8a'}}>
+                        💬{conteoComentarios > 0 ? ` ${conteoComentarios}` : ''}
                       </button>
                     </div>
                   )}
