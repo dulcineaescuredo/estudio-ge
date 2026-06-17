@@ -5197,7 +5197,20 @@ function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asu
 
   async function clickFila(n) {
     await marcarLeida(n);
-    if (n.link) setVista(n.link);
+    if (!n.link) return;
+    if (n.link.includes(':')) {
+      const [seccion, asuntoId, etapaId] = n.link.split(':');
+      const asunto = (asuntos || []).find(a => a.id === asuntoId);
+      if (asunto) {
+        setAsuntoActual(asunto);
+        if (etapaId && setEtapaPanelId) setEtapaPanelId(etapaId);
+        setVista('detalle-asunto');
+      } else {
+        setVista(seccion);
+      }
+    } else {
+      setVista(n.link);
+    }
   }
 
   function formatFechaNotif(ts) {
