@@ -4507,6 +4507,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   const [hoverUpload, setHoverUpload] = useState(false);
   const [filePreviewEtapa, setFilePreviewEtapa] = useState({});
   const [hoverUploadEtapa, setHoverUploadEtapa] = useState({});
+  const pendingScrollRef = useRef(null);
 
   useEffect(()=>{
     if (!a) return;
@@ -4517,6 +4518,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     setEstado(a.estado||'activo');
     if (etapaPanelId) {
       setEtapaPanels({ [etapaPanelId]: 'comentario' });
+      pendingScrollRef.current = etapaPanelId;
       if (setEtapaPanelId) setEtapaPanelId(null);
     } else {
       setEtapaPanels({});
@@ -4524,6 +4526,16 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     cargarDetalle();
   // eslint-disable-next-line
   }, [a?.id]);
+
+  useEffect(()=>{
+    if (!pendingScrollRef.current || etapas.length === 0) return;
+    const id = pendingScrollRef.current;
+    pendingScrollRef.current = null;
+    setTimeout(()=>{
+      document.getElementById(`etapa-${id}`)?.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 100);
+  // eslint-disable-next-line
+  }, [etapas]);
 
   async function cargarDetalle() {
     if (!a?.id) return;
