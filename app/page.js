@@ -18,12 +18,13 @@ function socioColor(nombre) {
 
 const PROCESOS = {
   ordinario: { nombre: 'Ordinario (conocimiento)', etapas: [
-    { id:'med', n:'Mediación' }, { id:'dem', n:'Demanda presentada' }, { id:'tra', n:'Traslado notificado' },
-    { id:'con', n:'Contestación de demanda' }, { id:'trd', n:'Traslado documental' }, { id:'aup', n:'Audiencia preliminar' },
-    { id:'apr', n:'Apertura a prueba' },
-    { id:'pru', n:'Producción de prueba', sub:['Informativa (oficios)','Testimonial (notificar)','Declaración de parte','Pericial (notificar)','Documental'] },
-    { id:'ale', n:'Alegatos' }, { id:'sen', n:'Sentencia' }, { id:'apl', n:'Plazo de apelación' },
-    { id:'cam', n:'Trámite en Cámara / TSJ' }, { id:'fir', n:'Firmeza' }, { id:'eje', n:'Ejecución de sentencia' }
+    { id:'med', n:'Mediación', op:['Hubo acuerdo','No hubo acuerdo'] },
+    { id:'dem', n:'Demanda presentada', req:['med','No hubo acuerdo'] }, { id:'tra', n:'Traslado notificado', req:['med','No hubo acuerdo'] },
+    { id:'con', n:'Contestación de demanda', req:['med','No hubo acuerdo'] }, { id:'trd', n:'Traslado documental', req:['med','No hubo acuerdo'] }, { id:'aup', n:'Audiencia preliminar', req:['med','No hubo acuerdo'] },
+    { id:'apr', n:'Apertura a prueba', req:['med','No hubo acuerdo'] },
+    { id:'pru', n:'Producción de prueba', sub:['Informativa (oficios)','Testimonial (notificar)','Declaración de parte','Pericial (notificar)','Documental'], req:['med','No hubo acuerdo'] },
+    { id:'ale', n:'Alegatos', req:['med','No hubo acuerdo'] }, { id:'sen', n:'Sentencia', req:['med','No hubo acuerdo'] }, { id:'apl', n:'Plazo de apelación', req:['med','No hubo acuerdo'] },
+    { id:'cam', n:'Trámite en Cámara / TSJ', req:['med','No hubo acuerdo'] }, { id:'fir', n:'Firmeza', req:['med','No hubo acuerdo'] }, { id:'eje', n:'Ejecución de sentencia', req:['med','No hubo acuerdo'] }
   ]},
   ejecutivo: { nombre: 'Ejecutivo (monitorio)', etapas: [
     { id:'dem', n:'Demanda presentada' }, { id:'sen', n:'Sentencia monitoria dictada' }, { id:'not', n:'Notificación al deudor' },
