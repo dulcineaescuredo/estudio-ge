@@ -621,13 +621,13 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
       {audienciasHoy.length>0&&(
         <div style={{marginBottom:14}}>
           <div style={{fontSize:11,fontWeight:700,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>⚖️ Audiencias de hoy</div>
-          {audienciasHoy.map(ev=>filaEvento(ev,'audiencia',()=>setVista('audiencias')))}
+          {audienciasHoy.map(ev=>filaEvento(ev,'audiencia',()=>setVista('agenda-audiencias')))}
         </div>
       )}
       {turnosHoy.length>0&&(
         <div style={{marginBottom:14}}>
           <div style={{fontSize:11,fontWeight:700,color:'#2B6CB0',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>🕐 Turnos de hoy</div>
-          {turnosHoy.map(ev=>filaEvento(ev,'turno',()=>setVista('turnos')))}
+          {turnosHoy.map(ev=>filaEvento(ev,'turno',()=>setVista('agenda-turnos')))}
         </div>
       )}
       {vencimientosHoy.length>0&&(
