@@ -1296,37 +1296,45 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
         </div>
         <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Cliente</div>
         <CliCombobox clientes={clientes||[]} value={e.cliente_id||''} onChange={v=>actualizarVencimiento('cliente_id',v||null)} perfil={perfil} recargar={recargar} />
-        <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
-          <div>
-            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Próximo vencimiento</label>
-            <input type="date" value={e.proximo_vencimiento||''} onChange={ev=>actualizarVencimiento('proximo_vencimiento',ev.target.value)}
-              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui'}} />
+        <div style={{borderTop:'1px solid #f5f5f3',paddingTop:12,marginBottom:0}}>
+          {vencEsAuto ? (
+            <div style={{background:'#FFFBF5',border:'1px solid #F6E0B5',borderRadius:8,padding:'10px 12px',marginBottom:10,display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:'#B45309',marginBottom:3,textTransform:'uppercase',letterSpacing:'0.04em'}}>Vencimiento de etapa (auto)</div>
+                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                  <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>{vencAutoEtapa && formatFecha(prog.fechasEtapa[vencAutoEtapa.id])}</span>
+                  <span style={{fontSize:12,color:'#6B5B00'}}>· {vencAutoEtapa && (prog.nombresCustom[vencAutoEtapa.id]||vencAutoEtapa.n)}</span>
+                  {vencAutoEtapa && (()=>{ const vc=vencColor(prog.fechasEtapa[vencAutoEtapa.id]); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
+                </div>
+              </div>
+              <div style={{fontSize:11,color:'#8a8a8a',flexShrink:0,alignSelf:'center'}}>Editá la fecha en el mapa ↑</div>
+            </div>
+          ) : (
+            <div style={{fontSize:11,color:'#aaa',marginBottom:8}}>Sin etapa con fecha — el vencimiento manual es el efectivo.</div>
+          )}
+          <div style={{opacity:vencEsAuto?0.5:1,transition:'opacity 0.2s'}}>
+            <div style={{fontSize:11,fontWeight:600,color:'#6B7280',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.04em'}}>
+              Vencimiento manual{vencEsAuto&&<span style={{fontWeight:400,textTransform:'none',marginLeft:6,color:'#B45309'}}> — inactivo</span>}
+            </div>
+            <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-start'}}>
+              <div>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Fecha</label>
+                <input type="date" value={otroFechaLocal}
+                  onChange={ev=>setOtroFechaLocal(ev.target.value)}
+                  onBlur={ev=>actualizarVencimientoOtro(ev.target.value, otroMotivoLocal)}
+                  style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui'}} />
+              </div>
+              <div style={{flex:1,minWidth:180}}>
+                <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo</label>
+                <input type="text" value={otroMotivoLocal}
+                  onChange={ev=>setOtroMotivoLocal(ev.target.value)}
+                  onBlur={ev=>actualizarVencimientoOtro(otroFechaLocal, ev.target.value)}
+                  placeholder="Describí el motivo..."
+                  style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box'}} />
+              </div>
+              {!vencEsAuto && otroFechaLocal && (()=>{ const vc=vencColor(otroFechaLocal); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
+            </div>
           </div>
-          <div style={{flex:1,minWidth:180}}>
-            <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Motivo del vencimiento</label>
-            <select
-              value={etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) ? e.motivo_vencimiento : 'Otro'}
-              onChange={ev => {
-                if (ev.target.value !== 'Otro') {
-                  setMotivoOtro('');
-                  actualizarVencimiento('motivo_vencimiento', ev.target.value);
-                } else {
-                  actualizarVencimiento('motivo_vencimiento', '');
-                }
-              }}
-              style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box'}}>
-              <option value="">— Sin motivo —</option>
-              {etapasVis.filter(et => et.id !== 'med').map(et => <option key={et.id} value={et.n}>{et.n}</option>)}
-              <option value="Otro">Otro</option>
-            </select>
-            {(etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) == null && e.motivo_vencimiento !== null && e.motivo_vencimiento !== '' || etapasVis.find(et => et.id !== 'med' && et.n === (e.motivo_vencimiento||'')) == null) &&
-              <input type="text" value={motivoOtro} onChange={ev=>setMotivoOtro(ev.target.value)}
-                onBlur={ev=>actualizarVencimiento('motivo_vencimiento', ev.target.value)}
-                placeholder="Describí el motivo..."
-                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,background:'#F7F6F3',fontFamily:'system-ui',boxSizing:'border-box',marginTop:6}} />
-            }
-          </div>
-          {e.proximo_vencimiento && (()=>{ const vc=vencColor(e.proximo_vencimiento); return <Badge bg={vc.bg} color={vc.color}>{vc.label}</Badge>; })()}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:12,borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <div>
