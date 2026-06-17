@@ -4511,6 +4511,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
 
   useEffect(()=>{
     if (!a) return;
+    console.log('[DetalleAsunto] useEffect disparado, etapaPanelId recibido:', etapaPanelId);
     setTitulo(a.titulo||'');
     setNotaTexto(a.notas||'');
     setCliId(a.cliente_id||'');
