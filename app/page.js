@@ -4541,6 +4541,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
       setEtapaPanels({ [etapaPanelId]: 'comentario' });
       pendingScrollRef.current = etapaPanelId;
       if (setEtapaPanelId) setEtapaPanelId(null);
+      cargarComentariosEtapa(etapaPanelId);
     } else {
       setEtapaPanels({});
     }
