@@ -4939,7 +4939,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
                     onChange={v=>setEtapaEdits(p=>({...p,[et.id]:{...p[et.id],comentario:v}}))}
                     perfiles={perfilesEstudio}
                   />
-                  <button onClick={async()=>{await actualizarEtapa(et,'comentario',editComentario);if(crearNotificacion){const mens=extraerMenciones(editComentario,perfilesEstudio);const prv=editComentario.substring(0,60);for(const d of mens)await crearNotificacion({destinatario_id:d.id,mensaje:`${perfil.nombre} te mencionó en "${et.descripcion}" (${a.titulo}): "${prv}"`,contexto:`${a.titulo} — ${et.descripcion}`,link:'extrajudicial'});}}}
+                  <button onClick={()=>guardarComentario(et,editComentario)}
                     style={{...btnPrimary,padding:'6px 12px',fontSize:12,background:'#9B4F6A',borderColor:'#9B4F6A'}}>Guardar</button>
                 </div>
               )}
