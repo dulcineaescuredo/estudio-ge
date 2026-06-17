@@ -4815,11 +4815,9 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
   }
 
   function toggleEtapaPanel(etapaId, panel) {
-    setEtapaPanels(prev => {
-      const isClosing = prev[etapaId] === panel;
-      if (!isClosing && panel === 'comentario') cargarComentariosEtapa(etapaId);
-      return { ...prev, [etapaId]: isClosing ? null : panel };
-    });
+    const isClosing = etapaPanels[etapaId] === panel;
+    setEtapaPanels(prev => ({ ...prev, [etapaId]: isClosing ? null : panel }));
+    if (!isClosing && panel === 'comentario') cargarComentariosEtapa(etapaId);
   }
 
   if (!a) return null;
