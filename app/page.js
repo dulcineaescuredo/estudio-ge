@@ -960,6 +960,8 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const [subAddNombre, setSubAddNombre] = useState('');
   const [subEditando, setSubEditando] = useState(null);
   const [subEditNombre, setSubEditNombre] = useState('');
+  const [etapaComOpen, setEtapaComOpen] = useState({});
+  const [etapaComText, setEtapaComText] = useState({});
 
   useEffect(()=>{
     if (!expActual?.id) return;
