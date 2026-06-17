@@ -635,7 +635,9 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
           <div style={{fontSize:11,fontWeight:700,color:'#B45309',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>⚠️ Vencimientos de hoy</div>
           {vencimientosHoy.map(e=>(
             <div key={e.id} onClick={()=>{setExpActual(e);setVista('detalle');}}
-              style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}>
+              style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}
+              onMouseEnter={ev=>ev.currentTarget.style.background='#F7F3F5'}
+              onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <span style={{background:'#B45309',color:'#fff',borderRadius:5,padding:'2px 8px',fontSize:11,fontWeight:500,flexShrink:0}}>vence hoy</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:1}}>{e.caratula}</div>
