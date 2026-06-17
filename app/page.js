@@ -3840,19 +3840,56 @@ function DetalleHonorario({ honActual, setHonActual, expedientes, clientes, cuot
           </button>
         </div>
         {editando ? (
-          <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480,marginBottom:12}}>
+          <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:520,marginBottom:12}}>
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Concepto</label>
             <input value={editForm.concepto} onChange={ev=>setEditForm({...editForm,concepto:ev.target.value})} placeholder="Concepto"
               style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Tipo de trabajo</label>
             <input value={editForm.tipo_trabajo} onChange={ev=>setEditForm({...editForm,tipo_trabajo:ev.target.value})} placeholder="Tipo de trabajo"
               style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Forma de cobro</label>
             <div style={{display:'flex',gap:6}}>
               {[['uhon','UHON'],['porcentaje','%'],['fijo','$ fijo']].map(([v,l])=>(
                 <button key={v} onClick={()=>setEditForm({...editForm,forma:v})}
                   style={{flex:1,padding:'6px',border:editForm.forma===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:12,cursor:'pointer',background:editForm.forma===v?'#E6F1FB':'#f9f8f5',color:editForm.forma===v?'#0C447C':'#4a4a4a'}}>{l}</button>
               ))}
             </div>
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>{editForm.forma==='uhon'?'Cantidad de UHON':editForm.forma==='porcentaje'?'Porcentaje (%)':'Monto en pesos'}</label>
             <input type="number" value={editForm.valor} onChange={ev=>setEditForm({...editForm,valor:ev.target.value})} placeholder="Valor"
               style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            {editForm.forma==='porcentaje' && <>
+              <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Monto base</label>
+              <input type="number" value={editForm.monto_base} onChange={ev=>setEditForm({...editForm,monto_base:ev.target.value})} placeholder="Monto base para calcular %"
+                style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            </>}
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Vincular a</label>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+              {[['ninguno','Sin vincular'],['expediente','Expediente'],['cliente','Cliente'],['contraparte','Contraparte'],['asunto','Asunto']].map(([v,l])=>(
+                <button key={v} onClick={()=>setEditForm(prev=>({...prev,vinculo_tipo:v,expediente_id:'',cliente_id:'',contraparte_nombre:'',asunto_id:''}))}
+                  style={{padding:'5px 8px',border:editForm.vinculo_tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:11,cursor:'pointer',background:editForm.vinculo_tipo===v?'#E6F1FB':'#f9f8f5',color:editForm.vinculo_tipo===v?'#0C447C':'#4a4a4a',fontFamily:'system-ui'}}>{l}</button>
+              ))}
+            </div>
+            {editForm.vinculo_tipo==='expediente' && <select value={editForm.expediente_id} onChange={ev=>setEditForm({...editForm,expediente_id:ev.target.value})} style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui',background:'#F7F6F3'}}>
+              <option value="">Seleccioná expediente</option>
+              {expedientes.map(ex=><option key={ex.id} value={ex.id}>{ex.caratula}</option>)}
+            </select>}
+            {editForm.vinculo_tipo==='cliente' && <select value={editForm.cliente_id} onChange={ev=>setEditForm({...editForm,cliente_id:ev.target.value})} style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui',background:'#F7F6F3'}}>
+              <option value="">Seleccioná cliente</option>
+              {clientes.map(cl=><option key={cl.id} value={cl.id}>{nombreCompleto(cl)}</option>)}
+            </select>}
+            {editForm.vinculo_tipo==='contraparte' && <input value={editForm.contraparte_nombre||''} onChange={ev=>setEditForm({...editForm,contraparte_nombre:ev.target.value})} placeholder="Nombre de la contraparte"
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />}
+            {editForm.vinculo_tipo==='asunto' && <select value={editForm.asunto_id} onChange={ev=>setEditForm({...editForm,asunto_id:ev.target.value})} style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui',background:'#F7F6F3'}}>
+              <option value="">Seleccioná asunto extrajudicial</option>
+              {(asuntos||[]).map(a=><option key={a.id} value={a.id}>{a.titulo}</option>)}
+            </select>}
+            <label style={{fontSize:11,color:'#8a8a8a',marginBottom:-4}}>Período (mes de facturación)</label>
+            <input type="month" value={editForm.periodo||''} onChange={ev=>setEditForm({...editForm,periodo:ev.target.value})}
+              style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:13,fontFamily:'system-ui'}} />
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,fontWeight:400}}>
+              <input type="checkbox" checked={editForm.en_cuotas} onChange={ev=>setEditForm({...editForm,en_cuotas:ev.target.checked})} style={{width:16,height:16,cursor:'pointer'}} />
+              Se cobra en cuotas
+            </label>
             <button onClick={guardarEdicion} style={{...btnPrimary,padding:'6px 12px',fontSize:12,alignSelf:'flex-start'}}>Guardar cambios</button>
           </div>
         ) : (
