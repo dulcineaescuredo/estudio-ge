@@ -1039,11 +1039,34 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     const idx = etapasConCustom.findIndex(et=>et.id===c.afterId);
     if (idx>=0) etapasConCustom.splice(idx+1,0,c); else etapasConCustom.push(c);
   }
+  const vencAutoEtapa = etapasConCustom.find(et => !prog.hechas[et.id] && prog.fechasEtapa[et.id]);
+  const vencEsAuto = !!vencAutoEtapa;
 
+  function calcVencEfectivo(np) {
+    const _esDem = e.rol==='demandada';
+    const _etVis = mapa ? mapa.etapas.filter(et=>!et.req||np.dec?.[et.req[0]]===et.req[1]).filter(et=>!(_esDem&&et.id==='dem')).filter(et=>!(np.etapasOcultas||[]).includes(et.id)) : [];
+    const _etCC = [..._etVis];
+    for(const c of np.etapasCustom||[]){if((np.etapasOcultas||[]).includes(c.id))continue;const idx=_etCC.findIndex(et=>et.id===c.afterId);if(idx>=0)_etCC.splice(idx+1,0,c);else _etCC.push(c);}
+    const etCF = _etCC.find(et=>!np.hechas?.[et.id]&&np.fechasEtapa?.[et.id]);
+    if(etCF) return {proximo_vencimiento:np.fechasEtapa[etCF.id],motivo_vencimiento:np.nombresCustom?.[etCF.id]||etCF.n};
+    return {proximo_vencimiento:np.vencimientoOtro?.fecha||null,motivo_vencimiento:np.vencimientoOtro?.motivo||null};
+  }
   async function guardarProg(nuevoProg) {
-    setExpActual({...e, progreso: nuevoProg});
-    await supabase.from('expedientes').update({ progreso: nuevoProg }).eq('id', e.id);
+    const ef = calcVencEfectivo(nuevoProg);
+    setExpActual({...e, progreso: nuevoProg, ...ef});
+    await supabase.from('expedientes').update({ progreso: nuevoProg, proximo_vencimiento: ef.proximo_vencimiento||null, motivo_vencimiento: ef.motivo_vencimiento||null }).eq('id', e.id);
     recargar();
+  }
+  async function actualizarFechaEtapa(etId, fecha) {
+    const np = JSON.parse(JSON.stringify(prog));
+    if (!np.fechasEtapa) np.fechasEtapa = {};
+    if (fecha) np.fechasEtapa[etId] = fecha; else delete np.fechasEtapa[etId];
+    await guardarProg(np);
+  }
+  async function actualizarVencimientoOtro(fecha, motivo) {
+    const np = JSON.parse(JSON.stringify(prog));
+    np.vencimientoOtro = { fecha: fecha||null, motivo: motivo||null };
+    await guardarProg(np);
   }
   async function confirmarCierre() {
     const motivo = cierreSeleccionado==='__nuevo__' ? cierreNuevo.trim() : cierreSeleccionado;
