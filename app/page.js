@@ -4552,6 +4552,28 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
     cargarDetalle();
   }
 
+  async function guardarComentario(et, texto) {
+    const { error } = await supabase.from('asunto_etapas')
+      .update({ comentario: texto || null })
+      .eq('id', et.id);
+    if (error) { alert('Error al guardar comentario: ' + JSON.stringify(error)); return; }
+    setEtapas(prev => prev.map(e => e.id === et.id ? {...e, comentario: texto||null} : e));
+    setEtapaEdits(prev => { const n = {...prev}; if (n[et.id]) delete n[et.id].comentario; return n; });
+    cargarDetalle();
+    if (crearNotificacion && texto) {
+      const mencionados = extraerMenciones(texto, perfilesEstudio);
+      const preview = texto.substring(0, 60);
+      for (const dest of mencionados) {
+        await crearNotificacion({
+          destinatario_id: dest.id,
+          mensaje: `${perfil.nombre} te mencionó en un comentario: "${preview}"`,
+          contexto: a.titulo,
+          link: 'extrajudicial',
+        });
+      }
+    }
+  }
+
   async function eliminarEtapa(et) {
     if (!confirm('¿Eliminar esta etapa?')) return;
     await supabase.from('asunto_etapas').delete().eq('id', et.id);
