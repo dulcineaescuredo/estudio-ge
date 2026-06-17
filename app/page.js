@@ -1211,13 +1211,9 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
             <option value="actora">Actora</option>
             <option value="demandada">Demandada</option>
           </select>
-          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Cliente:</span>
-          <select value={e.cliente_id||''} onChange={ev=>actualizarVencimiento('cliente_id', ev.target.value||null)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Sin vincular</option>
-            {(clientes||[]).map(cl=><option key={cl.id} value={cl.id}>{nombreCompleto(cl)}</option>)}
-          </select>
         </div>
+        <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Cliente</div>
+        <CliCombobox clientes={clientes||[]} value={e.cliente_id||''} onChange={v=>actualizarVencimiento('cliente_id',v||null)} perfil={perfil} recargar={recargar} />
         <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end',borderTop:'1px solid #f5f5f3',paddingTop:12}}>
           <div>
             <label style={{fontSize:11,color:'#8a8a8a',display:'block',marginBottom:4}}>Próximo vencimiento</label>
