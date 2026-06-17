@@ -1498,6 +1498,35 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
           </div>
         </div>
       </Card>
+      {modalCierre && (
+        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.45)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#fff',borderRadius:14,boxShadow:'0 8px 32px rgba(0,0,0,0.18)',padding:28,maxWidth:460,width:'100%'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+              <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>🏁 Proceso completado</div>
+              <button onClick={()=>setModalCierre(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#888',lineHeight:1}}>×</button>
+            </div>
+            <div style={{fontSize:13,color:'#6B7280',marginBottom:18,lineHeight:1.5}}>Todas las etapas de <strong>{e.caratula}</strong> están completas. ¿Cómo finalizó el proceso?</div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Motivo de cierre</label>
+            <select value={cierreSeleccionado} onChange={ev=>setCierreSeleccionado(ev.target.value)} style={inputStyle}>
+              <option value="">— Seleccioná un motivo —</option>
+              {motivosCierre.map(m=><option key={m.id||m.texto} value={m.texto}>{m.texto}</option>)}
+              <option value="__nuevo__">Otro (escribir nuevo motivo)</option>
+            </select>
+            {cierreSeleccionado==='__nuevo__' && (
+              <>
+                <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Nuevo motivo</label>
+                <input value={cierreNuevo} onChange={ev=>setCierreNuevo(ev.target.value)} placeholder="Ej: Acuerdo en audiencia..." style={inputStyle} />
+              </>
+            )}
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha de cierre</label>
+            <input type="date" value={fechaCierre} onChange={ev=>setFechaCierre(ev.target.value)} style={inputStyle} />
+            <div style={{display:'flex',gap:8,marginTop:4}}>
+              <button onClick={confirmarCierre} style={btnPrimary}>Confirmar cierre</button>
+              <button onClick={()=>setModalCierre(false)} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Ahora no</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
