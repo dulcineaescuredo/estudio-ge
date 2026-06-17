@@ -4803,7 +4803,7 @@ function DetalleAsunto({ asuntoActual, setAsuntoActual, setVista, clientes, hono
           const hasDocs = docsEtapa.length > 0;
           const hasComentario = !!(et.comentario);
           return (
-            <div key={et.id} style={{borderBottom:'1px solid #F0EFED'}}>
+            <div key={et.id} id={`etapa-${et.id}`} style={{borderBottom:'1px solid #F0EFED'}}>
               <div style={{display:'grid',gridTemplateColumns:isMobile?'32px 1fr 40px':'32px 1fr 130px 60px 60px 40px',gap:'0 8px',alignItems:'center',padding:'10px 0'}}>
                 <div onClick={()=>toggleEtapa(et)}
                   style={{width:16,height:16,borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:10,cursor:'pointer',
