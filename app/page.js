@@ -977,6 +977,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   if (!prog.hechas) prog.hechas = {}; if (!prog.subs) prog.subs = {}; if (!prog.dec) prog.dec = {};
   if (!prog.etapasCustom) prog.etapasCustom = []; if (!prog.nombresCustom) prog.nombresCustom = {}; if (!prog.etapasOcultas) prog.etapasOcultas = [];
   if (!prog.subsMapa) prog.subsMapa = {}; if (!prog.subsCustomIdx) prog.subsCustomIdx = {};
+  if (!prog.comentariosEtapa) prog.comentariosEtapa = {};
 
   const esDemandada = e.rol === 'demandada';
   const etapasVis = mapa ? mapa.etapas
