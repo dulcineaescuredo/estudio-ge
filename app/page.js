@@ -967,6 +967,8 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const [cierreSeleccionado, setCierreSeleccionado] = useState('');
   const [cierreNuevo, setCierreNuevo] = useState('');
   const [fechaCierre, setFechaCierre] = useState(HOY_LOCAL);
+  const [otroFechaLocal, setOtroFechaLocal] = useState('');
+  const [otroMotivoLocal, setOtroMotivoLocal] = useState('');
 
   useEffect(()=>{
     if (!expActual?.id) return;
