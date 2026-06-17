@@ -1032,6 +1032,19 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     await supabase.from('expedientes').update({ progreso: nuevoProg }).eq('id', e.id);
     recargar();
   }
+  async function confirmarCierre() {
+    const motivo = cierreSeleccionado==='__nuevo__' ? cierreNuevo.trim() : cierreSeleccionado;
+    if (!motivo) { alert('Elegí o escribí un motivo de cierre'); return; }
+    if (cierreSeleccionado==='__nuevo__' && cierreNuevo.trim() && perfil?.estudio_id) {
+      await supabase.from('motivos_cierre').insert({ texto: cierreNuevo.trim(), estudio_id: perfil.estudio_id });
+      setMotivosCierre(prev=>[...prev,{texto:cierreNuevo.trim()}].sort((a,b)=>a.texto.localeCompare(b.texto)));
+    }
+    const updates = { estado: motivo, fecha_cierre: fechaCierre||null };
+    setExpActual({...e, ...updates});
+    await supabase.from('expedientes').update(updates).eq('id', e.id);
+    setModalCierre(false);
+    recargar();
+  }
   function tildar(etId) {
     const np = JSON.parse(JSON.stringify(prog));
     if (np.hechas[etId]) {
@@ -1041,6 +1054,10 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
       etapasConCustom.slice(0, idx + 1).forEach(et => {
         if (!np.hechas[et.id]) np.hechas[et.id] = HOY;
       });
+      const _normales = ['activo','espera','apelado','archivado'];
+      if (etapasConCustom.every(et => np.hechas[et.id]) && _normales.includes(e.estado||'activo')) {
+        setModalCierre(true); setCierreSeleccionado(''); setCierreNuevo(''); setFechaCierre(HOY_LOCAL);
+      }
     }
     guardarProg(np);
   }
