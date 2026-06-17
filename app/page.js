@@ -2524,6 +2524,7 @@ function NuevoCliente({ perfil, recargar, setVista }) {
         <button onClick={guardar} style={btnPrimary}>Guardar cliente</button>
       </div>
     </Card>
+    </div>
   );
 }
 
