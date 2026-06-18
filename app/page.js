@@ -985,21 +985,6 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   // eslint-disable-next-line
   }, [perfil?.estudio_id]);
 
-  useEffect(()=>{
-    if (!expActual) return;
-    const _normales = ['activo','espera','apelado','archivado'];
-    if (!_normales.includes(expActual.estado||'activo')) return;
-    const _mapa = PROCESOS[expActual.tipo_proceso];
-    if (!_mapa || !_mapa.etapas.length) return;
-    const _prog = (()=>{try{return expActual.progreso?(typeof expActual.progreso==='string'?JSON.parse(expActual.progreso):expActual.progreso):{hechas:{},dec:{}};}catch{return {hechas:{},dec:{}};}})();
-    if (!_prog.hechas) return;
-    const _esDem = expActual.rol==='demandada';
-    const _etVis = _mapa.etapas.filter(et=>!et.req||_prog.dec?.[et.req[0]]===et.req[1]).filter(et=>!(_esDem&&et.id==='dem')).filter(et=>!(_prog.etapasOcultas||[]).includes(et.id));
-    const _etCC=[..._etVis];
-    for(const c of _prog.etapasCustom||[]){if((_prog.etapasOcultas||[]).includes(c.id))continue;const idx=_etCC.findIndex(et=>et.id===c.afterId);if(idx>=0)_etCC.splice(idx+1,0,c);else _etCC.push(c);}
-    if(_etCC.length>0&&_etCC.every(et=>_prog.hechas[et.id])){setModalCierre(true);setCierreSeleccionado('');setCierreNuevo('');setFechaCierre(HOY_LOCAL);}
-  // eslint-disable-next-line
-  }, [expActual?.id]);
 
   useEffect(()=>{
     if (!expActual) return;
