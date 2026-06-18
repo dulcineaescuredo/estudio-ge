@@ -4569,160 +4569,159 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
 function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setExpActual, filtro }) {
   const [audiencias, setAudiencias] = useState([]);
   const [turnos, setTurnos] = useState([]);
+  const [evPersonales, setEvPersonales] = useState([]);
   const [vistaAg, setVistaAg] = useState('mes');
-  const [navDate, setNavDate] = useState(new Date(HOY+'T00:00:00'));
-  const [detalleEv, setDetalleEv] = useState(null);
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [fechaPres, setFechaPres] = useState(HOY);
+  const [navDate, setNavDate] = useState(new Date(HOY_LOCAL+'T00:00:00'));
+  const [popoverEv, setPopoverEv] = useState(null);
+  const [mostrarFormPersonal, setMostrarFormPersonal] = useState(false);
+  const [editandoPersonal, setEditandoPersonal] = useState(null);
+  const [fechaFormPersonal, setFechaFormPersonal] = useState(HOY_LOCAL);
+  const [filtrosActivos, setFiltrosActivos] = useState(
+    ()=>new Set(filtro?[filtro]:['vencimientos','audiencias','turnos','tareas','personal'])
+  );
 
-  useEffect(()=>{ cargar(); },[]);
+  useEffect(()=>{
+    if(filtro) setFiltrosActivos(new Set([filtro]));
+  },[filtro]);
+
+  useEffect(()=>{
+    if(perfil?.id) cargar();
+  // eslint-disable-next-line
+  },[perfil?.id]);
 
   async function cargar() {
-    const [{ data: a },{ data: t }] = await Promise.all([
+    const [r0,r1,r2] = await Promise.all([
       supabase.from('audiencias').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'),
       supabase.from('turnos').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'),
+      supabase.from('eventos_personales').select('*').eq('user_id',perfil.id).eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'),
     ]);
-    setAudiencias(a||[]);
-    setTurnos(t||[]);
+    setAudiencias(r0.data||[]);
+    setTurnos(r1.data||[]);
+    setEvPersonales(r2.data||[]);
   }
 
-  async function eliminarEvento(ev) {
-    if (ev._tipo!=='audiencia'&&ev._tipo!=='turno') return;
-    const tabla = ev._tipo==='audiencia'?'audiencias':'turnos';
-    if (!confirm('¿Eliminar este evento?')) return;
-    await supabase.from(tabla).delete().eq('id',ev.id);
-    setDetalleEv(null);
-    cargar();
+  const CAT_COLORS = {
+    vencimientos:'#F97316', audiencias:'#3B82F6',
+    turnos:'#8B5CF6', tareas:'#22C55E', personal:'#EC4899',
+  };
+  const CAT_INFO = [
+    ['vencimientos','⚠️','Vencimientos'],
+    ['audiencias','⚖️','Audiencias'],
+    ['turnos','🕐','Turnos'],
+    ['tareas','✅','Tareas c/vencimiento'],
+    ['personal','🌸','Personal'],
+  ];
+  const titulos = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento',personal:'Personal'};
+
+  function toggleFiltro(key) {
+    setFiltrosActivos(prev=>{
+      const next=new Set(prev);
+      if(next.has(key)){ if(next.size>1) next.delete(key); }
+      else next.add(key);
+      return next;
+    });
   }
 
-  function abrirNuevo(fecha) { setFechaPres(fecha||HOY); setDetalleEv(null); setMostrarForm(true); }
-  function cerrarForm() { setMostrarForm(false); }
-  async function guardarEvento(datos) {
-    const tablaEv = filtro==='audiencias'?'audiencias':'turnos';
-    await supabase.from(tablaEv).insert({...datos,estudio_id:'51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'});
-    cerrarForm();
-    cargar();
-  }
-
-  const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento);
+  const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento&&(e.estado||'').toLowerCase()!=='archivado');
   const tareasConDeadline = (tareas||[]).filter(e=>e.deadline&&normEstado(e.estado)!=='terminado');
-  const AU_COLOR = '#9B4F6A';
-  const TU_COLOR = '#2B6CB0';
-  const VE_COLOR = '#B45309';
-  const TA_COLOR = '#D97706';
-
-  const filtroToTipo = {vencimientos:'vencimiento',audiencias:'audiencia',turnos:'turno',tareas:'tarea'};
-  const tipoActivo = filtro ? filtroToTipo[filtro] : null;
-
-  function chipColor(tipo) {
-    if (tipo==='audiencia') return AU_COLOR;
-    if (tipo==='turno') return TU_COLOR;
-    if (tipo==='tarea') return TA_COLOR;
-    return VE_COLOR;
-  }
 
   function dateStr(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
   function eventosDelDia(fs) {
-    const todos = [
-      ...(!tipoActivo||tipoActivo==='audiencia'?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'audiencia'})):[]),
-      ...(!tipoActivo||tipoActivo==='turno'?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_tipo:'turno'})):[]),
-      ...(!tipoActivo||tipoActivo==='tarea'?tareasConDeadline.filter(e=>e.deadline===fs).map(e=>({...e,_tipo:'tarea'})):[]),
-      ...(!tipoActivo||tipoActivo==='vencimiento'?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_tipo:'vencimiento'})):[]),
-    ];
-    return todos.sort((a,b)=>{
-      const orden = {audiencia:0,turno:1,tarea:2,vencimiento:3};
-      if (orden[a._tipo]!==orden[b._tipo]) return orden[a._tipo]-orden[b._tipo];
-      return (a.hora||'').localeCompare(b.hora||'');
+    return [
+      ...(filtrosActivos.has('audiencias')?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'audiencias'})):[]),
+      ...(filtrosActivos.has('turnos')?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'turnos'})):[]),
+      ...(filtrosActivos.has('tareas')?tareasConDeadline.filter(e=>e.deadline===fs).map(e=>({...e,_cat:'tareas'})):[]),
+      ...(filtrosActivos.has('vencimientos')?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_cat:'vencimientos'})):[]),
+      ...(filtrosActivos.has('personal')?evPersonales.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'personal'})):[]),
+    ].sort((a,b)=>{
+      const ord={audiencias:0,turnos:1,tareas:2,vencimientos:3,personal:4};
+      if((ord[a._cat]||0)!==(ord[b._cat]||0)) return (ord[a._cat]||0)-(ord[b._cat]||0);
+      return (a.hora||a.hora_inicio||'').localeCompare(b.hora||b.hora_inicio||'');
     });
   }
 
   function fmtH(h) { return h?h.substring(0,5):''; }
 
   function chipLabel(ev) {
-    if (ev._tipo==='vencimiento') return (ev.motivo_vencimiento||(ev.caratula||'').split(' c/')[0]).substring(0,20);
-    if (ev._tipo==='tarea') return (ev.descripcion||'Tarea').substring(0,20);
-    return `${fmtH(ev.hora)?fmtH(ev.hora)+' ':''}${(ev.tipo||'').substring(0,16)}`;
+    if(ev._cat==='vencimientos') return ev.motivo_vencimiento||ev.caratula||'Vencimiento';
+    if(ev._cat==='tareas') return ev.descripcion||'Tarea';
+    if(ev._cat==='personal') return (ev.hora_inicio?fmtH(ev.hora_inicio)+' ':'')+( ev.titulo||'Evento personal');
+    return (fmtH(ev.hora)?fmtH(ev.hora)+' ':'')+(ev.tipo||'Evento');
   }
 
-  function handleChipClick(e, ev) {
-    e.stopPropagation();
-    if (ev._tipo==='vencimiento') {
-      const exp = expedientes.find(x=>x.id===ev.id);
-      if (exp) { setExpActual(exp); setVista('detalle'); }
-    } else if (ev._tipo==='tarea') {
-      setVista('tareas');
-    } else {
-      setDetalleEv(ev);
-    }
-  }
-
-  function handleEvClick(ev) {
-    if (ev._tipo==='vencimiento') {
-      const exp = expedientes.find(x=>x.id===ev.id);
-      if (exp) { setExpActual(exp); setVista('detalle'); }
-    } else if (ev._tipo==='tarea') {
-      setVista('tareas');
-    } else {
-      setDetalleEv(ev);
-    }
-  }
-
-  const año = navDate.getFullYear();
-  const mes = navDate.getMonth();
-
-  function navAnt() {
-    if (vistaAg==='mes') setNavDate(new Date(año,mes-1,1));
-    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()-7*864e5));
-    else setNavDate(new Date(navDate.getTime()-864e5));
-  }
-  function navSig() {
-    if (vistaAg==='mes') setNavDate(new Date(año,mes+1,1));
-    else if (vistaAg==='semana') setNavDate(new Date(navDate.getTime()+7*864e5));
-    else setNavDate(new Date(navDate.getTime()+864e5));
-  }
-
-  const lunSem = new Date(navDate);
-  lunSem.setDate(navDate.getDate()-((navDate.getDay()+6)%7));
-
-  let navTit = '';
-  if (vistaAg==='mes') navTit = `${MESES_AG[mes]} ${año}`;
-  else if (vistaAg==='semana') {
-    const domSem = new Date(lunSem); domSem.setDate(lunSem.getDate()+6);
-    navTit = `${lunSem.getDate()} ${MESES_AG[lunSem.getMonth()].substring(0,3)} — ${domSem.getDate()} ${MESES_AG[domSem.getMonth()].substring(0,3)} ${domSem.getFullYear()}`;
-  } else {
-    navTit = `${navDate.getDate()} de ${MESES_AG[mes]} ${año}`;
-  }
-
-  const leyendaTodos = [[AU_COLOR,'Audiencias'],[TU_COLOR,'Turnos'],[TA_COLOR,'Tareas'],[VE_COLOR,'Vencimientos']];
-  const leyendaLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento'};
-  const leyenda = tipoActivo ? [[chipColor(tipoActivo),leyendaLabel[filtro]]] : leyendaTodos;
-
-  const tituloLabel = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento'};
-  const tituloEmoji = {vencimientos:'⚠️',audiencias:'⚖️',turnos:'🕐',tareas:'✅'};
-  const tituloTexto = filtro ? `${tituloEmoji[filtro]||'📅'} ${tituloLabel[filtro]}` : '🗓️ Agenda';
-
-  function renderChip(ev, i) {
-    const bg = chipColor(ev._tipo);
+  function renderChip(ev,idx) {
+    const bg=CAT_COLORS[ev._cat];
     return (
-      <div key={`${ev._tipo}-${ev.id}-${i}`}
-        onClick={e=>handleChipClick(e,ev)}
-        style={{fontSize:10,background:bg,color:'#fff',borderRadius:4,padding:'1px 4px',
-          marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',cursor:'pointer'}}>
+      <div key={`${ev._cat}-${ev.id}-${idx}`}
+        onClick={e=>{e.stopPropagation();setPopoverEv(ev);}}
+        title={chipLabel(ev)}
+        style={{fontSize:11,background:bg,color:'#fff',borderRadius:4,padding:'4px 6px',marginBottom:3,
+          cursor:'pointer',minHeight:28,lineHeight:'1.3',overflow:'hidden',
+          display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
         {chipLabel(ev)}
       </div>
     );
   }
 
+  const ano=navDate.getFullYear(), mes=navDate.getMonth();
+
+  function navAnt() {
+    if(vistaAg==='mes') setNavDate(new Date(ano,mes-1,1));
+    else if(vistaAg==='semana') setNavDate(new Date(navDate.getTime()-7*864e5));
+    else setNavDate(new Date(navDate.getTime()-864e5));
+  }
+  function navSig() {
+    if(vistaAg==='mes') setNavDate(new Date(ano,mes+1,1));
+    else if(vistaAg==='semana') setNavDate(new Date(navDate.getTime()+7*864e5));
+    else setNavDate(new Date(navDate.getTime()+864e5));
+  }
+
+  const lunSem=new Date(navDate);
+  lunSem.setDate(navDate.getDate()-((navDate.getDay()+6)%7));
+
+  let navTit='';
+  if(vistaAg==='mes') navTit=`${MESES_AG[mes]} ${ano}`;
+  else if(vistaAg==='semana'){
+    const d2=new Date(lunSem); d2.setDate(lunSem.getDate()+6);
+    navTit=`${lunSem.getDate()} ${MESES_AG[lunSem.getMonth()].substring(0,3)} — ${d2.getDate()} ${MESES_AG[d2.getMonth()].substring(0,3)} ${d2.getFullYear()}`;
+  } else navTit=`${navDate.getDate()} de ${MESES_AG[mes]} ${ano}`;
+
+  const emojis={vencimientos:'⚠️',audiencias:'⚖️',turnos:'🕐',tareas:'✅',personal:'🌸'};
+  const tituloTexto=filtro?`${emojis[filtro]||'📅'} ${titulos[filtro]||filtro}`:'🗓️ Agenda';
+
+  async function eliminarEv(ev) {
+    if(!confirm('¿Eliminar este evento?')) return;
+    if(ev._cat==='audiencias') await supabase.from('audiencias').delete().eq('id',ev.id);
+    else if(ev._cat==='turnos') await supabase.from('turnos').delete().eq('id',ev.id);
+    else if(ev._cat==='personal') await supabase.from('eventos_personales').delete().eq('id',ev.id);
+    setPopoverEv(null);
+    cargar();
+  }
+
+  function irDia(fs) { setNavDate(new Date(fs+'T00:00:00')); setVistaAg('dia'); }
+
+  function getScheduleEvs() {
+    const hoy=new Date(HOY_LOCAL+'T00:00:00');
+    const result=[];
+    for(let i=0;i<60;i++){
+      const d=new Date(hoy); d.setDate(hoy.getDate()+i);
+      const fs=dateStr(d);
+      const evs=eventosDelDia(fs);
+      if(evs.length) result.push({fecha:fs,evs});
+    }
+    return result;
+  }
+
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,flexWrap:'wrap',gap:10}}>
         <div style={{fontSize:22,fontWeight:700,color:'#1A1A1A'}}>{tituloTexto}</div>
-        <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
           <div style={{display:'flex',border:'1px solid #DDDCDA',borderRadius:8,overflow:'hidden'}}>
-            {[['mes','Mes'],['semana','Semana'],['dia','Día']].map(([v,l])=>(
+            {[['mes','Mes'],['semana','Semana'],['dia','Día'],['schedule','Lista']].map(([v,l])=>(
               <button key={v} onClick={()=>setVistaAg(v)}
                 style={{padding:'6px 14px',fontSize:12,fontWeight:vistaAg===v?600:400,cursor:'pointer',border:'none',
                   background:vistaAg===v?'#4A5568':'#fff',color:vistaAg===v?'#fff':'#6B7280',fontFamily:'system-ui'}}>
@@ -4730,36 +4729,47 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
               </button>
             ))}
           </div>
-          <div style={{display:'flex',gap:10,alignItems:'center'}}>
-            {leyenda.map(([bg,label])=>(
-              <div key={label} style={{display:'flex',alignItems:'center',gap:4,fontSize:11,color:'#6B7280'}}>
-                <span style={{width:10,height:10,borderRadius:3,background:bg,display:'inline-block',flexShrink:0}}></span>
-                {label}
-              </div>
-            ))}
-          </div>
-          {(filtro==='audiencias'||filtro==='turnos')&&(
-            <button onClick={()=>abrirNuevo(HOY)} style={btnPrimary}>
-              + {filtro==='audiencias'?'Nueva audiencia':'Nuevo turno'}
+          {filtrosActivos.has('personal')&&(
+            <button onClick={()=>{setFechaFormPersonal(HOY_LOCAL);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
+              style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899'}}>
+              + Evento personal
             </button>
           )}
         </div>
       </div>
 
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-        <button onClick={navAnt} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
-        <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:220,textAlign:'center'}}>{navTit}</span>
-        <button onClick={navSig} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>›</button>
-        <button onClick={()=>setNavDate(new Date(HOY+'T00:00:00'))} style={{fontSize:11,color:'#6B7280',background:'none',border:'1px solid #DDDCDA',borderRadius:6,padding:'3px 8px',cursor:'pointer',fontFamily:'system-ui'}}>Hoy</button>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
+        {CAT_INFO.map(([key,emoji,label])=>{
+          const act=filtrosActivos.has(key);
+          return (
+            <button key={key} onClick={()=>toggleFiltro(key)}
+              style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',
+                fontFamily:'system-ui',display:'flex',alignItems:'center',gap:5,
+                border:`2px solid ${CAT_COLORS[key]}`,
+                background:act?CAT_COLORS[key]:'#fff',
+                color:act?'#fff':CAT_COLORS[key]}}>
+              {emoji} {label}
+            </button>
+          );
+        })}
       </div>
 
-      {vistaAg==='mes' && (()=>{
-        const primer = new Date(año,mes,1).getDay();
-        const offset = (primer+6)%7;
-        const ultDia = new Date(año,mes+1,0).getDate();
-        const celdas = [];
-        for (let i=0;i<offset;i++) celdas.push(null);
-        for (let d=1;d<=ultDia;d++) celdas.push(d);
+      {vistaAg!=='schedule'&&(
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+          <button onClick={navAnt} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>‹</button>
+          <span style={{fontWeight:600,fontSize:14,color:'#2c2c2c',minWidth:220,textAlign:'center'}}>{navTit}</span>
+          <button onClick={navSig} style={{background:'none',border:'1px solid #DDDCDA',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:16,color:'#4a4a4a'}}>›</button>
+          <button onClick={()=>setNavDate(new Date(HOY_LOCAL+'T00:00:00'))} style={{fontSize:11,color:'#6B7280',background:'none',border:'1px solid #DDDCDA',borderRadius:6,padding:'3px 8px',cursor:'pointer',fontFamily:'system-ui'}}>Hoy</button>
+        </div>
+      )}
+
+      {vistaAg==='mes'&&(()=>{
+        const primer=new Date(ano,mes,1).getDay();
+        const offset=(primer+6)%7;
+        const ultDia=new Date(ano,mes+1,0).getDate();
+        const celdas=[];
+        for(let i=0;i<offset;i++) celdas.push(null);
+        for(let d=1;d<=ultDia;d++) celdas.push(d);
         return (
           <Card>
             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
@@ -4767,17 +4777,19 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
             </div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
               {celdas.map((d,i)=>{
-                if (!d) return <div key={`b${i}`} style={{minHeight:80}} />;
-                const fs = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const evs = eventosDelDia(fs);
-                const esHoy = fs===HOY;
+                if(!d) return <div key={`b${i}`} style={{minHeight:90}}/>;
+                const fs=`${ano}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const evs=eventosDelDia(fs);
+                const esHoy=fs===HOY_LOCAL;
                 return (
-                  <div key={d}
-                    style={{minHeight:80,borderRadius:8,padding:'5px 4px',
-                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}>
-                    <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:2}}>{d}</div>
+                  <div key={d} onClick={()=>irDia(fs)}
+                    style={{minHeight:90,borderRadius:8,padding:'5px 4px',cursor:'pointer',
+                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}
+                    onMouseEnter={e=>{if(!esHoy)e.currentTarget.style.background='#F0EEE8';}}
+                    onMouseLeave={e=>{if(!esHoy)e.currentTarget.style.background='#F7F6F3';}}>
+                    <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:3}}>{d}</div>
                     {evs.slice(0,3).map((ev,i)=>renderChip(ev,i))}
-                    {evs.length>3&&<div style={{fontSize:9,color:'#8a8a8a'}}>+{evs.length-3} más</div>}
+                    {evs.length>3&&<div style={{fontSize:10,color:'#8a8a8a',paddingLeft:2}}>+{evs.length-3} más</div>}
                   </div>
                 );
               })}
@@ -4786,18 +4798,18 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
         );
       })()}
 
-      {vistaAg==='semana' && (()=>{
-        const dias = Array.from({length:7},(_,i)=>{const d=new Date(lunSem);d.setDate(lunSem.getDate()+i);return d;});
+      {vistaAg==='semana'&&(()=>{
+        const dias=Array.from({length:7},(_,i)=>{const d=new Date(lunSem);d.setDate(lunSem.getDate()+i);return d;});
         return (
           <Card>
             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:6}}>
               {dias.map(d=>{
-                const fs = dateStr(d);
-                const evs = eventosDelDia(fs);
-                const esHoy = fs===HOY;
+                const fs=dateStr(d);
+                const evs=eventosDelDia(fs);
+                const esHoy=fs===HOY_LOCAL;
                 return (
-                  <div key={fs}
-                    style={{minHeight:120,borderRadius:10,padding:'8px 6px',
+                  <div key={fs} onClick={()=>irDia(fs)}
+                    style={{minHeight:120,borderRadius:10,padding:'8px 6px',cursor:'pointer',
                       background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}>
                     <div style={{fontSize:11,fontWeight:600,color:esHoy?'#2B6CB0':'#4a4a4a'}}>{DIAS_SEM_AG[(d.getDay()+6)%7]}</div>
                     <div style={{fontSize:18,fontWeight:700,color:esHoy?'#2B6CB0':'#1a1a1a',marginBottom:6}}>{d.getDate()}</div>
@@ -4810,43 +4822,54 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
         );
       })()}
 
-      {vistaAg==='dia' && (()=>{
-        const fs = dateStr(navDate);
-        const evs = eventosDelDia(fs);
+      {vistaAg==='dia'&&(()=>{
+        const fs=dateStr(navDate);
+        const evs=eventosDelDia(fs);
         return (
           <Card>
-            <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a',marginBottom:14}}>Eventos del día</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>Eventos del día</span>
+              {filtrosActivos.has('personal')&&(
+                <button onClick={()=>{setFechaFormPersonal(fs);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
+                  style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899',padding:'6px 12px',fontSize:12}}>
+                  + Evento personal
+                </button>
+              )}
+            </div>
             {evs.length===0&&<div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin eventos para este día.</div>}
             {evs.map((ev,i)=>{
-              const bg = chipColor(ev._tipo);
-              const expVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (expedientes||[]).find(e=>e.id===ev.expediente_id) : null;
-              const cliVinc = (ev._tipo==='audiencia'||ev._tipo==='turno') ? (clientes||[]).find(c=>c.id===ev.cliente_id) : null;
-              const vinc = expVinc?expVinc.caratula:cliVinc?nombreCompleto(cliVinc):'';
-              const icono = ev._tipo==='audiencia'?'⚖️':ev._tipo==='turno'?'🕐':ev._tipo==='tarea'?'✅':'⚠️';
-              const titulo = ev._tipo==='vencimiento'
-                ? (ev.motivo_vencimiento||ev.caratula)
-                : ev._tipo==='tarea'
-                ? (ev.descripcion||'Tarea')
-                : (ev.tipo||ev._tipo);
+              const bg=CAT_COLORS[ev._cat];
+              const expVinc=(ev._cat==='audiencias'||ev._cat==='turnos')?(expedientes||[]).find(e=>e.id===ev.expediente_id):null;
+              const cliVinc=(ev._cat==='audiencias'||ev._cat==='turnos')?(clientes||[]).find(c=>c.id===ev.cliente_id):null;
+              const vinc=expVinc?expVinc.caratula:cliVinc?nombreCompleto(cliVinc):'';
+              const hora=ev.hora||ev.hora_inicio||'';
+              const icono=ev._cat==='audiencias'?'⚖️':ev._cat==='turnos'?'🕐':ev._cat==='tareas'?'✅':ev._cat==='personal'?'🌸':'⚠️';
+              const tit=ev._cat==='vencimientos'?(ev.motivo_vencimiento||ev.caratula||'Vencimiento')
+                :ev._cat==='tareas'?(ev.descripcion||'Tarea')
+                :ev._cat==='personal'?(ev.titulo||'Evento personal')
+                :(ev.tipo||'Evento');
               return (
-                <div key={`${ev._tipo}-${ev.id}-${i}`}
-                  onClick={()=>handleEvClick(ev)}
-                  style={{display:'flex',gap:12,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',alignItems:'flex-start'}}>
-                  <div style={{width:48,flexShrink:0,textAlign:'right'}}>
-                    {ev.hora
-                      ?<div style={{fontSize:14,fontWeight:700,color:bg}}>{fmtH(ev.hora)}</div>
+                <div key={`${ev._cat}-${ev.id}-${i}`}
+                  onClick={()=>setPopoverEv(ev)}
+                  style={{display:'flex',gap:10,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',alignItems:'flex-start'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='#F7F6F3'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <div style={{width:4,borderRadius:2,background:bg,flexShrink:0,alignSelf:'stretch',minHeight:32}}/>
+                  <div style={{width:44,flexShrink:0,textAlign:'right'}}>
+                    {hora?<div style={{fontSize:13,fontWeight:700,color:bg}}>{fmtH(hora)}</div>
                       :<div style={{fontSize:12,color:'#c0c0c0'}}>—</div>}
                   </div>
-                  <div style={{fontSize:16,flexShrink:0,marginTop:1}}>{icono}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{titulo}</div>
-                    {ev._tipo==='tarea'&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
-                    {ev._tipo==='tarea'&&ev.responsable&&<div style={{fontSize:11,color:'#8a8a8a'}}>👤 {ev.responsable}</div>}
-                    {(ev._tipo==='audiencia'||ev._tipo==='turno')&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                  <div style={{fontSize:15,flexShrink:0,marginTop:1}}>{icono}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:2,color:'#1a1a1a'}}>{tit}</div>
+                    {ev._cat==='vencimientos'&&ev.caratula&&ev.motivo_vencimiento&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.caratula}</div>}
+                    {(ev._cat==='audiencias'||ev._cat==='turnos')&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                    {ev._cat==='personal'&&ev.descripcion&&<div style={{fontSize:12,color:'#4a4a4a',marginBottom:2}}>{ev.descripcion}</div>}
+                    {ev._cat==='personal'&&ev.hora_fin&&<div style={{fontSize:11,color:'#8a8a8a'}}>hasta {fmtH(ev.hora_fin)}</div>}
+                    {ev._cat==='tareas'&&ev.responsable&&<div style={{fontSize:11,color:'#8a8a8a'}}>👤 {ev.responsable}</div>}
                     {vinc&&<div style={{fontSize:11,color:'#8a8a8a'}}>📁 {vinc}</div>}
-                    {ev._tipo==='vencimiento'&&ev.numero&&<div style={{fontSize:11,color:'#8a8a8a'}}>{ev.numero}</div>}
+                    {ev._cat==='vencimientos'&&ev.numero&&<div style={{fontSize:11,color:'#8a8a8a'}}>{ev.numero}</div>}
                   </div>
-                  <div style={{width:8,height:8,borderRadius:2,background:bg,flexShrink:0,marginTop:6}}></div>
                 </div>
               );
             })}
@@ -4854,24 +4877,242 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
         );
       })()}
 
-      {detalleEv&&(
-        <AgendaDetalle ev={detalleEv} expedientes={expedientes||[]} clientes={clientes||[]}
-          onEditar={()=>{ setVista(detalleEv._tipo==='audiencia'?'audiencias':'turnos'); setDetalleEv(null); }}
-          onEliminar={()=>eliminarEvento(detalleEv)}
-          onCerrar={()=>setDetalleEv(null)} />
+      {vistaAg==='schedule'&&(()=>{
+        const grupos=getScheduleEvs();
+        const diasSem=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+        const mesesC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        return (
+          <Card>
+            <div style={{fontSize:14,fontWeight:600,color:'#1a1a1a',marginBottom:16}}>Próximos eventos (60 días)</div>
+            {grupos.length===0&&<div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>No hay eventos próximos con los filtros actuales.</div>}
+            {grupos.map(({fecha,evs})=>{
+              const d=new Date(fecha+'T00:00:00');
+              const esHoy=fecha===HOY_LOCAL;
+              return (
+                <div key={fecha} style={{marginBottom:20}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+                    <div style={{width:44,height:44,borderRadius:10,
+                      background:esHoy?'#2B6CB0':'#F3F4F6',
+                      color:esHoy?'#fff':'#4a4a4a',
+                      display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                      fontWeight:700,flexShrink:0}}>
+                      <div style={{fontSize:8,textTransform:'uppercase',letterSpacing:'0.05em',opacity:0.8}}>{diasSem[d.getDay()]}</div>
+                      <div style={{fontSize:19,lineHeight:1}}>{d.getDate()}</div>
+                    </div>
+                    <span style={{fontSize:12,color:'#8a8a8a',fontWeight:500}}>{diasSem[d.getDay()]} {d.getDate()} {mesesC[d.getMonth()]}</span>
+                    <div style={{flex:1,height:1,background:'#EBEBEA'}}/>
+                  </div>
+                  {evs.map((ev,i)=>{
+                    const bg=CAT_COLORS[ev._cat];
+                    const hora=ev.hora||ev.hora_inicio||'';
+                    const tit=ev._cat==='vencimientos'?(ev.motivo_vencimiento||ev.caratula||'Vencimiento')
+                      :ev._cat==='tareas'?(ev.descripcion||'Tarea')
+                      :ev._cat==='personal'?(ev.titulo||'Evento personal')
+                      :(ev.tipo||'Evento');
+                    const expV=(ev._cat==='audiencias'||ev._cat==='turnos')?(expedientes||[]).find(e=>e.id===ev.expediente_id):null;
+                    const cliV=(ev._cat==='audiencias'||ev._cat==='turnos')?(clientes||[]).find(c=>c.id===ev.cliente_id):null;
+                    const vinc=expV?expV.caratula:cliV?nombreCompleto(cliV):'';
+                    return (
+                      <div key={`${ev._cat}-${ev.id}-${i}`}
+                        onClick={()=>setPopoverEv(ev)}
+                        style={{display:'flex',gap:10,padding:'10px 12px',borderRadius:10,marginBottom:6,
+                          background:'#F9F8F5',cursor:'pointer',alignItems:'center',
+                          borderLeft:`4px solid ${bg}`}}
+                        onMouseEnter={e=>e.currentTarget.style.background='#F0EEE8'}
+                        onMouseLeave={e=>e.currentTarget.style.background='#F9F8F5'}>
+                        {hora&&<div style={{fontSize:12,fontWeight:700,color:bg,width:40,flexShrink:0,textAlign:'right'}}>{fmtH(hora)}</div>}
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:600,color:'#1a1a1a',marginBottom:1}}>{tit}</div>
+                          {vinc&&<div style={{fontSize:11,color:'#6B7280'}}>📁 {vinc}</div>}
+                          {ev._cat==='personal'&&ev.descripcion&&<div style={{fontSize:11,color:'#6B7280'}}>{ev.descripcion}</div>}
+                        </div>
+                        <span style={{fontSize:11,background:bg,color:'#fff',borderRadius:20,padding:'2px 8px',flexShrink:0,fontWeight:500,whiteSpace:'nowrap'}}>
+                          {titulos[ev._cat]||ev._cat}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </Card>
+        );
+      })()}
+
+      {popoverEv&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.3)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}}
+          onClick={()=>setPopoverEv(null)}>
+          <div onClick={e=>e.stopPropagation()}
+            style={{background:'#fff',borderRadius:16,padding:24,maxWidth:420,width:'90%',
+              boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxHeight:'80vh',overflowY:'auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <div style={{width:12,height:12,borderRadius:3,background:CAT_COLORS[popoverEv._cat],flexShrink:0}}/>
+                <span style={{fontSize:11,fontWeight:700,textTransform:'uppercase',color:CAT_COLORS[popoverEv._cat],letterSpacing:'0.05em'}}>
+                  {titulos[popoverEv._cat]||popoverEv._cat}
+                </span>
+              </div>
+              <button onClick={()=>setPopoverEv(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#8a8a8a',padding:4,lineHeight:1}}>×</button>
+            </div>
+            <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a',marginBottom:16,lineHeight:1.3}}>
+              {popoverEv._cat==='vencimientos'?(popoverEv.motivo_vencimiento||popoverEv.caratula||'Vencimiento')
+               :popoverEv._cat==='tareas'?(popoverEv.descripcion||'Tarea')
+               :popoverEv._cat==='personal'?(popoverEv.titulo||'Evento personal')
+               :(popoverEv.tipo||'Evento')}
+            </div>
+            <div style={{display:'grid',gap:10,marginBottom:20,fontSize:13}}>
+              <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Fecha</span>
+                <span style={{fontWeight:500}}>{formatFecha(popoverEv.fecha||popoverEv.proximo_vencimiento||popoverEv.deadline)}</span>
+              </div>
+              {(popoverEv.hora||popoverEv.hora_inicio)&&(
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Hora</span>
+                  <span style={{fontWeight:500}}>{fmtH(popoverEv.hora||popoverEv.hora_inicio)}{popoverEv.hora_fin?` – ${fmtH(popoverEv.hora_fin)}`:''}</span>
+                </div>
+              )}
+              {popoverEv._cat==='vencimientos'&&popoverEv.caratula&&(
+                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Expediente</span>
+                  <span style={{fontWeight:500}}>{popoverEv.caratula}{popoverEv.numero?` (${popoverEv.numero})`:''}</span>
+                </div>
+              )}
+              {(popoverEv._cat==='audiencias'||popoverEv._cat==='turnos')&&(()=>{
+                const exp=(expedientes||[]).find(e=>e.id===popoverEv.expediente_id);
+                const cli=(clientes||[]).find(c=>c.id===popoverEv.cliente_id);
+                const vinc=exp?exp.caratula:cli?nombreCompleto(cli):'';
+                return vinc?(<div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Vinculado</span>
+                  <span style={{fontWeight:500}}>{vinc}</span>
+                </div>):null;
+              })()}
+              {popoverEv.descripcion&&(
+                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Descripción</span>
+                  <span style={{lineHeight:1.5}}>{popoverEv.descripcion}</span>
+                </div>
+              )}
+              {popoverEv.responsable&&(
+                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Responsable</span>
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                    {popoverEv.responsable.split(',').map(r=>r.trim()).filter(Boolean).map(r=>(
+                      <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              {popoverEv._cat==='vencimientos'&&(
+                <button onClick={()=>{const exp=(expedientes||[]).find(e=>e.id===popoverEv.id);if(exp){setExpActual(exp);setVista('detalle');setPopoverEv(null);}}}
+                  style={btnPrimary}>Ver expediente</button>
+              )}
+              {popoverEv._cat==='tareas'&&(
+                <button onClick={()=>{setVista('tareas');setPopoverEv(null);}} style={btnPrimary}>Ver tareas</button>
+              )}
+              {(popoverEv._cat==='audiencias'||popoverEv._cat==='turnos')&&(<>
+                <button onClick={()=>{setVista(popoverEv._cat==='audiencias'?'audiencias':'turnos');setPopoverEv(null);}} style={btnPrimary}>Editar</button>
+                <button onClick={()=>eliminarEv(popoverEv)}
+                  style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>Eliminar</button>
+              </>)}
+              {popoverEv._cat==='personal'&&(<>
+                <button onClick={()=>{setEditandoPersonal(popoverEv);setFechaFormPersonal(popoverEv.fecha);setMostrarFormPersonal(true);setPopoverEv(null);}}
+                  style={btnPrimary}>Editar</button>
+                <button onClick={()=>eliminarEv(popoverEv)}
+                  style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>Eliminar</button>
+              </>)}
+              <button onClick={()=>setPopoverEv(null)}
+                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cerrar</button>
+            </div>
+          </div>
+        </div>
       )}
-      {mostrarForm&&(filtro==='audiencias'||filtro==='turnos')&&(
-        <AgendaForm
-          tabla={filtro==='audiencias'?'audiencias':'turnos'}
-          tipos={filtro==='audiencias'?TIPOS_AUDIENCIA:TIPOS_TURNO}
-          fechaPres={fechaPres}
-          eventoEdit={null}
-          expedientes={expedientes||[]} clientes={clientes||[]} perfil={perfil}
-          onGuardar={guardarEvento} onCancelar={cerrarForm} />
+
+      {mostrarFormPersonal&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.3)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}}
+          onClick={()=>{setMostrarFormPersonal(false);setEditandoPersonal(null);}}>
+          <div onClick={e=>e.stopPropagation()}
+            style={{background:'#fff',borderRadius:16,padding:24,maxWidth:480,width:'90%',
+              boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxHeight:'90vh',overflowY:'auto'}}>
+            <FormPersonal
+              fechaPres={fechaFormPersonal}
+              eventoEdit={editandoPersonal}
+              onGuardar={async(datos)=>{
+                if(editandoPersonal){
+                  await supabase.from('eventos_personales').update(datos).eq('id',editandoPersonal.id);
+                } else {
+                  await supabase.from('eventos_personales').insert({
+                    ...datos, user_id:perfil.id, estudio_id:'51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'
+                  });
+                }
+                setMostrarFormPersonal(false);
+                setEditandoPersonal(null);
+                cargar();
+              }}
+              onCancelar={()=>{setMostrarFormPersonal(false);setEditandoPersonal(null);}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
 }
+
+function FormPersonal({ fechaPres, eventoEdit, onGuardar, onCancelar }) {
+  const [f, setF] = useState({
+    titulo: eventoEdit?.titulo||'',
+    descripcion: eventoEdit?.descripcion||'',
+    fecha: eventoEdit?.fecha||fechaPres||HOY_LOCAL,
+    hora_inicio: eventoEdit?.hora_inicio||'',
+    hora_fin: eventoEdit?.hora_fin||'',
+  });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+
+  async function guardar() {
+    if(!f.titulo.trim()) { alert('El título es obligatorio.'); return; }
+    if(!f.fecha) { alert('La fecha es obligatoria.'); return; }
+    onGuardar({
+      titulo: f.titulo.trim(),
+      descripcion: f.descripcion.trim()||null,
+      fecha: f.fecha,
+      hora_inicio: f.hora_inicio||null,
+      hora_fin: f.hora_fin||null,
+    });
+  }
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+        <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>{eventoEdit?'Editar evento personal':'Nuevo evento personal'}</div>
+        <button onClick={onCancelar} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#8a8a8a',padding:4,lineHeight:1}}>×</button>
+      </div>
+      <div style={{maxWidth:440}}>
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Título *</label>
+        <input style={inputStyle} placeholder="Ej: Reunión con cliente, consulta médica..." value={f.titulo} onChange={e=>set('titulo',e.target.value)} autoFocus />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción</label>
+        <textarea style={{...inputStyle,minHeight:64,resize:'vertical'}} placeholder="Detalles opcionales..." value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} />
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Fecha *</label>
+        <input type="date" style={inputStyle} value={f.fecha} onChange={e=>set('fecha',e.target.value)} />
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hora inicio</label>
+            <input type="time" style={inputStyle} value={f.hora_inicio} onChange={e=>set('hora_inicio',e.target.value)} />
+          </div>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Hora fin</label>
+            <input type="time" style={inputStyle} value={f.hora_fin} onChange={e=>set('hora_fin',e.target.value)} />
+          </div>
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:8}}>
+          <button onClick={guardar} style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899'}}>Guardar</button>
+          <button onClick={onCancelar} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function Extrajudicial({ asuntos, asuntoEtapas, clientes, setVista, setAsuntoActual, recargar }) {
   const [filtroEstado, setFiltroEstado] = useState('todos');
