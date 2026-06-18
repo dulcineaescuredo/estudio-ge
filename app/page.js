@@ -1055,17 +1055,27 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
     await guardarProg(np);
   }
   async function confirmarCierre() {
-    const motivo = cierreSeleccionado==='__nuevo__' ? cierreNuevo.trim() : cierreSeleccionado;
+    const motivo = cierreSeleccionado.trim();
     if (!motivo) { alert('Elegí o escribí un motivo de cierre'); return; }
-    if (cierreSeleccionado==='__nuevo__' && cierreNuevo.trim() && perfil?.estudio_id) {
-      await supabase.from('motivos_cierre').insert({ texto: cierreNuevo.trim(), estudio_id: perfil.estudio_id });
-      setMotivosCierre(prev=>[...prev,{texto:cierreNuevo.trim()}].sort((a,b)=>a.texto.localeCompare(b.texto)));
+    const esNuevo = !motivosCierre.find(m => m.texto === motivo);
+    if (esNuevo && perfil?.estudio_id) {
+      const { data: nuevoM } = await supabase.from('motivos_cierre').insert({ texto: motivo, estudio_id: perfil.estudio_id }).select().single();
+      setMotivosCierre(prev => [...prev, nuevoM||{texto:motivo}].sort((a,b) => a.texto.localeCompare(b.texto)));
     }
-    const updates = { estado: motivo, fecha_cierre: fechaCierre||null };
+    const updates = { estado: 'cerrado', motivo_cierre: motivo, fecha_cierre: fechaCierre||null };
     setExpActual({...e, ...updates});
     await supabase.from('expedientes').update(updates).eq('id', e.id);
     setModalCierre(false);
     recargar();
+  }
+  function agregarMotivoNuevo() {
+    const t = cierreNuevo.trim();
+    if (!t) return;
+    if (!motivosCierre.find(m => m.texto === t)) {
+      setMotivosCierre(prev => [...prev, {texto:t}].sort((a,b) => a.texto.localeCompare(b.texto)));
+    }
+    setCierreSeleccionado(t);
+    setCierreNuevo('');
   }
   function tildar(etId) {
     const np = JSON.parse(JSON.stringify(prog));
