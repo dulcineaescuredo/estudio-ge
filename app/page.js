@@ -4625,22 +4625,10 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     vencimientos:'#F97316', audiencias:'#3B82F6',
     turnos:'#8B5CF6', tareas:'#22C55E', personal:'#EC4899',
   };
-  const CAT_INFO = [
-    ['vencimientos','⚠️','Vencimientos'],
-    ['audiencias','⚖️','Audiencias'],
-    ['turnos','🕐','Turnos'],
-    ['tareas','✅','Tareas c/vencimiento'],
-    ['personal','🌸','Personal'],
-  ];
   const titulos = {vencimientos:'Vencimientos',audiencias:'Audiencias',turnos:'Turnos',tareas:'Tareas c/vencimiento',personal:'Personal'};
 
-  function toggleFiltro(key) {
-    setFiltrosActivos(prev=>{
-      const next=new Set(prev);
-      if(next.has(key)){ if(next.size>1) next.delete(key); }
-      else next.add(key);
-      return next;
-    });
+  function catVisible(cat) {
+    return !agendaFiltros || agendaFiltros.size===0 || agendaFiltros.has(cat);
   }
 
   const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento&&(e.estado||'').toLowerCase()!=='archivado');
