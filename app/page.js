@@ -289,8 +289,8 @@ export default function Home() {
             ))}
             <button onClick={()=>setAgendaAbierta(a=>!a)}
               style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
-                background:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas'].includes(vista)?'rgba(255,255,255,0.18)':'transparent',
-                color:'#FFFFFF',fontWeight:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas'].includes(vista)?600:400,
+                background:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas','agenda-personal'].includes(vista)?'rgba(255,255,255,0.18)':'transparent',
+                color:'#FFFFFF',fontWeight:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas','agenda-personal'].includes(vista)?600:400,
                 cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
               <span style={{fontSize:16,flexShrink:0}}>📅</span>
               <span style={{flex:1}}>Agenda</span>
