@@ -133,6 +133,7 @@ export default function Home() {
   const [cargandoDatos, setCargandoDatos] = useState(false);
   const [sidebarAbierta, setSidebarAbierta] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? false : true);
   const [agendaAbierta, setAgendaAbierta] = useState(false);
+  const [agendaFiltros, setAgendaFiltros] = useState(new Set());
   const [notifNoLeidas, setNotifNoLeidas] = useState(0);
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [etapaPanelId, setEtapaPanelId] = useState(null);
