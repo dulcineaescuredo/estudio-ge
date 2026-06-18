@@ -1086,8 +1086,9 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
       etapasConCustom.slice(0, idx + 1).forEach(et => {
         if (!np.hechas[et.id]) np.hechas[et.id] = HOY;
       });
-      const _normales = ['activo','espera','apelado','archivado'];
-      if (etapasConCustom.every(et => np.hechas[et.id]) && _normales.includes(e.estado||'activo')) {
+      const todasHechas = etapasConCustom.every(et => np.hechas[et.id]);
+      console.log('[tildar] etapas:', etapasConCustom.map(et => et.id), '| hechas en np:', {...np.hechas}, '| todasHechas:', todasHechas, '| e.estado:', e.estado);
+      if (todasHechas) {
         setModalCierre(true); setCierreSeleccionado(''); setCierreNuevo(''); setFechaCierre(HOY_LOCAL);
       }
     }
