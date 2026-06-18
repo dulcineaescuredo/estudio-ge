@@ -554,6 +554,7 @@ function Contenido(props) {
   if (vista === 'agenda-audiencias') return <AgendaUnificada filtro="audiencias" {...props} />;
   if (vista === 'agenda-turnos') return <AgendaUnificada filtro="turnos" {...props} />;
   if (vista === 'agenda-tareas') return <AgendaUnificada filtro="tareas" {...props} />;
+  if (vista === 'agenda-personal') return <AgendaUnificada filtro="personal" {...props} />;
   if (vista === 'notificaciones') return <Notificaciones {...props} />;
   return null;
 }
