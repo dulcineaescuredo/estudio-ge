@@ -1273,27 +1273,40 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
       <Card>
         <div style={{fontSize:11,color:'#6B7280',marginBottom:4}}>{e.numero} · {e.juzgado||'Sin juzgado'}</div>
         <div style={{fontSize:20,fontWeight:700,marginBottom:10,lineHeight:1.3}}>{e.caratula}</div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
-          <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            {!['activo','espera','apelado','archivado'].includes(e.estado||'activo') && <option value={e.estado}>{e.estado}</option>}
-            <option value="activo">Activo</option>
-            <option value="espera">En espera</option>
-            <option value="apelado">Apelado</option>
-            <option value="archivado">Archivado</option>
-          </select>
-          {mapa && <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge>}
-          <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="">Responsable</option>
-            {ABOGADAS.map(a=><option key={a}>{a}</option>)}
-          </select>
-          <span style={{fontSize:12,color:'#8a8a8a',marginLeft:4}}>Rol:</span>
-          <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
-            style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
-            <option value="actora">Actora</option>
-            <option value="demandada">Demandada</option>
-          </select>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:10,marginBottom:14}}>
+          <div>
+            <label style={{fontSize:11,color:'#6B7280',display:'block',marginBottom:3,fontWeight:500}}>Estado</label>
+            <select value={e.estado||'activo'} onChange={ev=>actualizarVencimiento('estado', ev.target.value)}
+              style={{width:'100%',padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+              {!['activo','espera','apelado','archivado'].includes(e.estado||'activo') && <option value={e.estado}>{e.estado}</option>}
+              <option value="activo">Activo</option>
+              <option value="espera">En espera</option>
+              <option value="apelado">Apelado</option>
+              <option value="archivado">Archivado</option>
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:11,color:'#6B7280',display:'block',marginBottom:3,fontWeight:500}}>Tipo de proceso</label>
+            <div style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',minHeight:29,display:'flex',alignItems:'center'}}>
+              {mapa ? <Badge bg="#EEEDFE" color="#3C3489">{mapa.nombre}</Badge> : <span style={{color:'#c9c9c4',fontSize:11}}>Sin mapa</span>}
+            </div>
+          </div>
+          <div>
+            <label style={{fontSize:11,color:'#6B7280',display:'block',marginBottom:3,fontWeight:500}}>Responsable</label>
+            <select value={e.responsable||''} onChange={ev=>actualizarVencimiento('responsable', ev.target.value)}
+              style={{width:'100%',padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+              <option value="">—</option>
+              {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:11,color:'#6B7280',display:'block',marginBottom:3,fontWeight:500}}>Rol</label>
+            <select value={e.rol||'actora'} onChange={ev=>actualizarVencimiento('rol', ev.target.value)}
+              style={{width:'100%',padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,background:'#F7F6F3',fontFamily:'system-ui'}}>
+              <option value="actora">Actora</option>
+              <option value="demandada">Demandada</option>
+            </select>
+          </div>
         </div>
         <div style={{fontSize:11,color:'#8a8a8a',marginBottom:4}}>Cliente</div>
         <CliCombobox clientes={clientes||[]} value={e.cliente_id||''} onChange={v=>actualizarVencimiento('cliente_id',v||null)} perfil={perfil} recargar={recargar} />
