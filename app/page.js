@@ -4640,11 +4640,11 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
 
   function eventosDelDia(fs) {
     return [
-      ...(filtrosActivos.has('audiencias')?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'audiencias'})):[]),
-      ...(filtrosActivos.has('turnos')?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'turnos'})):[]),
-      ...(filtrosActivos.has('tareas')?tareasConDeadline.filter(e=>e.deadline===fs).map(e=>({...e,_cat:'tareas'})):[]),
-      ...(filtrosActivos.has('vencimientos')?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_cat:'vencimientos'})):[]),
-      ...(filtrosActivos.has('personal')?evPersonales.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'personal'})):[]),
+      ...(catVisible('audiencias')?audiencias.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'audiencias'})):[]),
+      ...(catVisible('turnos')?turnos.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'turnos'})):[]),
+      ...(catVisible('tareas')?tareasConDeadline.filter(e=>e.deadline===fs).map(e=>({...e,_cat:'tareas'})):[]),
+      ...(catVisible('vencimientos')?vencFiltrados.filter(e=>e.proximo_vencimiento===fs).map(e=>({...e,_cat:'vencimientos'})):[]),
+      ...(catVisible('personal')?evPersonales.filter(e=>e.fecha===fs).map(e=>({...e,_cat:'personal'})):[]),
     ].sort((a,b)=>{
       const ord={audiencias:0,turnos:1,tareas:2,vencimientos:3,personal:4};
       if((ord[a._cat]||0)!==(ord[b._cat]||0)) return (ord[a._cat]||0)-(ord[b._cat]||0);
