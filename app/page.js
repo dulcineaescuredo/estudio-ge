@@ -314,6 +314,32 @@ export default function Home() {
                 <span style={{fontSize:13,flexShrink:0}}>{emoji}</span>{label}
               </button>
             ))}
+            {agendaAbierta && (
+              <div style={{padding:'10px 10px 4px 10px'}}>
+                <div style={{fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6,paddingLeft:18}}>Mis calendarios</div>
+                {[
+                  ['vencimientos','Vencimientos','#F97316'],
+                  ['audiencias','Audiencias','#3B82F6'],
+                  ['turnos','Turnos','#8B5CF6'],
+                  ['tareas','Tareas c/vencimiento','#22C55E'],
+                  ['personal','Personal','#EC4899'],
+                ].map(([key,label,color])=>(
+                  <div key={key}
+                    onClick={()=>setAgendaFiltros(prev=>{const n=new Set(prev);if(n.has(key))n.delete(key);else n.add(key);return n;})}
+                    style={{display:'flex',alignItems:'center',gap:8,padding:'5px 6px 5px 18px',cursor:'pointer',borderRadius:6,marginBottom:1,userSelect:'none'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+                    onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                    <div style={{width:14,height:14,borderRadius:3,flexShrink:0,
+                      background:agendaFiltros.has(key)?color:'transparent',
+                      border:`2px solid ${color}`,
+                      display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      {agendaFiltros.has(key)&&<span style={{color:'#fff',fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
+                    </div>
+                    <span style={{fontSize:12,color:'rgba(255,255,255,0.9)',fontFamily:'system-ui'}}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {[
               ['consultas','💬','Consultas'],
               ['tareas','✅','Tareas'],
