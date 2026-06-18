@@ -4738,29 +4738,13 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
               </button>
             ))}
           </div>
-          {filtrosActivos.has('personal')&&(
+          {catVisible('personal')&&(
             <button onClick={()=>{setFechaFormPersonal(HOY_LOCAL);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
               style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899'}}>
               + Evento personal
             </button>
           )}
         </div>
-      </div>
-
-      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
-        {CAT_INFO.map(([key,emoji,label])=>{
-          const act=filtrosActivos.has(key);
-          return (
-            <button key={key} onClick={()=>toggleFiltro(key)}
-              style={{padding:'6px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',
-                fontFamily:'system-ui',display:'flex',alignItems:'center',gap:5,
-                border:`2px solid ${CAT_COLORS[key]}`,
-                background:act?CAT_COLORS[key]:'#fff',
-                color:act?'#fff':CAT_COLORS[key]}}>
-              {emoji} {label}
-            </button>
-          );
-        })}
       </div>
 
       {vistaAg!=='schedule'&&(
