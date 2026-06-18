@@ -301,6 +301,7 @@ export default function Home() {
               ['agenda-audiencias','⚖️','Audiencias'],
               ['agenda-turnos','🕐','Turnos'],
               ['agenda-tareas','✅','Tareas c/vencimiento'],
+              ['agenda-personal','🌸','Personal'],
             ].map(([id,emoji,label])=>(
               <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
                 style={{display:'flex',alignItems:'center',gap:8,
