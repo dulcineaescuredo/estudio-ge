@@ -4594,7 +4594,7 @@ function AgendaForm({ tabla, tipos, fechaPres, eventoEdit, expedientes, clientes
   );
 }
 
-function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setExpActual, filtro }) {
+function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setExpActual, filtro, agendaFiltros }) {
   const [audiencias, setAudiencias] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [evPersonales, setEvPersonales] = useState([]);
@@ -4604,13 +4604,6 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   const [mostrarFormPersonal, setMostrarFormPersonal] = useState(false);
   const [editandoPersonal, setEditandoPersonal] = useState(null);
   const [fechaFormPersonal, setFechaFormPersonal] = useState(HOY_LOCAL);
-  const [filtrosActivos, setFiltrosActivos] = useState(
-    ()=>new Set(filtro?[filtro]:['vencimientos','audiencias','turnos','tareas','personal'])
-  );
-
-  useEffect(()=>{
-    if(filtro) setFiltrosActivos(new Set([filtro]));
-  },[filtro]);
 
   useEffect(()=>{
     if(perfil?.id) cargar();
