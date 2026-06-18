@@ -392,6 +392,7 @@ export default function Home() {
           crearNotificacion={crearNotificacion}
           perfilesEstudio={perfilesEstudio}
           etapaPanelId={etapaPanelId} setEtapaPanelId={setEtapaPanelId}
+          agendaFiltros={agendaFiltros} setAgendaFiltros={setAgendaFiltros}
         />
       </div>
     </div>
