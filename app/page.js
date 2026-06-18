@@ -1444,9 +1444,12 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
                       const open = etapaComOpen[et.id];
                       return <div style={{marginTop:6}}>
                         <button onClick={()=>toggleComentariosEtapa(et.id)}
-                          style={{fontSize:11,background:'none',border:'none',cursor:'pointer',color:coms.length?'#9B4F6A':'#c9c9c4',padding:0,fontFamily:'system-ui',display:'flex',alignItems:'center',gap:3}}>
-                          💬{coms.length>0&&<span style={{fontWeight:600}}>{coms.length}</span>}
-                          <span style={{color:'#8a8a8a'}}>{open?'▲':'▼'}</span>
+                          onMouseEnter={()=>setEtapaBtnHover(et.id)}
+                          onMouseLeave={()=>setEtapaBtnHover(null)}
+                          style={{background:etapaBtnHover===et.id?'#F3F4F6':'none',border:'none',cursor:'pointer',color:coms.length?'#9B4F6A':'#c9c9c4',padding:'2px 5px',borderRadius:6,fontFamily:'system-ui',display:'flex',alignItems:'center',gap:4,transition:'background 0.15s'}}>
+                          <span title="Comentarios" style={{fontSize:19}}>💬</span>
+                          {coms.length>0&&<span style={{fontWeight:600,fontSize:11}}>{coms.length}</span>}
+                          <span title="Ver detalle" style={{color:'#8a8a8a',fontSize:18}}>{open?'▲':'▼'}</span>
                         </button>
                         {open&&<div style={{marginTop:6,background:'#F9F8F5',borderRadius:8,padding:'10px 12px',borderLeft:'2px solid #E8C4D4'}}>
                           {coms.length===0&&<div style={{fontSize:12,color:'#8a8a8a',marginBottom:8}}>Sin comentarios todavía.</div>}
