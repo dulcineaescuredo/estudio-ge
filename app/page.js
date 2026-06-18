@@ -4822,7 +4822,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
           <Card>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
               <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>Eventos del día</span>
-              {filtrosActivos.has('personal')&&(
+              {catVisible('personal')&&(
                 <button onClick={()=>{setFechaFormPersonal(fs);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
                   style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899',padding:'6px 12px',fontSize:12}}>
                   + Evento personal
