@@ -951,6 +951,7 @@ function Detalle({ expActual, setExpActual, setVista, notas, perfil, recargar, c
   const [gastosExp, setGastosExp] = useState([]);
   const [nuevoGasto, setNuevoGasto] = useState({ descripcion:'', monto:'', fecha:HOY_LOCAL });
   const [etapaHover, setEtapaHover] = useState(null);
+  const [etapaBtnHover, setEtapaBtnHover] = useState(null);
   const [etapaAddingAfter, setEtapaAddingAfter] = useState(null);
   const [etapaAddNombre, setEtapaAddNombre] = useState('');
   const [etapaEditandoId, setEtapaEditandoId] = useState(null);
