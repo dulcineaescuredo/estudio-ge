@@ -740,6 +740,12 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
 }
 
 function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, setExpActual, setHonActual, cuotas, honorarios, clientes }) {
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
   const mes = HOY.substring(0,7);
   const activos = expedientes.filter(e=>(e.estado||'').toLowerCase()==='activo').length;
   const consMes = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes)).length;
