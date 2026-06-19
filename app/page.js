@@ -573,18 +573,21 @@ function Contenido(props) {
 function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual }) {
   const [audienciasHoy, setAudienciasHoy] = useState([]);
   const [turnosHoy, setTurnosHoy] = useState([]);
+  const [personalesHoy, setPersonalesHoy] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     if (!perfil?.nombre) return;
     (async () => {
-      const [{ data: a },{ data: t }] = await Promise.all([
+      const [{ data: a },{ data: t },{ data: p }] = await Promise.all([
         supabase.from('audiencias').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b').eq('fecha',HOY_LOCAL),
         supabase.from('turnos').select('*').eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b').eq('fecha',HOY_LOCAL),
+        supabase.from('eventos_personales').select('*').eq('user_id',perfil.id).eq('estudio_id','51cc9627-71d2-4cab-a3d5-c5490b3b3e4b').eq('fecha',HOY_LOCAL),
       ]);
       const esResp = r => (r.responsable||'').split(',').map(s=>s.trim()).includes(perfil.nombre);
       setAudienciasHoy((a||[]).filter(esResp).sort((x,y)=>(x.hora||'z').localeCompare(y.hora||'z')));
       setTurnosHoy((t||[]).filter(esResp).sort((x,y)=>(x.hora||'z').localeCompare(y.hora||'z')));
+      setPersonalesHoy((p||[]).sort((x,y)=>(x.hora_inicio||'z').localeCompare(y.hora_inicio||'z')));
       setCargando(false);
     })();
   }, [perfil?.nombre]);
@@ -597,7 +600,7 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
     .filter(t => t.deadline === HOY_LOCAL && normEstado(t.estado) !== 'terminado'
       && (t.responsable||'').split(',').map(s=>s.trim()).includes(perfil?.nombre));
 
-  const totalHoy = audienciasHoy.length + turnosHoy.length + vencimientosHoy.length + tareasHoy.length;
+  const totalHoy = audienciasHoy.length + turnosHoy.length + vencimientosHoy.length + tareasHoy.length + personalesHoy.length;
   const sinNada = !cargando && totalHoy === 0;
 
   function fmtH(h) { return h ? h.substring(0,5) : ''; }
@@ -673,6 +676,24 @@ function LoDeHoy({ perfil, expedientes, clientes, tareas, setVista, setExpActual
               <span style={{background:'#D97706',color:'#fff',borderRadius:5,padding:'2px 8px',fontSize:11,fontWeight:500,flexShrink:0}}>hoy</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a'}}>{t.descripcion}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {personalesHoy.length>0&&(
+        <div style={{marginTop:14}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#EC4899',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em'}}>🌸 Personal de hoy</div>
+          {personalesHoy.map(ev=>(
+            <div key={ev.id} onClick={()=>setVista('agenda')}
+              style={{display:'flex',alignItems:'flex-start',gap:10,padding:'9px 0',borderBottom:'1px solid #F5EEF0',cursor:'pointer'}}
+              onMouseEnter={e=>e.currentTarget.style.background='#FDF4F7'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              {ev.hora_inicio&&<span style={{fontSize:12,fontWeight:700,color:'#EC4899',minWidth:40,flexShrink:0}}>{ev.hora_inicio.substring(0,5)}</span>}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:1}}>{ev.titulo||'Evento personal'}</div>
+                {ev.descripcion&&<div style={{fontSize:11,color:'#8a8a8a'}}>{ev.descripcion}</div>}
+                {ev.hora_inicio&&ev.hora_fin&&<div style={{fontSize:11,color:'#8a8a8a'}}>hasta {ev.hora_fin.substring(0,5)}</div>}
               </div>
             </div>
           ))}
