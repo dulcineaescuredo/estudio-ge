@@ -137,6 +137,7 @@ export default function Home() {
   const [notifNoLeidas, setNotifNoLeidas] = useState(0);
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [etapaPanelId, setEtapaPanelId] = useState(null);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
