@@ -2482,12 +2482,19 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
   const [comentarioId, setComentarioId] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
     if (perfil?.nombre && typeof window !== 'undefined' && localStorage.getItem('tareas_filtro_responsable') === null) {
       setFiltroResp(perfil.nombre);
     }
   }, [perfil?.nombre]);
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
 
   function setFiltroAndSave(v) { setFiltro(v); if (typeof window !== 'undefined') localStorage.setItem('tareas_filtro_estado', v); }
   function setFiltroRespAndSave(v) { setFiltroResp(v); if (typeof window !== 'undefined') localStorage.setItem('tareas_filtro_responsable', v); }
@@ -2508,6 +2515,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
       responsable: editModalForm.responsable,
       deadline: editModalForm.deadline || null,
       comentario: editModalForm.comentario || null,
+      estado: editModalForm.estado || 'pendiente',
       expediente_id: editExpId || null,
       cliente_id: editCliId || null,
     }).eq('id', modalEditTarea.id);
@@ -2522,6 +2530,14 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
     setComentarioId(null);
     recargar();
   }
+
+  function openEdit(t) {
+    setModalEditTarea(t);
+    setEditModalForm({descripcion:t.descripcion||'',responsable:t.responsable||'',deadline:t.deadline||'',comentario:t.comentario||'',estado:t.estado||'pendiente'});
+    setEditExpId(t.expediente_id||'');
+    setEditCliId(t.cliente_id||'');
+  }
+
   const responsablesUnicos = [...new Set(
     tareas.flatMap(t=>(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean))
   )].sort();
@@ -2540,24 +2556,83 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
   const cntPend = listaFiltrada.filter(t=>t.estado==='pendiente').length;
   const cntEnP = listaFiltrada.filter(t=>t.estado==='en proceso').length;
   const cntTerm = listaFiltrada.filter(t=>t.estado==='terminado').length;
+
   const renderCard = (t) => {
     const done = t.estado==='terminado';
     const verComentario = comentarioId===t.id;
     const expVinc = t.expediente_id ? expedientes.find(e=>e.id===t.expediente_id) : null;
     const cliVinc = t.cliente_id ? clientes.find(c=>c.id===t.cliente_id) : null;
     const bColor = ESTADO_SOLID[t.estado]||'#E09A3A';
+    const deadlineBadge = !t.deadline
+      ? <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:'normal',background:'#F0F0F0',color:'#888'}}>Sin fecha</span>
+      : (()=>{
+          const _dd=diasHasta(t.deadline);
+          const _cs=_dd<=2?{bg:'#FDECEA',color:'#C0392B',fw:600}:_dd<=3?{bg:'#FEF0E6',color:'#E67E22',fw:600}:_dd<=7?{bg:'#FAEEDA',color:'#D4A017',fw:400}:{bg:'#EBF6E0',color:'#5A8A4A',fw:400};
+          return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:_cs.fw,background:_cs.bg,color:_cs.color}}>{formatFecha(t.deadline)}</span>;
+        })();
+
+    if (isMobile) {
+      return (
+        <div key={t.id} onClick={()=>openEdit(t)}
+          style={{marginBottom:10,borderRadius:10,background:'#fff',border:'1px solid #EBEBEA',
+            borderLeft:`4px solid ${bColor}`,cursor:'pointer',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+          <div style={{display:'flex',alignItems:'center',padding:'12px 10px 12px 14px',gap:10}}>
+            <button onClick={e=>{e.stopPropagation();cambiarEstado(t,done?'pendiente':'terminado');}}
+              title={done?'Marcar pendiente':'Marcar terminado'}
+              style={{width:44,height:44,borderRadius:'50%',flexShrink:0,
+                border:`2px solid ${done?'#6BAE75':'#DDDCDA'}`,
+                background:done?'#6BAE75':'transparent',
+                color:'#fff',cursor:'pointer',
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontSize:20,fontWeight:900}}>
+              {done?'✓':''}
+            </button>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:600,
+                color:done?'#8a8a8a':'#1a1a1a',
+                textDecoration:done?'line-through':'none',
+                lineHeight:1.3,marginBottom:5}}>
+                {t.descripcion}
+              </div>
+              <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
+                {deadlineBadge}
+                {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
+                  <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
+                ))}
+                {t.estado!=='pendiente'&&(
+                  <span style={{fontSize:11,padding:'2px 8px',borderRadius:10,
+                    background:ESTADO_SOLID[t.estado]||'#ccc',color:'#fff',fontWeight:600}}>
+                    {t.estado}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button onClick={e=>{e.stopPropagation();eliminarTarea(t);}}
+              title="Eliminar"
+              style={{width:44,height:44,borderRadius:8,background:'none',border:'none',
+                cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+                flexShrink:0,fontSize:16,color:'#c9c9c4'}}>
+              🗑️
+            </button>
+          </div>
+          {(expVinc||cliVinc||t.comentario)&&(
+            <div style={{padding:'0 14px 10px 70px',fontSize:12,color:'#6B7280'}}>
+              {expVinc&&<div style={{fontStyle:'italic',marginBottom:2}}>📁 {expVinc.caratula}</div>}
+              {cliVinc&&<div style={{fontStyle:'italic',marginBottom:2}}>👤 {nombreCompleto(cliVinc)}</div>}
+              {t.comentario&&<div style={{whiteSpace:'pre-wrap',color:'#666'}}>{t.comentario}</div>}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     return <div key={t.id} style={{marginBottom:12,borderRadius:10,boxShadow:'0 1px 4px rgba(0,0,0,0.08)',background:'#fff',border:'1px solid #EBEBEA',borderLeft:`4px solid ${bColor}`,padding:'14px 16px'}}>
       <>
         <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:4}}>
           <div style={{fontSize:15,fontWeight:600,color:done?'#8a8a8a':'#1a1a1a',textDecoration:done?'line-through':'none',lineHeight:1.3,flex:1,marginRight:8}}>{t.descripcion}</div>
           <div style={{display:'flex',gap:2,flexShrink:0}}>
             {[
-              {emoji:'✏️',title:'Editar',onClick:()=>{
-                setModalEditTarea(t);
-                setEditModalForm({descripcion:t.descripcion||'',responsable:t.responsable||'',deadline:t.deadline||'',comentario:t.comentario||''});
-                setEditExpId(t.expediente_id||'');
-                setEditCliId(t.cliente_id||'');
-              }},
+              {emoji:'✏️',title:'Editar',onClick:()=>openEdit(t)},
               {emoji:'💬',title:'Agregar comentario',onClick:()=>setComentarioId(verComentario?null:t.id)},
               {emoji:'🗑️',title:'Eliminar',onClick:()=>eliminarTarea(t)},
             ].map(({emoji,title,onClick})=>(
@@ -2583,12 +2658,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
         >{nombreCompleto(cliVinc)}</span></div>}
         {t.comentario && <div style={{fontSize:13,color:'#666',marginBottom:6,whiteSpace:'pre-wrap'}}>{t.comentario}</div>}
         <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginTop:6}}>
-          {(()=>{
-            if(!t.deadline) return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:'normal',background:'#F0F0F0',color:'#888'}}>Sin fecha</span>;
-            const _dd=diasHasta(t.deadline);
-            const _cs=_dd<=2?{bg:'#FDECEA',color:'#C0392B',fw:600}:_dd<=3?{bg:'#FEF0E6',color:'#E67E22',fw:600}:_dd<=7?{bg:'#FAEEDA',color:'#D4A017',fw:400}:{bg:'#EBF6E0',color:'#5A8A4A',fw:400};
-            return <span style={{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:_cs.fw,background:_cs.bg,color:_cs.color}}>{formatFecha(t.deadline)}</span>;
-          })()}
+          {deadlineBadge}
           {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
             <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
           ))}
@@ -2613,67 +2683,104 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
       </>
     </div>;
   };
+
   return (
-    <Card>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-        <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>✅ Tareas</div>
-        <button onClick={()=>setVista('nueva-tarea')} style={btnPrimary}>+ Nueva tarea</button>
-      </div>
-      <div style={{fontSize:13,color:'#888',marginBottom:12}}>
-        {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':''}`:''}
-      </div>
-      <input type="text" placeholder="Buscar tarea..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}
-        style={{width:'100%',maxWidth:400,padding:'8px 12px',border:'1px solid #E0E0E0',borderRadius:8,fontSize:14,outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'}}
-        onFocus={e=>e.target.style.outline='2px solid #9B4F6A'}
-        onBlur={e=>e.target.style.outline='none'}
-      />
-      <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
-        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtro} onChange={e=>setFiltroAndSave(e.target.value)}>
-          <option value="activas">Activas (pendiente + en proceso)</option>
-          <option value="pendiente">Solo pendientes</option>
-          <option value="en proceso">Solo en proceso</option>
-          <option value="terminado">Solo terminadas</option>
-          <option value="todas">Todas</option>
-        </select>
-        <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtroResp} onChange={e=>setFiltroRespAndSave(e.target.value)}>
-          <option value="">Responsable: Todos</option>
-          {responsablesUnicos.map(r=><option key={r} value={r}>{r}</option>)}
-        </select>
-      </div>
-      <div style={{marginTop:12}}>
-      {listaFiltrada.length === 0 ? (
-        <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>
-      ) : (
-        listaFiltrada.map(t => renderCard(t))
-      )}
-      </div>
-      {modalEditTarea && (
-        <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.4)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-          <div style={{background:'#fff',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.18)',padding:28,maxWidth:520,width:'100%',maxHeight:'90vh',overflowY:'auto'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
-              <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>✅ Editar tarea</div>
-              <button onClick={()=>setModalEditTarea(null)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#888',lineHeight:1}}>×</button>
-            </div>
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción *</label>
-            <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={editModalForm.descripcion} onChange={e=>setEditModalForm({...editModalForm,descripcion:e.target.value})} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
-            <SocioChips value={editModalForm.responsable} onChange={v=>setEditModalForm({...editModalForm,responsable:v})} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
-            <input type="date" style={inputStyle} value={editModalForm.deadline} onChange={e=>setEditModalForm({...editModalForm,deadline:e.target.value})} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Expediente (opcional)</label>
-            <ExpCombobox expedientes={expedientes} value={editExpId} onChange={setEditExpId} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
-            <CliCombobox clientes={clientes} value={editCliId} onChange={setEditCliId} perfil={perfil} recargar={recargar} />
-            <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
-            <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
-            <div style={{display:'flex',gap:8,marginTop:4}}>
-              <button onClick={guardarEdicion} style={btnPrimary}>Guardar cambios</button>
-              <button onClick={()=>setModalEditTarea(null)} style={{padding:'10px 20px',borderRadius:8,fontSize:14,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+    <>
+      <Card>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div style={{fontSize:15,fontWeight:600,color:'#1A1A1A'}}>✅ Tareas</div>
+          {!isMobile && <button onClick={()=>setVista('nueva-tarea')} style={btnPrimary}>+ Nueva tarea</button>}
+        </div>
+        <div style={{fontSize:13,color:'#888',marginBottom:12}}>
+          {listaFiltrada.length} tarea{listaFiltrada.length!==1?'s':''}{cntPend>0?` · ${cntPend} pendiente${cntPend!==1?'s':''}`:''}{cntEnP>0?` · ${cntEnP} en proceso`:''}{cntTerm>0?` · ${cntTerm} terminada${cntTerm!==1?'s':''}`:''}
+        </div>
+        <input type="text" placeholder="Buscar tarea..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}
+          style={{width:'100%',maxWidth:400,padding:'8px 12px',border:'1px solid #E0E0E0',borderRadius:8,fontSize:14,outline:'none',fontFamily:'system-ui',marginBottom:12,boxSizing:'border-box'}}
+          onFocus={e=>e.target.style.outline='2px solid #9B4F6A'}
+          onBlur={e=>e.target.style.outline='none'}
+        />
+        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
+          <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtro} onChange={e=>setFiltroAndSave(e.target.value)}>
+            <option value="activas">Activas (pendiente + en proceso)</option>
+            <option value="pendiente">Solo pendientes</option>
+            <option value="en proceso">Solo en proceso</option>
+            <option value="terminado">Solo terminadas</option>
+            <option value="todas">Todas</option>
+          </select>
+          <select style={{...inputStyle,width:'auto',marginBottom:0}} value={filtroResp} onChange={e=>setFiltroRespAndSave(e.target.value)}>
+            <option value="">Responsable: Todos</option>
+            {responsablesUnicos.map(r=><option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+        <div style={{marginTop:12}}>
+          {listaFiltrada.length === 0 ? (
+            <div style={{color:'#888',fontSize:13,textAlign:'center',padding:30}}>No se encontraron tareas.</div>
+          ) : (
+            listaFiltrada.map(t => renderCard(t))
+          )}
+        </div>
+        {modalEditTarea && (
+          <div style={{position:'fixed',inset:0,zIndex:1000,
+            ...(isMobile
+              ? {background:'#fff',overflowY:'auto'}
+              : {background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'center',justifyContent:'center',padding:16})}}>
+            <div style={{background:'#fff',
+              ...(isMobile
+                ? {minHeight:'100%',padding:'0 16px 40px'}
+                : {borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.18)',padding:28,maxWidth:520,width:'100%',maxHeight:'90vh',overflowY:'auto'})}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18,
+                ...(isMobile ? {position:'sticky',top:0,background:'#fff',padding:'16px 0 14px',borderBottom:'1px solid #EBEBEA',zIndex:1,marginBottom:20} : {})}}>
+                <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>✅ Editar tarea</div>
+                <button onClick={()=>setModalEditTarea(null)}
+                  style={{background:'none',border:'none',cursor:'pointer',fontSize:22,color:'#888',lineHeight:1,
+                    minWidth:40,minHeight:40,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+              </div>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Descripción *</label>
+              <textarea style={{...inputStyle,minHeight:72,resize:'vertical'}} value={editModalForm.descripcion} onChange={e=>setEditModalForm({...editModalForm,descripcion:e.target.value})} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Responsable *</label>
+              <SocioChips value={editModalForm.responsable} onChange={v=>setEditModalForm({...editModalForm,responsable:v})} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Vencimiento (opcional)</label>
+              <input type="date" style={inputStyle} value={editModalForm.deadline} onChange={e=>setEditModalForm({...editModalForm,deadline:e.target.value})} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Estado</label>
+              <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+                {ESTADOS_TAREA.map(es=>{
+                  const sel=editModalForm.estado===es;
+                  return <button key={es} onClick={()=>setEditModalForm({...editModalForm,estado:es})}
+                    style={{flex:isMobile?1:undefined,
+                      padding:isMobile?'10px 8px':'3px 10px',
+                      borderRadius:isMobile?8:20,
+                      fontSize:isMobile?13:11,fontWeight:600,cursor:'pointer',border:'none',
+                      background:sel?(ESTADO_SOLID[es]||'#ccc'):'#F0F0F0',
+                      color:sel?'#fff':'#888',fontFamily:'system-ui'}}>
+                    {es.charAt(0).toUpperCase()+es.slice(1)}
+                  </button>;
+                })}
+              </div>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Expediente (opcional)</label>
+              <ExpCombobox expedientes={expedientes} value={editExpId} onChange={setEditExpId} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Cliente (opcional)</label>
+              <CliCombobox clientes={clientes} value={editCliId} onChange={setEditCliId} perfil={perfil} recargar={recargar} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
+              <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
+              <div style={{display:'flex',gap:8,marginTop:isMobile?16:4,flexDirection:isMobile?'column':'row'}}>
+                <button onClick={guardarEdicion} style={{...btnPrimary,..( isMobile ? {padding:'14px',fontSize:15,textAlign:'center',justifyContent:'center'} : {})}}>Guardar cambios</button>
+                <button onClick={()=>setModalEditTarea(null)}
+                  style={{padding:isMobile?'14px':'10px 20px',borderRadius:8,fontSize:isMobile?15:14,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',textAlign:'center'}}>Cancelar</button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+      </Card>
+      {isMobile && (
+        <button onClick={()=>setVista('nueva-tarea')}
+          style={{position:'fixed',bottom:24,right:24,width:56,height:56,borderRadius:'50%',
+            background:'#9B4F6A',color:'#fff',border:'none',cursor:'pointer',fontSize:28,lineHeight:1,
+            boxShadow:'0 4px 16px rgba(155,79,106,0.35)',
+            display:'flex',alignItems:'center',justifyContent:'center',zIndex:100}}>
+          +
+        </button>
       )}
-    </Card>
+    </>
   );
 }
 
