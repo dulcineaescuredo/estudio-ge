@@ -2857,7 +2857,7 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
               <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Comentario (opcional)</label>
               <textarea style={{...inputStyle,minHeight:56,resize:'vertical'}} value={editModalForm.comentario} onChange={e=>setEditModalForm({...editModalForm,comentario:e.target.value})} />
               <div style={{display:'flex',gap:8,marginTop:isMobile?16:4,flexDirection:isMobile?'column':'row'}}>
-                <button onClick={guardarEdicion} style={{...btnPrimary,..( isMobile ? {padding:'14px',fontSize:15,textAlign:'center',justifyContent:'center'} : {})}}>Guardar cambios</button>
+                <button onClick={guardarEdicion} style={{...btnPrimary,...( isMobile ? {padding:'14px',fontSize:15,textAlign:'center',justifyContent:'center'} : {})}}>Guardar cambios</button>
                 <button onClick={()=>setModalEditTarea(null)}
                   style={{padding:isMobile?'14px':'10px 20px',borderRadius:8,fontSize:isMobile?15:14,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',textAlign:'center'}}>Cancelar</button>
               </div>
