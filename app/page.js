@@ -4649,11 +4649,12 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
 
   function renderChip(ev,idx) {
     const bg=CAT_COLORS[ev._cat];
-    const expVinc=ev.expediente_id?(expedientes||[]).find(e=>e.id===ev.expediente_id):null;
+    const expVinc=ev._cat==='vencimientos'?ev:(ev.expediente_id?(expedientes||[]).find(e=>e.id===ev.expediente_id):null);
     const cliVinc=!expVinc&&ev.cliente_id?(clientes||[]).find(c=>c.id===ev.cliente_id):null;
-    const apellido=expVinc?.caratula
+    const showApellido=ev._cat!=='vencimientos'||!!ev.motivo_vencimiento;
+    const apellido=showApellido?(expVinc?.caratula
       ?expVinc.caratula.trim().split(/[\s,]/)[0]
-      :cliVinc?.apellido||(cliVinc?nombreCompleto(cliVinc).trim().split(/[\s,]/)[0]:null)||null;
+      :cliVinc?.apellido||(cliVinc?nombreCompleto(cliVinc).trim().split(/[\s,]/)[0]:null)||null):null;
     return (
       <div key={`${ev._cat}-${ev.id}-${idx}`}
         onClick={e=>{e.stopPropagation();setPanelEv(ev);}}
