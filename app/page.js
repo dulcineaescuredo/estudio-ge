@@ -288,7 +288,7 @@ export default function Home() {
                 <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>{label}
               </button>
             ))}
-            <button onClick={()=>setAgendaAbierta(a=>!a)}
+            <button onClick={()=>{setAgendaAbierta(a=>!a);setVista('agenda');setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
               style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
                 background:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas','agenda-personal'].includes(vista)?'rgba(255,255,255,0.18)':'transparent',
                 color:'#FFFFFF',fontWeight:['agenda','agenda-vencimientos','agenda-audiencias','agenda-turnos','agenda-tareas','agenda-personal'].includes(vista)?600:400,
@@ -297,23 +297,6 @@ export default function Home() {
               <span style={{flex:1}}>Agenda</span>
               <span style={{fontSize:11,opacity:0.8}}>{agendaAbierta?'▼':'▶'}</span>
             </button>
-            {agendaAbierta && [
-              ['agenda-vencimientos','⚠️','Vencimientos'],
-              ['agenda-audiencias','⚖️','Audiencias'],
-              ['agenda-turnos','🕐','Turnos'],
-              ['agenda-tareas','✅','Tareas c/vencimiento'],
-              ['agenda-personal','🌸','Personal'],
-            ].map(([id,emoji,label])=>(
-              <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
-                style={{display:'flex',alignItems:'center',gap:8,
-                  width:vista===id?'calc(100% - 8px)':'100%',
-                  marginLeft:vista===id?4:0,marginRight:vista===id?4:0,
-                  textAlign:'left',padding:'6px 10px 6px 28px',borderRadius:6,fontSize:13,border:'none',
-                  background:vista===id?'rgba(255,255,255,0.18)':'transparent',
-                  color:'#FFFFFF',fontWeight:vista===id?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:36}}>
-                <span style={{fontSize:13,flexShrink:0}}>{emoji}</span>{label}
-              </button>
-            ))}
             {agendaAbierta && (
               <div style={{padding:'10px 10px 4px 10px'}}>
                 <div style={{fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6,paddingLeft:18}}>Mis calendarios</div>
@@ -4600,10 +4583,9 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   const [evPersonales, setEvPersonales] = useState([]);
   const [vistaAg, setVistaAg] = useState('mes');
   const [navDate, setNavDate] = useState(new Date(HOY_LOCAL+'T00:00:00'));
-  const [popoverEv, setPopoverEv] = useState(null);
-  const [mostrarFormPersonal, setMostrarFormPersonal] = useState(false);
-  const [editandoPersonal, setEditandoPersonal] = useState(null);
-  const [fechaFormPersonal, setFechaFormPersonal] = useState(HOY_LOCAL);
+  const [panelEv, setPanelEv] = useState(null);
+  const [modalNuevo, setModalNuevo] = useState(null);
+  const [nuevoFecha, setNuevoFecha] = useState(HOY_LOCAL);
 
   useEffect(()=>{
     if(perfil?.id) cargar();
@@ -4632,7 +4614,11 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   }
 
   const vencFiltrados = (expedientes||[]).filter(e=>e.proximo_vencimiento&&(e.estado||'').toLowerCase()!=='archivado');
-  const tareasConDeadline = (tareas||[]).filter(e=>e.deadline&&normEstado(e.estado)!=='terminado');
+  const tareasConDeadline = (tareas||[]).filter(e=>{
+    if(!e.deadline||normEstado(e.estado)==='terminado') return false;
+    if(!perfil?.nombre) return false;
+    return (e.responsable||'').split(',').map(s=>s.trim()).includes(perfil.nombre);
+  });
 
   function dateStr(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -4663,14 +4649,15 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
 
   function renderChip(ev,idx) {
     const bg=CAT_COLORS[ev._cat];
+    const expVinc=ev.expediente_id?(expedientes||[]).find(e=>e.id===ev.expediente_id):null;
+    const apellido=expVinc?.caratula?expVinc.caratula.trim().split(/[\s,]/)[0]:null;
     return (
       <div key={`${ev._cat}-${ev.id}-${idx}`}
-        onClick={e=>{e.stopPropagation();setPopoverEv(ev);}}
+        onClick={e=>{e.stopPropagation();setPanelEv(ev);}}
         title={chipLabel(ev)}
-        style={{fontSize:11,background:bg,color:'#fff',borderRadius:4,padding:'4px 6px',marginBottom:3,
-          cursor:'pointer',minHeight:28,lineHeight:'1.3',overflow:'hidden',
-          display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
-        {chipLabel(ev)}
+        style={{fontSize:11,background:bg,color:'#fff',borderRadius:4,padding:'4px 6px',marginBottom:3,cursor:'pointer',minHeight:28}}>
+        <div style={{lineHeight:'1.3',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:apellido?1:2,WebkitBoxOrient:'vertical'}}>{chipLabel(ev)}</div>
+        {apellido&&<div style={{fontSize:10,fontStyle:'italic',opacity:0.8,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',marginTop:1}}>{apellido}</div>}
       </div>
     );
   }
@@ -4706,7 +4693,34 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     if(ev._cat==='audiencias') await supabase.from('audiencias').delete().eq('id',ev.id);
     else if(ev._cat==='turnos') await supabase.from('turnos').delete().eq('id',ev.id);
     else if(ev._cat==='personal') await supabase.from('eventos_personales').delete().eq('id',ev.id);
-    setPopoverEv(null);
+    setPanelEv(null);
+    cargar();
+  }
+
+  async function guardarEvPanel(ev, datos) {
+    if(ev._cat==='audiencias') await supabase.from('audiencias').update(datos).eq('id',ev.id);
+    else if(ev._cat==='turnos') await supabase.from('turnos').update(datos).eq('id',ev.id);
+    else if(ev._cat==='tareas') await supabase.from('tareas').update(datos).eq('id',ev.id);
+    else if(ev._cat==='personal') await supabase.from('eventos_personales').update(datos).eq('id',ev.id);
+    else if(ev._cat==='vencimientos') await supabase.from('expedientes').update(datos).eq('id',ev.id);
+    setPanelEv(null);
+    cargar();
+  }
+
+  async function crearNuevoEv(tipo, datos) {
+    const ESTUDIO='51cc9627-71d2-4cab-a3d5-c5490b3b3e4b';
+    if(tipo==='audiencia'){
+      await supabase.from('audiencias').insert({...datos, estudio_id:ESTUDIO});
+    } else if(tipo==='turno'){
+      await supabase.from('turnos').insert({...datos, estudio_id:ESTUDIO});
+    } else if(tipo==='vencimiento'){
+      await supabase.from('expedientes').update({proximo_vencimiento:datos.fecha,motivo_vencimiento:datos.motivo||null}).eq('id',datos.expediente_id);
+    } else if(tipo==='tarea'){
+      await supabase.from('tareas').insert({descripcion:datos.descripcion,responsable:datos.responsable||null,deadline:datos.deadline||null,expediente_id:datos.expediente_id||null,estado:'pendiente',estudio_id:ESTUDIO});
+    } else if(tipo==='personal'){
+      await supabase.from('eventos_personales').insert({...datos,user_id:perfil.id,estudio_id:ESTUDIO});
+    }
+    setModalNuevo(null);
     cargar();
   }
 
@@ -4738,12 +4752,12 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
               </button>
             ))}
           </div>
-          {catVisible('personal')&&(
-            <button onClick={()=>{setFechaFormPersonal(HOY_LOCAL);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
-              style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899'}}>
-              + Evento personal
-            </button>
-          )}
+          <button
+            onClick={()=>{setNuevoFecha(vistaAg==='dia'?dateStr(navDate):HOY_LOCAL);setModalNuevo('tipo');}}
+            title="Nuevo evento"
+            style={{width:36,height:36,borderRadius:'50%',background:'#9B4F6A',color:'#fff',border:'none',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,flexShrink:0,fontWeight:300}}>
+            +
+          </button>
         </div>
       </div>
 
@@ -4822,12 +4836,6 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
           <Card>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
               <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>Eventos del día</span>
-              {catVisible('personal')&&(
-                <button onClick={()=>{setFechaFormPersonal(fs);setEditandoPersonal(null);setMostrarFormPersonal(true);}}
-                  style={{...btnPrimary,background:'#EC4899',borderColor:'#EC4899',padding:'6px 12px',fontSize:12}}>
-                  + Evento personal
-                </button>
-              )}
             </div>
             {evs.length===0&&<div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin eventos para este día.</div>}
             {evs.map((ev,i)=>{
@@ -4843,7 +4851,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
                 :(ev.tipo||'Evento');
               return (
                 <div key={`${ev._cat}-${ev.id}-${i}`}
-                  onClick={()=>setPopoverEv(ev)}
+                  onClick={()=>setPanelEv(ev)}
                   style={{display:'flex',gap:10,padding:'12px 0',borderBottom:'1px solid #F0EFED',cursor:'pointer',alignItems:'flex-start'}}
                   onMouseEnter={e=>e.currentTarget.style.background='#F7F6F3'}
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
@@ -4907,7 +4915,7 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
                     const vinc=expV?expV.caratula:cliV?nombreCompleto(cliV):'';
                     return (
                       <div key={`${ev._cat}-${ev.id}-${i}`}
-                        onClick={()=>setPopoverEv(ev)}
+                        onClick={()=>setPanelEv(ev)}
                         style={{display:'flex',gap:10,padding:'10px 12px',borderRadius:10,marginBottom:6,
                           background:'#F9F8F5',cursor:'pointer',alignItems:'center',
                           borderLeft:`4px solid ${bg}`}}
@@ -4932,125 +4940,394 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
         );
       })()}
 
-      {popoverEv&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.3)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}}
-          onClick={()=>setPopoverEv(null)}>
-          <div onClick={e=>e.stopPropagation()}
-            style={{background:'#fff',borderRadius:16,padding:24,maxWidth:420,width:'90%',
-              boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxHeight:'80vh',overflowY:'auto'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-              <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <div style={{width:12,height:12,borderRadius:3,background:CAT_COLORS[popoverEv._cat],flexShrink:0}}/>
-                <span style={{fontSize:11,fontWeight:700,textTransform:'uppercase',color:CAT_COLORS[popoverEv._cat],letterSpacing:'0.05em'}}>
-                  {titulos[popoverEv._cat]||popoverEv._cat}
-                </span>
-              </div>
-              <button onClick={()=>setPopoverEv(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#8a8a8a',padding:4,lineHeight:1}}>×</button>
-            </div>
-            <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a',marginBottom:16,lineHeight:1.3}}>
-              {popoverEv._cat==='vencimientos'?(popoverEv.motivo_vencimiento||popoverEv.caratula||'Vencimiento')
-               :popoverEv._cat==='tareas'?(popoverEv.descripcion||'Tarea')
-               :popoverEv._cat==='personal'?(popoverEv.titulo||'Evento personal')
-               :(popoverEv.tipo||'Evento')}
-            </div>
-            <div style={{display:'grid',gap:10,marginBottom:20,fontSize:13}}>
-              <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Fecha</span>
-                <span style={{fontWeight:500}}>{formatFecha(popoverEv.fecha||popoverEv.proximo_vencimiento||popoverEv.deadline)}</span>
-              </div>
-              {(popoverEv.hora||popoverEv.hora_inicio)&&(
-                <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Hora</span>
-                  <span style={{fontWeight:500}}>{fmtH(popoverEv.hora||popoverEv.hora_inicio)}{popoverEv.hora_fin?` – ${fmtH(popoverEv.hora_fin)}`:''}</span>
-                </div>
-              )}
-              {popoverEv._cat==='vencimientos'&&popoverEv.caratula&&(
-                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Expediente</span>
-                  <span style={{fontWeight:500}}>{popoverEv.caratula}{popoverEv.numero?` (${popoverEv.numero})`:''}</span>
-                </div>
-              )}
-              {(popoverEv._cat==='audiencias'||popoverEv._cat==='turnos')&&(()=>{
-                const exp=(expedientes||[]).find(e=>e.id===popoverEv.expediente_id);
-                const cli=(clientes||[]).find(c=>c.id===popoverEv.cliente_id);
-                const vinc=exp?exp.caratula:cli?nombreCompleto(cli):'';
-                return vinc?(<div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Vinculado</span>
-                  <span style={{fontWeight:500}}>{vinc}</span>
-                </div>):null;
-              })()}
-              {popoverEv.descripcion&&(
-                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Descripción</span>
-                  <span style={{lineHeight:1.5}}>{popoverEv.descripcion}</span>
-                </div>
-              )}
-              {popoverEv.responsable&&(
-                <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-                  <span style={{fontSize:12,color:'#8a8a8a',width:80,flexShrink:0}}>Responsable</span>
-                  <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                    {popoverEv.responsable.split(',').map(r=>r.trim()).filter(Boolean).map(r=>(
-                      <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              {popoverEv._cat==='vencimientos'&&(
-                <button onClick={()=>{const exp=(expedientes||[]).find(e=>e.id===popoverEv.id);if(exp){setExpActual(exp);setVista('detalle');setPopoverEv(null);}}}
-                  style={btnPrimary}>Ver expediente</button>
-              )}
-              {popoverEv._cat==='tareas'&&(
-                <button onClick={()=>{setVista('tareas');setPopoverEv(null);}} style={btnPrimary}>Ver tareas</button>
-              )}
-              {(popoverEv._cat==='audiencias'||popoverEv._cat==='turnos')&&(<>
-                <button onClick={()=>{setVista(popoverEv._cat==='audiencias'?'audiencias':'turnos');setPopoverEv(null);}} style={btnPrimary}>Editar</button>
-                <button onClick={()=>eliminarEv(popoverEv)}
-                  style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>Eliminar</button>
-              </>)}
-              {popoverEv._cat==='personal'&&(<>
-                <button onClick={()=>{setEditandoPersonal(popoverEv);setFechaFormPersonal(popoverEv.fecha);setMostrarFormPersonal(true);setPopoverEv(null);}}
-                  style={btnPrimary}>Editar</button>
-                <button onClick={()=>eliminarEv(popoverEv)}
-                  style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>Eliminar</button>
-              </>)}
-              <button onClick={()=>setPopoverEv(null)}
-                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cerrar</button>
-            </div>
-          </div>
-        </div>
+      {panelEv&&(
+        <PanelEvento
+          key={`${panelEv._cat}-${panelEv.id}`}
+          ev={panelEv}
+          expedientes={expedientes}
+          clientes={clientes}
+          CAT_COLORS={CAT_COLORS}
+          titulos={titulos}
+          fmtH={fmtH}
+          onClose={()=>setPanelEv(null)}
+          onEliminar={()=>eliminarEv(panelEv)}
+          onGuardar={(datos)=>guardarEvPanel(panelEv,datos)}
+          setVista={setVista}
+          setExpActual={setExpActual}
+        />
       )}
 
-      {mostrarFormPersonal&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.3)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}}
-          onClick={()=>{setMostrarFormPersonal(false);setEditandoPersonal(null);}}>
-          <div onClick={e=>e.stopPropagation()}
-            style={{background:'#fff',borderRadius:16,padding:24,maxWidth:480,width:'90%',
-              boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxHeight:'90vh',overflowY:'auto'}}>
-            <FormPersonal
-              fechaPres={fechaFormPersonal}
-              eventoEdit={editandoPersonal}
-              onGuardar={async(datos)=>{
-                if(editandoPersonal){
-                  await supabase.from('eventos_personales').update(datos).eq('id',editandoPersonal.id);
-                } else {
-                  await supabase.from('eventos_personales').insert({
-                    ...datos, user_id:perfil.id, estudio_id:'51cc9627-71d2-4cab-a3d5-c5490b3b3e4b'
-                  });
-                }
-                setMostrarFormPersonal(false);
-                setEditandoPersonal(null);
-                cargar();
-              }}
-              onCancelar={()=>{setMostrarFormPersonal(false);setEditandoPersonal(null);}}
-            />
-          </div>
-        </div>
+      {modalNuevo&&(
+        <ModalNuevoEvento
+          tipo={modalNuevo}
+          fecha={nuevoFecha}
+          expedientes={expedientes}
+          clientes={clientes}
+          perfil={perfil}
+          onTipoElegido={(t)=>setModalNuevo(t)}
+          onGuardar={crearNuevoEv}
+          onCerrar={()=>setModalNuevo(null)}
+        />
       )}
     </div>
   );
 }
+
+function PanelEvento({ ev, expedientes, clientes, CAT_COLORS, titulos, fmtH, onClose, onEliminar, onGuardar, setVista, setExpActual }) {
+  const [f, setF] = useState(()=>({
+    tipo: ev.tipo||'',
+    fecha: ev.fecha||ev.proximo_vencimiento||ev.deadline||'',
+    hora: ev.hora||'',
+    hora_inicio: ev.hora_inicio||'',
+    hora_fin: ev.hora_fin||'',
+    descripcion: ev.descripcion||'',
+    titulo: ev.titulo||'',
+    link: ev.link||'',
+    motivo_vencimiento: ev.motivo_vencimiento||'',
+    responsable: ev.responsable||'',
+    deadline: ev.deadline||'',
+  }));
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const cat=ev._cat;
+  const bg=CAT_COLORS[cat];
+  const expVinc=cat==='vencimientos'?ev:(ev.expediente_id?(expedientes||[]).find(e=>e.id===ev.expediente_id):null);
+  const cliVinc=ev.cliente_id?(clientes||[]).find(c=>c.id===ev.cliente_id):null;
+  const vincNombre=expVinc?expVinc.caratula:cliVinc?nombreCompleto(cliVinc):'';
+  const tituloEv=cat==='vencimientos'?(ev.motivo_vencimiento||ev.caratula||'Vencimiento')
+    :cat==='tareas'?(ev.descripcion||'Tarea')
+    :cat==='personal'?(ev.titulo||'Evento personal')
+    :(ev.tipo||'Evento');
+
+  function handleGuardar() {
+    let datos={};
+    if(cat==='audiencias') datos={tipo:f.tipo,fecha:f.fecha,hora:f.hora||null,descripcion:f.descripcion||null,link:f.link||null};
+    else if(cat==='turnos') datos={tipo:f.tipo,fecha:f.fecha,hora:f.hora||null,hora_fin:f.hora_fin||null,descripcion:f.descripcion||null,link:f.link||null};
+    else if(cat==='tareas') datos={descripcion:f.descripcion,deadline:f.deadline||null,responsable:f.responsable||null};
+    else if(cat==='personal') datos={titulo:f.titulo,descripcion:f.descripcion||null,fecha:f.fecha,hora_inicio:f.hora_inicio||null,hora_fin:f.hora_fin||null};
+    else if(cat==='vencimientos') datos={proximo_vencimiento:f.fecha,motivo_vencimiento:f.motivo_vencimiento||null};
+    onGuardar(datos);
+  }
+
+  const iStyle={...inputStyle,marginBottom:8};
+  const lStyle={fontSize:11,color:'#8a8a8a',marginBottom:3,display:'block'};
+
+  return (
+    <>
+      <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',zIndex:300}} onClick={onClose}/>
+      <div style={{position:'fixed',top:0,right:0,height:'100vh',width:360,background:'#fff',zIndex:301,
+        display:'flex',flexDirection:'column',boxShadow:'-4px 0 24px rgba(0,0,0,0.15)',overflowY:'auto'}}>
+        <div style={{padding:'20px 20px 14px',borderBottom:'1px solid #F0EFED',flexShrink:0}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+            <div style={{display:'flex',alignItems:'center',gap:7}}>
+              <div style={{width:10,height:10,borderRadius:2,background:bg,flexShrink:0}}/>
+              <span style={{fontSize:10,fontWeight:700,textTransform:'uppercase',color:bg,letterSpacing:'0.06em'}}>{titulos[cat]||cat}</span>
+            </div>
+            <button onClick={onClose} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#8a8a8a',padding:4,lineHeight:1}}>×</button>
+          </div>
+          <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a',lineHeight:1.3,marginBottom:vincNombre?6:0}}>{tituloEv}</div>
+          {vincNombre&&<div style={{fontSize:12,color:'#6B7280'}}>📁 {vincNombre}</div>}
+        </div>
+
+        <div style={{padding:'16px 20px',flex:1,overflowY:'auto'}}>
+          {(cat==='audiencias'||cat==='turnos')&&(f.link||ev.link)&&(
+            <a href={f.link||ev.link} target="_blank" rel="noopener noreferrer"
+              style={{display:'block',textAlign:'center',padding:'10px 16px',borderRadius:10,background:'#3B82F6',color:'#fff',textDecoration:'none',fontWeight:600,fontSize:14,marginBottom:16}}>
+              Unirse a la reunión 🔗
+            </a>
+          )}
+
+          {cat==='vencimientos'&&(
+            <div>
+              <label style={lStyle}>Fecha de vencimiento</label>
+              <input type="date" value={f.fecha} onChange={e=>set('fecha',e.target.value)} style={iStyle}/>
+              <label style={lStyle}>Motivo</label>
+              <input value={f.motivo_vencimiento} onChange={e=>set('motivo_vencimiento',e.target.value)} style={iStyle} placeholder="Motivo del vencimiento"/>
+            </div>
+          )}
+
+          {cat==='audiencias'&&(
+            <div>
+              <label style={lStyle}>Tipo / Título</label>
+              <input value={f.tipo} onChange={e=>set('tipo',e.target.value)} style={iStyle} placeholder="Tipo de audiencia"/>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:0}}>
+                <div><label style={lStyle}>Fecha</label><input type="date" value={f.fecha} onChange={e=>set('fecha',e.target.value)} style={iStyle}/></div>
+                <div><label style={lStyle}>Hora</label><input type="time" value={f.hora} onChange={e=>set('hora',e.target.value)} style={iStyle}/></div>
+              </div>
+              <label style={lStyle}>Descripción / Juzgado</label>
+              <textarea value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} style={{...iStyle,minHeight:60,resize:'vertical'}}/>
+              <label style={lStyle}>Link de reunión</label>
+              <input value={f.link} onChange={e=>set('link',e.target.value)} style={iStyle} placeholder="https://..."/>
+            </div>
+          )}
+
+          {cat==='turnos'&&(
+            <div>
+              <label style={lStyle}>Tipo / Título</label>
+              <input value={f.tipo} onChange={e=>set('tipo',e.target.value)} style={iStyle} placeholder="Tipo de turno"/>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                <div><label style={lStyle}>Fecha</label><input type="date" value={f.fecha} onChange={e=>set('fecha',e.target.value)} style={iStyle}/></div>
+                <div><label style={lStyle}>Hora inicio</label><input type="time" value={f.hora} onChange={e=>set('hora',e.target.value)} style={iStyle}/></div>
+              </div>
+              <label style={lStyle}>Hora fin</label>
+              <input type="time" value={f.hora_fin} onChange={e=>set('hora_fin',e.target.value)} style={iStyle}/>
+              <label style={lStyle}>Descripción / Notas</label>
+              <textarea value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} style={{...iStyle,minHeight:60,resize:'vertical'}}/>
+              <label style={lStyle}>Link de reunión</label>
+              <input value={f.link} onChange={e=>set('link',e.target.value)} style={iStyle} placeholder="https://..."/>
+            </div>
+          )}
+
+          {cat==='tareas'&&(
+            <div>
+              <label style={lStyle}>Descripción</label>
+              <textarea value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} style={{...iStyle,minHeight:64,resize:'vertical'}}/>
+              <label style={lStyle}>Deadline</label>
+              <input type="date" value={f.deadline} onChange={e=>set('deadline',e.target.value)} style={iStyle}/>
+              <label style={lStyle}>Responsable</label>
+              <input value={f.responsable} onChange={e=>set('responsable',e.target.value)} style={iStyle}/>
+            </div>
+          )}
+
+          {cat==='personal'&&(
+            <div>
+              <label style={lStyle}>Título</label>
+              <input value={f.titulo} onChange={e=>set('titulo',e.target.value)} style={iStyle}/>
+              <label style={lStyle}>Descripción</label>
+              <textarea value={f.descripcion} onChange={e=>set('descripcion',e.target.value)} style={{...iStyle,minHeight:60,resize:'vertical'}}/>
+              <label style={lStyle}>Fecha</label>
+              <input type="date" value={f.fecha} onChange={e=>set('fecha',e.target.value)} style={iStyle}/>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                <div><label style={lStyle}>Hora inicio</label><input type="time" value={f.hora_inicio} onChange={e=>set('hora_inicio',e.target.value)} style={iStyle}/></div>
+                <div><label style={lStyle}>Hora fin</label><input type="time" value={f.hora_fin} onChange={e=>set('hora_fin',e.target.value)} style={iStyle}/></div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{padding:'14px 20px',borderTop:'1px solid #F0EFED',display:'flex',gap:8,flexWrap:'wrap',flexShrink:0}}>
+          {cat==='vencimientos'&&(
+            <>
+              <button onClick={handleGuardar} style={{...btnPrimary,flex:1}}>Guardar cambios</button>
+              <button onClick={()=>{const exp=(expedientes||[]).find(e=>e.id===ev.id);if(exp){setExpActual(exp);setVista('detalle');onClose();}}}
+                style={{padding:'9px 14px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+                Ver expediente
+              </button>
+            </>
+          )}
+          {cat!=='vencimientos'&&(
+            <button onClick={handleGuardar} style={{...btnPrimary,flex:1}}>Guardar cambios</button>
+          )}
+          {(cat==='audiencias'||cat==='turnos'||cat==='personal')&&(
+            <button onClick={onEliminar}
+              style={{padding:'9px 14px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#A32D2D',fontFamily:'system-ui',fontWeight:500}}>
+              Eliminar
+            </button>
+          )}
+          {cat==='tareas'&&(
+            <button onClick={()=>{setVista('tareas');onClose();}} style={{...btnPrimary,background:'#22C55E',borderColor:'#22C55E'}}>
+              Ver tareas
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ModalNuevoEvento({ tipo, fecha, expedientes, clientes, perfil, onTipoElegido, onGuardar, onCerrar }) {
+  const [f, setF] = useState({
+    titulo:'', fecha:fecha, hora:'', hora_fin:'', hora_inicio:'',
+    descripcion:'', link:'', motivo:'', responsable:perfil?.nombre||'',
+    deadline:fecha, expediente_id:'', expediente_nombre:'', exp_q:'',
+  });
+  const [expAbierto, setExpAbierto] = useState(false);
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  const sugsExp=f.exp_q?(expedientes||[]).filter(e=>
+    (e.caratula||'').toLowerCase().includes(f.exp_q.toLowerCase())||(e.numero||'').includes(f.exp_q)
+  ).slice(0,8):[];
+
+  const TIPOS_NAV=[
+    ['turno','📅','Turno','#8B5CF6'],
+    ['audiencia','⚖️','Audiencia','#3B82F6'],
+    ['vencimiento','⚠️','Vencimiento','#F97316'],
+    ['tarea','✅','Tarea con vencimiento','#22C55E'],
+    ['personal','🌸','Personal','#EC4899'],
+  ];
+  const tipoInfo=TIPOS_NAV.find(t=>t[0]===tipo);
+
+  async function guardar() {
+    if(tipo==='turno'){
+      if(!f.fecha){alert('La fecha es obligatoria.');return;}
+      await onGuardar('turno',{tipo:f.titulo||'Turno',fecha:f.fecha,hora:f.hora||null,hora_fin:f.hora_fin||null,descripcion:f.descripcion||null,link:f.link||null,expediente_id:f.expediente_id||null,responsable:perfil?.nombre||null});
+    } else if(tipo==='audiencia'){
+      if(!f.fecha){alert('La fecha es obligatoria.');return;}
+      await onGuardar('audiencia',{tipo:f.titulo||'Audiencia',fecha:f.fecha,hora:f.hora||null,descripcion:f.descripcion||null,link:f.link||null,expediente_id:f.expediente_id||null,responsable:perfil?.nombre||null});
+    } else if(tipo==='vencimiento'){
+      if(!f.expediente_id){alert('Seleccioná el expediente.');return;}
+      if(!f.fecha){alert('La fecha es obligatoria.');return;}
+      await onGuardar('vencimiento',{expediente_id:f.expediente_id,fecha:f.fecha,motivo:f.motivo||null});
+    } else if(tipo==='tarea'){
+      if(!f.descripcion.trim()){alert('La descripción es obligatoria.');return;}
+      await onGuardar('tarea',{descripcion:f.descripcion.trim(),responsable:f.responsable||null,deadline:f.deadline||null,expediente_id:f.expediente_id||null});
+    } else if(tipo==='personal'){
+      if(!f.titulo.trim()){alert('El título es obligatorio.');return;}
+      await onGuardar('personal',{titulo:f.titulo.trim(),descripcion:f.descripcion||null,fecha:f.fecha,hora_inicio:f.hora_inicio||null,hora_fin:f.hora_fin||null});
+    }
+  }
+
+  const iS=inputStyle;
+  const lS={fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5};
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',zIndex:400,display:'flex',alignItems:'center',justifyContent:'center'}}
+      onClick={onCerrar}>
+      <div onClick={e=>e.stopPropagation()}
+        style={{background:'#fff',borderRadius:16,padding:24,maxWidth:tipo==='tipo'?460:520,width:'90%',
+          boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxHeight:'92vh',overflowY:'auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
+          <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>
+            {tipo==='tipo'?'Nuevo evento':`${tipoInfo?.[1]||''} Nuevo ${tipoInfo?.[2]||tipo}`}
+          </div>
+          <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            {tipo!=='tipo'&&(
+              <button onClick={()=>onTipoElegido('tipo')}
+                style={{background:'none',border:'none',fontSize:12,cursor:'pointer',color:'#6B7280',padding:'4px 8px',fontFamily:'system-ui'}}>
+                ← Cambiar tipo
+              </button>
+            )}
+            <button onClick={onCerrar} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#8a8a8a',padding:4,lineHeight:1}}>×</button>
+          </div>
+        </div>
+
+        {tipo==='tipo'&&(
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            {TIPOS_NAV.map(([key,emoji,label,color])=>(
+              <button key={key} onClick={()=>onTipoElegido(key)}
+                style={{padding:'16px 12px',borderRadius:12,border:`2px solid ${color}`,background:'#fff',cursor:'pointer',fontFamily:'system-ui',textAlign:'center',transition:'background 0.1s'}}
+                onMouseEnter={e=>e.currentTarget.style.background=`${color}14`}
+                onMouseLeave={e=>e.currentTarget.style.background='#fff'}>
+                <div style={{fontSize:28,marginBottom:6}}>{emoji}</div>
+                <div style={{fontSize:13,fontWeight:600,color:'#1a1a1a'}}>{label}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tipo!=='tipo'&&(
+          <div>
+            {(tipo==='turno'||tipo==='audiencia'||tipo==='vencimiento'||tipo==='tarea')&&(
+              <div style={{marginBottom:14,position:'relative'}}>
+                <label style={lS}>Expediente vinculado{tipo==='vencimiento'?' *':' (opcional)'}</label>
+                <input style={{...iS,marginBottom:0}}
+                  placeholder="Buscar por carátula o número..."
+                  value={f.expediente_nombre||f.exp_q}
+                  onChange={e=>{set('exp_q',e.target.value);set('expediente_nombre','');set('expediente_id','');setExpAbierto(true);}}
+                  onFocus={()=>setExpAbierto(true)}
+                  onBlur={()=>setTimeout(()=>setExpAbierto(false),150)}/>
+                {f.expediente_id&&<div style={{fontSize:11,color:'#27500A',marginTop:3}}>✓ {f.expediente_nombre}</div>}
+                {expAbierto&&sugsExp.length>0&&(
+                  <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',
+                    borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,maxHeight:200,overflowY:'auto',marginTop:2}}>
+                    {sugsExp.map(e=>(
+                      <div key={e.id} onMouseDown={ev=>ev.preventDefault()}
+                        onClick={()=>{set('expediente_id',e.id);set('expediente_nombre',e.caratula);set('exp_q','');setExpAbierto(false);}}
+                        style={{padding:'9px 12px',cursor:'pointer',fontSize:12,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}>
+                        <span style={{color:'#6B7280',fontSize:11}}>{e.numero} — </span>{e.caratula}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tipo==='turno'&&(
+              <div>
+                <label style={lS}>Título</label>
+                <input style={iS} placeholder="Tipo de turno..." value={f.titulo} onChange={e=>set('titulo',e.target.value)}/>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                  <div><label style={lS}>Fecha *</label><input type="date" style={iS} value={f.fecha} onChange={e=>set('fecha',e.target.value)}/></div>
+                  <div><label style={lS}>Hora inicio</label><input type="time" style={iS} value={f.hora} onChange={e=>set('hora',e.target.value)}/></div>
+                </div>
+                <label style={lS}>Hora fin</label>
+                <input type="time" style={iS} value={f.hora_fin} onChange={e=>set('hora_fin',e.target.value)}/>
+                <label style={lS}>Link (opcional)</label>
+                <input style={iS} placeholder="https://..." value={f.link} onChange={e=>set('link',e.target.value)}/>
+                <label style={lS}>Notas</label>
+                <textarea style={{...iS,minHeight:60,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)}/>
+              </div>
+            )}
+
+            {tipo==='audiencia'&&(
+              <div>
+                <label style={lS}>Título</label>
+                <input style={iS} placeholder="Tipo de audiencia..." value={f.titulo} onChange={e=>set('titulo',e.target.value)}/>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                  <div><label style={lS}>Fecha *</label><input type="date" style={iS} value={f.fecha} onChange={e=>set('fecha',e.target.value)}/></div>
+                  <div><label style={lS}>Hora</label><input type="time" style={iS} value={f.hora} onChange={e=>set('hora',e.target.value)}/></div>
+                </div>
+                <label style={lS}>Juzgado / Notas</label>
+                <textarea style={{...iS,minHeight:60,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)}/>
+                <label style={lS}>Link (opcional)</label>
+                <input style={iS} placeholder="https://..." value={f.link} onChange={e=>set('link',e.target.value)}/>
+              </div>
+            )}
+
+            {tipo==='vencimiento'&&(
+              <div>
+                <label style={lS}>Motivo</label>
+                <input style={iS} placeholder="Motivo del vencimiento..." value={f.motivo} onChange={e=>set('motivo',e.target.value)}/>
+                <label style={lS}>Fecha de vencimiento *</label>
+                <input type="date" style={iS} value={f.fecha} onChange={e=>set('fecha',e.target.value)}/>
+              </div>
+            )}
+
+            {tipo==='tarea'&&(
+              <div>
+                <label style={lS}>Descripción *</label>
+                <textarea style={{...iS,minHeight:60,resize:'vertical'}} placeholder="Descripción de la tarea..." value={f.descripcion} onChange={e=>set('descripcion',e.target.value)}/>
+                <label style={lS}>Responsable</label>
+                <select style={iS} value={f.responsable} onChange={e=>set('responsable',e.target.value)}>
+                  <option value="">Sin asignar</option>
+                  {ABOGADAS.map(a=><option key={a} value={a}>{a}</option>)}
+                </select>
+                <label style={lS}>Deadline</label>
+                <input type="date" style={iS} value={f.deadline} onChange={e=>set('deadline',e.target.value)}/>
+              </div>
+            )}
+
+            {tipo==='personal'&&(
+              <div>
+                <label style={lS}>Título *</label>
+                <input style={iS} placeholder="Ej: Reunión, consulta médica..." value={f.titulo} onChange={e=>set('titulo',e.target.value)} autoFocus/>
+                <label style={lS}>Descripción</label>
+                <textarea style={{...iS,minHeight:60,resize:'vertical'}} value={f.descripcion} onChange={e=>set('descripcion',e.target.value)}/>
+                <label style={lS}>Fecha *</label>
+                <input type="date" style={iS} value={f.fecha} onChange={e=>set('fecha',e.target.value)}/>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                  <div><label style={lS}>Hora inicio</label><input type="time" style={iS} value={f.hora_inicio} onChange={e=>set('hora_inicio',e.target.value)}/></div>
+                  <div><label style={lS}>Hora fin</label><input type="time" style={iS} value={f.hora_fin} onChange={e=>set('hora_fin',e.target.value)}/></div>
+                </div>
+              </div>
+            )}
+
+            <div style={{display:'flex',gap:8,marginTop:8}}>
+              <button onClick={guardar}
+                style={{...btnPrimary,background:tipoInfo?tipoInfo[3]:'#2B6CB0',borderColor:tipoInfo?tipoInfo[3]:'#2B6CB0'}}>
+                Guardar
+              </button>
+              <button onClick={onCerrar}
+                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 function FormPersonal({ fechaPres, eventoEdit, onGuardar, onCancelar }) {
   const [f, setF] = useState({
