@@ -764,7 +764,7 @@ function Dashboard({ expedientes, consultas, tareas, notas, perfil, setVista, se
   const honConRecordatorio=(honorarios||[]).filter(h=>h.fecha_limite_pago&&h.fecha_limite_pago<=hoyMas3&&h.estado!=='pagado');
   return (
     <div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
+      <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(4,1fr)',gap:12,marginBottom:22}}>
         {[['📁','Expedientes activos',activos,null,'expedientes'],['⚠️','Vencimientos esta semana',vencSemana.length,vencSemana.length>0?'#C53030':null,'agenda-vencimientos'],['✅','Tareas pendientes',tareasPend,null,'tareas'],['💬','Consultas este mes',consMes,null,'consultas']].map(([emoji,l,v,col,dest])=>(
           <div key={l} onClick={()=>setVista(dest)}
             onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';e.currentTarget.style.borderColor='#DDDCDA';}}
