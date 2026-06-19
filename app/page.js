@@ -5078,11 +5078,11 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
         return (
           <Card>
             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
-              {DIAS_SEM_AG.map(d=><div key={d} style={{textAlign:'center',fontSize:11,fontWeight:600,color:'#8a8a8a',padding:'4px 0'}}>{d}</div>)}
+              {DIAS_SEM_AG.map(d=><div key={d} style={{textAlign:'center',fontSize:isMobile?9:11,fontWeight:600,color:'#8a8a8a',padding:'4px 0'}}>{isMobile?d[0]:d}</div>)}
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:isMobile?1:2}}>
               {celdas.map((d,i)=>{
-                if(!d) return <div key={`b${i}`} style={{minHeight:90}}/>;
+                if(!d) return <div key={`b${i}`} style={{minHeight:isMobile?48:90}}/>;
                 const fs=`${ano}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const evs=eventosDelDia(fs);
                 const esHoy=fs===HOY_LOCAL;
@@ -5091,16 +5091,29 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
                     onDragOver={e=>{e.preventDefault();if(dragEv)setDragOverDate(fs);}}
                     onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget))setDragOverDate(null);}}
                     onDrop={e=>{e.preventDefault();e.stopPropagation();const ev=dragEv;setDragEv(null);setDragOverDate(null);reprogramarEv(ev,fs);}}
-                    style={{minHeight:90,borderRadius:8,padding:'5px 4px',
+                    style={{minHeight:isMobile?48:90,borderRadius:8,padding:isMobile?'4px 2px':'5px 4px',
                       cursor:dragEv?(dragOverDate===fs?'copy':'default'):'pointer',
                       background:dragOverDate===fs?'#DBEAFE':esHoy?'#EBF2FA':'#F7F6F3',
                       border:dragOverDate===fs?'2px dashed #3B82F6':esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent',
                       transition:'background 0.1s,border 0.1s'}}
                     onMouseEnter={e=>{if(!esHoy&&!dragEv)e.currentTarget.style.background='#F0EEE8';}}
                     onMouseLeave={e=>{if(!esHoy&&!dragEv)e.currentTarget.style.background='#F7F6F3';}}>
-                    <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:3}}>{d}</div>
-                    {evs.slice(0,3).map((ev,i)=>renderChip(ev,i))}
-                    {evs.length>3&&<div style={{fontSize:10,color:'#8a8a8a',paddingLeft:2}}>+{evs.length-3} más</div>}
+                    <div style={{fontSize:isMobile?10:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:isMobile?2:3,textAlign:isMobile?'center':'left'}}>{d}</div>
+                    {isMobile ? (
+                      evs.length>0&&(
+                        <div style={{display:'flex',flexWrap:'wrap',gap:2,justifyContent:'center'}}>
+                          {evs.slice(0,4).map((ev,idx)=>(
+                            <div key={idx} style={{width:6,height:6,borderRadius:'50%',background:CAT_COLORS[ev._cat]||'#888',flexShrink:0}}/>
+                          ))}
+                          {evs.length>4&&<div style={{fontSize:8,color:'#8a8a8a',width:'100%',textAlign:'center',lineHeight:1.4}}>+{evs.length-4}</div>}
+                        </div>
+                      )
+                    ) : (
+                      <>
+                        {evs.slice(0,3).map((ev,i)=>renderChip(ev,i))}
+                        {evs.length>3&&<div style={{fontSize:10,color:'#8a8a8a',paddingLeft:2}}>+{evs.length-3} más</div>}
+                      </>
+                    )}
                   </div>
                 );
               })}
