@@ -6485,3 +6485,258 @@ function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asu
     </div>
   );
 }
+
+const CHIPS_DUR = [1, 5, 10, 15, 30, 45, 60];
+
+function Llamadas({ perfil, clientes }) {
+  const [llamadas, setLlamadas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [clienteQ, setClienteQ] = useState('');
+  const [clienteId, setClienteId] = useState('');
+  const [clienteNombre, setClienteNombre] = useState('');
+  const [clienteAbierto, setClienteAbierto] = useState(false);
+  const [duracionMin, setDuracionMin] = useState(null);
+  const [duracionLibre, setDuracionLibre] = useState('');
+  const [comentario, setComentario] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [toast, setToast] = useState('');
+  const [editandoId, setEditandoId] = useState(null);
+  const [editDuracion, setEditDuracion] = useState(null);
+  const [editDurLibre, setEditDurLibre] = useState('');
+  const [editComentario, setEditComentario] = useState('');
+
+  async function cargar() {
+    setCargando(true);
+    const { data } = await supabase.from('llamadas')
+      .select('*, clientes(apellido, nombre_pila, nombre)')
+      .eq('estudio_id', '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b')
+      .order('fecha', { ascending: false });
+    setLlamadas(data || []);
+    setCargando(false);
+  }
+
+  useEffect(() => { cargar(); }, []);
+
+  const sugsCliente = !clienteId && clienteQ
+    ? (clientes || []).filter(cl => (nombreCompleto(cl) || '').toLowerCase().includes(clienteQ.toLowerCase())).slice(0, 8)
+    : [];
+
+  function seleccionarCliente(cl) {
+    setClienteId(cl.id);
+    setClienteNombre(nombreCompleto(cl));
+    setClienteQ('');
+    setClienteAbierto(false);
+  }
+
+  function limpiarCliente() {
+    setClienteId('');
+    setClienteNombre('');
+    setClienteQ('');
+  }
+
+  function mostrarToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }
+
+  function duracionFinal() {
+    if (duracionMin !== null) return duracionMin;
+    const n = parseInt(duracionLibre);
+    return isNaN(n) ? null : n;
+  }
+
+  async function guardar() {
+    if (!clienteId) { alert('Seleccioná un cliente'); return; }
+    if (!perfil) return;
+    setGuardando(true);
+    await supabase.from('llamadas').insert({
+      estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b',
+      cliente_id: clienteId,
+      usuario_id: perfil.id,
+      duracion_minutos: duracionFinal(),
+      comentario: comentario.trim() || null,
+    });
+    setGuardando(false);
+    mostrarToast(`Llamada con ${clienteNombre} registrada ✓`);
+    limpiarCliente();
+    setDuracionMin(null);
+    setDuracionLibre('');
+    setComentario('');
+    cargar();
+  }
+
+  async function guardarEdicion(id) {
+    const dur = editDuracion !== null ? editDuracion : (parseInt(editDurLibre) || null);
+    await supabase.from('llamadas').update({
+      duracion_minutos: dur,
+      comentario: editComentario.trim() || null,
+    }).eq('id', id);
+    setEditandoId(null);
+    cargar();
+  }
+
+  const contadorPorClienteDia = {};
+  llamadas.forEach(l => {
+    const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
+    const key = `${l.cliente_id}-${dia}`;
+    contadorPorClienteDia[key] = (contadorPorClienteDia[key] || 0) + 1;
+  });
+
+  function fmtFechaLlamada(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return `${d.getDate()} ${meses[d.getMonth()]}`;
+  }
+
+  function fmtHoraLlamada(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function nombreClienteLlamada(l) {
+    if (l.clientes) return nombreCompleto(l.clientes) || l.clientes.nombre || '—';
+    return '—';
+  }
+
+  return (
+    <div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',fontSize:14,fontWeight:500,zIndex:9999,boxShadow:'0 4px 20px rgba(0,0,0,0.2)',pointerEvents:'none',whiteSpace:'nowrap'}}>
+          {toast}
+        </div>
+      )}
+
+      <Card title="📞 Registrar llamada">
+        {clienteId ? (
+          <div style={{display:'flex',alignItems:'center',gap:10,background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',marginBottom:12}}>
+            <span style={{fontSize:18,color:'#27500A',flexShrink:0}}>✓</span>
+            <div style={{flex:1,fontSize:13,fontWeight:600,color:'#27500A'}}>{clienteNombre}</div>
+            <button onClick={limpiarCliente}
+              style={{background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:4,flexShrink:0}}>×</button>
+          </div>
+        ) : (
+          <div style={{position:'relative',marginBottom:12}}>
+            <input
+              style={{...inputStyle,marginBottom:0}}
+              placeholder="Buscar cliente..."
+              value={clienteQ}
+              onChange={ev=>{setClienteQ(ev.target.value);setClienteAbierto(true);}}
+              onFocus={()=>setClienteAbierto(true)}
+              onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
+            />
+            {clienteAbierto && clienteQ && (
+              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:240,overflowY:'auto',marginTop:2}}>
+                {sugsCliente.map(cl=>(
+                  <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
+                    style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
+                    onMouseLeave={e=>e.currentTarget.style.background=''}>
+                    <span style={{fontWeight:500}}>{nombreCompleto(cl)}</span>
+                    {cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
+                    {cl.telefono&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>· {cl.telefono}</span>}
+                  </div>
+                ))}
+                {sugsCliente.length===0 && <div style={{padding:'9px 12px',fontSize:13,color:'#8a8a8a'}}>Sin resultados</div>}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{marginBottom:10}}>
+          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+            {CHIPS_DUR.map(m=>(
+              <button key={m} type="button"
+                onClick={()=>{setDuracionMin(duracionMin===m?null:m);setDuracionLibre('');}}
+                style={{padding:'5px 11px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                  border:duracionMin===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
+                  background:duracionMin===m?'#FBEAF0':'#fff',
+                  color:duracionMin===m?'#9B4F6A':'#8a8a8a'}}>
+                {m===60?'1h':`${m}m`}
+              </button>
+            ))}
+            <input type="number" min="1" placeholder="otro (min)"
+              value={duracionLibre}
+              onChange={ev=>{setDuracionLibre(ev.target.value);setDuracionMin(null);}}
+              style={{padding:'5px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:96,outline:'none'}} />
+          </div>
+        </div>
+
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Comentario (opcional)</div>
+          <input style={{...inputStyle,marginBottom:0}} placeholder="Anotá lo que quieras..."
+            value={comentario} onChange={e=>setComentario(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter'&&clienteId)guardar();}} />
+        </div>
+
+        <button onClick={guardar} disabled={!clienteId||guardando}
+          style={{...btnPrimary,opacity:(!clienteId||guardando)?0.5:1,cursor:(!clienteId||guardando)?'default':'pointer'}}>
+          {guardando?'Guardando...':'Registrar llamada'}
+        </button>
+      </Card>
+
+      <Card title="Historial de llamadas">
+        {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:10}}>Cargando...</div>}
+        {!cargando && llamadas.length===0 && (
+          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin llamadas registradas todavía.</div>
+        )}
+        {!cargando && llamadas.map(l=>{
+          const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
+          const key = `${l.cliente_id}-${dia}`;
+          const count = contadorPorClienteDia[key] || 1;
+          const esEditando = editandoId===l.id;
+          const nc = nombreClienteLlamada(l);
+          return (
+            <div key={l.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+              {esEditando ? (
+                <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:440}}>
+                  <div style={{fontSize:12,color:'#4a4a4a',marginBottom:2,fontWeight:500}}>{nc}</div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                    {CHIPS_DUR.map(m=>(
+                      <button key={m} type="button"
+                        onClick={()=>{setEditDuracion(editDuracion===m?null:m);setEditDurLibre('');}}
+                        style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                          border:editDuracion===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
+                          background:editDuracion===m?'#FBEAF0':'#fff',
+                          color:editDuracion===m?'#9B4F6A':'#8a8a8a'}}>
+                        {m===60?'1h':`${m}m`}
+                      </button>
+                    ))}
+                    <input type="number" min="1" placeholder="otro (min)" value={editDurLibre}
+                      onChange={ev=>{setEditDurLibre(ev.target.value);setEditDuracion(null);}}
+                      style={{padding:'4px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:90,outline:'none'}} />
+                  </div>
+                  <input style={{...inputStyle,marginBottom:0}} placeholder="Comentario..."
+                    value={editComentario} onChange={e=>setEditComentario(e.target.value)} />
+                  <div style={{display:'flex',gap:8}}>
+                    <button onClick={()=>guardarEdicion(l.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                    <button onClick={()=>setEditandoId(null)}
+                      style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer'}}
+                  onClick={()=>{setEditandoId(l.id);setEditDuracion(l.duracion_minutos||null);setEditDurLibre('');setEditComentario(l.comentario||'');}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2,flexWrap:'wrap'}}>
+                      <span style={{fontSize:13,fontWeight:500}}>{nc}</span>
+                      {count>1&&<span style={{background:'#FBEAF0',color:'#9B4F6A',borderRadius:10,padding:'1px 8px',fontSize:11,fontWeight:600}}>×{count}</span>}
+                      {l.duracion_minutos&&<Badge bg="#EEEDFE" color="#3C3489">{l.duracion_minutos===60?'1h':`${l.duracion_minutos}m`}</Badge>}
+                    </div>
+                    <div style={{fontSize:11,color:'#8a8a8a',marginBottom:l.comentario?3:0}}>
+                      {fmtFechaLlamada(l.fecha)} · {fmtHoraLlamada(l.fecha)}
+                    </div>
+                    {l.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic'}}>{l.comentario}</div>}
+                  </div>
+                  <span style={{fontSize:11,color:'#c9c9c4',flexShrink:0,marginTop:2}}>editar</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
