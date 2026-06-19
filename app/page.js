@@ -4607,6 +4607,8 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   const [panelEv, setPanelEv] = useState(null);
   const [modalNuevo, setModalNuevo] = useState(null);
   const [nuevoFecha, setNuevoFecha] = useState(HOY_LOCAL);
+  const [dragEv, setDragEv] = useState(null);
+  const [dragOverDate, setDragOverDate] = useState(null);
 
   useEffect(()=>{
     if(perfil?.id) cargar();
@@ -4676,11 +4678,16 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     const apellido=showApellido?(expVinc?.caratula
       ?expVinc.caratula.trim().split(/[\s,]/)[0]
       :cliVinc?.apellido||(cliVinc?nombreCompleto(cliVinc).trim().split(/[\s,]/)[0]:null)||null):null;
+    const isDragging=dragEv&&dragEv._cat===ev._cat&&dragEv.id===ev.id;
     return (
       <div key={`${ev._cat}-${ev.id}-${idx}`}
+        draggable
+        onDragStart={e=>{e.stopPropagation();e.dataTransfer.effectAllowed='move';setDragEv(ev);}}
+        onDragEnd={()=>{setDragEv(null);setDragOverDate(null);}}
         onClick={e=>{e.stopPropagation();setPanelEv(ev);}}
         title={chipLabel(ev)}
-        style={{fontSize:11,background:bg,color:'#fff',borderRadius:4,padding:'4px 6px',marginBottom:3,cursor:'pointer',minHeight:28}}>
+        style={{fontSize:11,background:bg,color:'#fff',borderRadius:4,padding:'4px 6px',marginBottom:3,
+          cursor:isDragging?'grabbing':'grab',minHeight:28,opacity:isDragging?0.4:1,transition:'opacity 0.1s',userSelect:'none'}}>
         <div style={{lineHeight:'1.3',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:apellido?1:2,WebkitBoxOrient:'vertical'}}>{chipLabel(ev)}</div>
         {apellido&&<div style={{fontSize:10,fontStyle:'italic',opacity:0.8,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',marginTop:1}}>{apellido}</div>}
       </div>
@@ -4749,6 +4756,22 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     cargar();
   }
 
+  async function reprogramarEv(ev,nuevaFecha) {
+    if(!ev) return;
+    const fechaOrig=ev.fecha||ev.proximo_vencimiento||ev.deadline||'';
+    if(nuevaFecha===fechaOrig) return;
+    let datos={},tabla='';
+    if(ev._cat==='audiencias'){datos={fecha:nuevaFecha};tabla='audiencias';}
+    else if(ev._cat==='turnos'){datos={fecha:nuevaFecha};tabla='turnos';}
+    else if(ev._cat==='tareas'){datos={deadline:nuevaFecha};tabla='tareas';}
+    else if(ev._cat==='personal'){datos={fecha:nuevaFecha};tabla='eventos_personales';}
+    else if(ev._cat==='vencimientos'){datos={proximo_vencimiento:nuevaFecha};tabla='expedientes';}
+    else return;
+    const {error}=await supabase.from(tabla).update(datos).eq('id',ev.id);
+    if(error){alert('Error al reprogramar el evento. Por favor, intentá nuevamente.');return;}
+    cargar();
+  }
+
   function irDia(fs) { setNavDate(new Date(fs+'T00:00:00')); setVistaAg('dia'); }
 
   function getScheduleEvs() {
@@ -4814,11 +4837,17 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
                 const evs=eventosDelDia(fs);
                 const esHoy=fs===HOY_LOCAL;
                 return (
-                  <div key={d} onClick={()=>irDia(fs)}
-                    style={{minHeight:90,borderRadius:8,padding:'5px 4px',cursor:'pointer',
-                      background:esHoy?'#EBF2FA':'#F7F6F3',border:esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent'}}
-                    onMouseEnter={e=>{if(!esHoy)e.currentTarget.style.background='#F0EEE8';}}
-                    onMouseLeave={e=>{if(!esHoy)e.currentTarget.style.background='#F7F6F3';}}>
+                  <div key={d} onClick={()=>{if(!dragEv)irDia(fs);}}
+                    onDragOver={e=>{e.preventDefault();if(dragEv)setDragOverDate(fs);}}
+                    onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget))setDragOverDate(null);}}
+                    onDrop={e=>{e.preventDefault();e.stopPropagation();const ev=dragEv;setDragEv(null);setDragOverDate(null);reprogramarEv(ev,fs);}}
+                    style={{minHeight:90,borderRadius:8,padding:'5px 4px',
+                      cursor:dragEv?(dragOverDate===fs?'copy':'default'):'pointer',
+                      background:dragOverDate===fs?'#DBEAFE':esHoy?'#EBF2FA':'#F7F6F3',
+                      border:dragOverDate===fs?'2px dashed #3B82F6':esHoy?'1.5px solid #2B6CB0':'1.5px solid transparent',
+                      transition:'background 0.1s,border 0.1s'}}
+                    onMouseEnter={e=>{if(!esHoy&&!dragEv)e.currentTarget.style.background='#F0EEE8';}}
+                    onMouseLeave={e=>{if(!esHoy&&!dragEv)e.currentTarget.style.background='#F7F6F3';}}>
                     <div style={{fontSize:12,fontWeight:esHoy?700:400,color:esHoy?'#2B6CB0':'#4a4a4a',marginBottom:3}}>{d}</div>
                     {evs.slice(0,3).map((ev,i)=>renderChip(ev,i))}
                     {evs.length>3&&<div style={{fontSize:10,color:'#8a8a8a',paddingLeft:2}}>+{evs.length-3} más</div>}
