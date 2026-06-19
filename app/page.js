@@ -2671,16 +2671,6 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
           style={{marginBottom:10,borderRadius:10,background:'#fff',border:'1px solid #EBEBEA',
             borderLeft:`4px solid ${bColor}`,cursor:'pointer',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
           <div style={{display:'flex',alignItems:'center',padding:'12px 10px 12px 14px',gap:10}}>
-            <button onClick={e=>{e.stopPropagation();cambiarEstado(t,done?'pendiente':'terminado');}}
-              title={done?'Marcar pendiente':'Marcar terminado'}
-              style={{width:44,height:44,borderRadius:'50%',flexShrink:0,
-                border:`2px solid ${done?'#6BAE75':'#DDDCDA'}`,
-                background:done?'#6BAE75':'transparent',
-                color:'#fff',cursor:'pointer',
-                display:'flex',alignItems:'center',justifyContent:'center',
-                fontSize:20,fontWeight:900}}>
-              {done?'✓':''}
-            </button>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:14,fontWeight:600,
                 color:done?'#8a8a8a':'#1a1a1a',
@@ -2693,12 +2683,6 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
                 {(t.responsable||'').split(',').map(s=>s.trim()).filter(Boolean).map(r=>(
                   <Badge key={r} bg={socioColor(r).bg} color={socioColor(r).color}>{r}</Badge>
                 ))}
-                {t.estado!=='pendiente'&&(
-                  <span style={{fontSize:11,padding:'2px 8px',borderRadius:10,
-                    background:ESTADO_SOLID[t.estado]||'#ccc',color:'#fff',fontWeight:600}}>
-                    {t.estado}
-                  </span>
-                )}
               </div>
             </div>
             <button onClick={e=>{e.stopPropagation();eliminarTarea(t);}}
@@ -2709,8 +2693,24 @@ function Tareas({ tareas, recargar, expedientes, clientes, perfil, setVista, set
               🗑️
             </button>
           </div>
+          <div onClick={e=>e.stopPropagation()}
+            style={{display:'flex',gap:6,padding:'0 14px 12px 14px'}}>
+            {ESTADOS_TAREA.map(est=>{
+              const active=normEstado(t.estado)===est;
+              const col={pendiente:'#E09A3A','en proceso':'#5B8FD4',terminado:'#6BAE75'}[est]||'#ccc';
+              return (
+                <button key={est} onClick={()=>cambiarEstado(t,est)}
+                  style={{flex:1,padding:'5px 4px',borderRadius:8,fontSize:11,fontWeight:600,
+                    cursor:'pointer',border:active?`1.5px solid ${col}`:'1.5px solid #E0E0E0',
+                    background:active?col:'#fff',color:active?'#fff':'#8a8a8a',fontFamily:'system-ui',
+                    textTransform:'capitalize',transition:'background 0.1s'}}>
+                  {est}
+                </button>
+              );
+            })}
+          </div>
           {(expVinc||cliVinc||t.comentario)&&(
-            <div style={{padding:'0 14px 10px 70px',fontSize:12,color:'#6B7280'}}>
+            <div style={{padding:'0 14px 10px 14px',fontSize:12,color:'#6B7280'}}>
               {expVinc&&<div style={{fontStyle:'italic',marginBottom:2}}>📁 {expVinc.caratula}</div>}
               {cliVinc&&<div style={{fontStyle:'italic',marginBottom:2}}>👤 {nombreCompleto(cliVinc)}</div>}
               {t.comentario&&<div style={{whiteSpace:'pre-wrap',color:'#666'}}>{t.comentario}</div>}
