@@ -1853,24 +1853,37 @@ function Consultas({ consultas, recargar, setVista }) {
   const [q, setQ] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const mes = HOY.substring(0,7);
   const mesA = consultas.filter(c=>c.fecha&&c.fecha.startsWith(mes));
   const lista = consultas.filter(c=>!q||(c.cliente||'').toLowerCase().includes(q.toLowerCase())||(c.motivo||'').toLowerCase().includes(q.toLowerCase()));
+  const editandoConsulta = editandoId ? lista.find(c=>c.id===editandoId)||null : null;
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
+  function openEdit(c) {
+    setEditandoId(c.id);
+    setEditForm({cliente:c.cliente,tipo:c.tipo,fecha:c.fecha,abogada:c.abogada,motivo:c.motivo,comentario:c.comentario||''});
+  }
 
   async function eliminarConsulta(c) {
     if (!confirm(`¿Eliminar la consulta de ${c.cliente}?`)) return;
     await supabase.from('consultas').delete().eq('id', c.id);
     recargar();
   }
-  async function guardarEdicion(c) {
-    await supabase.from('consultas').update({ cliente: editForm.cliente, tipo: editForm.tipo, fecha: editForm.fecha, abogada: editForm.abogada, motivo: editForm.motivo, comentario: editForm.comentario }).eq('id', c.id);
+  async function guardarEdicion() {
+    await supabase.from('consultas').update({ cliente: editForm.cliente, tipo: editForm.tipo, fecha: editForm.fecha, abogada: editForm.abogada, motivo: editForm.motivo, comentario: editForm.comentario }).eq('id', editandoId);
     setEditandoId(null);
     recargar();
   }
 
   return (
     <div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
+      <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(4,1fr)',gap:10,marginBottom:20}}>
         {[['💬','Consultas este mes',mesA.length],['✨','Primeras',mesA.filter(c=>c.tipo==='primera').length],['🔄','Otras consultas',mesA.filter(c=>c.tipo==='seguimiento').length],['👤','Clientes únicos',new Set(mesA.map(c=>c.cliente)).size]].map(([emoji,l,v])=>(
           <div key={l} style={{background:'#fff',borderRadius:14,padding:'18px 20px',border:'1px solid #EBEBEA',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'}}>
             <span style={{fontSize:24,display:'block',marginBottom:6}}>{emoji}</span>
@@ -1887,6 +1900,43 @@ function Consultas({ consultas, recargar, setVista }) {
         <input style={inputStyle} placeholder="Buscar cliente o motivo..." value={q} onChange={e=>setQ(e.target.value)} />
         {lista.length ? lista.map(c=>{
           const esEditando = editandoId===c.id;
+
+          if (isMobile) {
+            return (
+              <div key={c.id} onClick={()=>openEdit(c)}
+                style={{marginBottom:10,borderRadius:10,background:'#fff',border:'1px solid #EBEBEA',
+                  cursor:'pointer',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',overflow:'hidden'}}>
+                <div style={{padding:'12px 14px'}}>
+                  <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:5}}>
+                    <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',flex:1,minWidth:0}}>
+                      <span style={{fontSize:14,fontWeight:600,color:'#1a1a1a'}}>{c.cliente}</span>
+                      <Badge bg={c.tipo==='primera'?'#FAEEDA':'#EAF3DE'} color={c.tipo==='primera'?'#633806':'#27500A'}>
+                        {c.tipo==='primera'?'Primera':'Otra'}
+                      </Badge>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:2,flexShrink:0,marginLeft:8}}>
+                      <span style={{fontSize:11,color:'#8a8a8a',whiteSpace:'nowrap'}}>{formatFecha(c.fecha)}</span>
+                      <button onClick={e=>{e.stopPropagation();eliminarConsulta(c);}}
+                        style={{width:36,height:36,borderRadius:8,background:'none',border:'none',
+                          cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+                          fontSize:15,color:'#c9c9c4',flexShrink:0}}>
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center',marginBottom:5}}>
+                    <Badge bg={socioColor(c.abogada).bg} color={socioColor(c.abogada).color}>{c.abogada}</Badge>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:500,color:'#1a1a1a',marginBottom:c.comentario?4:0,lineHeight:1.3}}>{c.motivo}</div>
+                  {c.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic',lineHeight:1.5,
+                    overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
+                    {c.comentario}
+                  </div>}
+                </div>
+              </div>
+            );
+          }
+
           return <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
             {esEditando ? (
               <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:480}}>
@@ -1911,7 +1961,7 @@ function Consultas({ consultas, recargar, setVista }) {
                 <textarea value={editForm.comentario||''} onChange={ev=>setEditForm({...editForm,comentario:ev.target.value})} placeholder="Paso siguiente (opcional)"
                   style={{padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',resize:'vertical',minHeight:56}} />
                 <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>guardarEdicion(c)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                  <button onClick={()=>guardarEdicion()} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
                   <button onClick={()=>setEditandoId(null)} style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff'}}>Cancelar</button>
                 </div>
               </div>
@@ -1931,7 +1981,7 @@ function Consultas({ consultas, recargar, setVista }) {
                     {c.comentario && <div style={{fontSize:11,color:'#4a4a4a',fontStyle:'italic',lineHeight:1.5}}>{c.comentario}</div>}
                   </div>
                   <div style={{display:'flex',gap:10,flexShrink:0,marginLeft:12}}>
-                    <button onClick={()=>{setEditandoId(c.id);setEditForm({cliente:c.cliente,tipo:c.tipo,fecha:c.fecha,abogada:c.abogada,motivo:c.motivo,comentario:c.comentario||''}); }}
+                    <button onClick={()=>openEdit(c)}
                       style={{fontSize:11,color:'#2B6CB0',background:'none',border:'none',cursor:'pointer'}}>editar</button>
                     <button onClick={()=>eliminarConsulta(c)}
                       style={{fontSize:11,color:'#A32D2D',background:'none',border:'none',cursor:'pointer'}}>eliminar</button>
@@ -1941,6 +1991,50 @@ function Consultas({ consultas, recargar, setVista }) {
             )}
           </div>;
         }) : <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin consultas todavía.</div>}
+
+        {isMobile && editandoId && editandoConsulta && (
+          <div style={{position:'fixed',inset:0,background:'#fff',zIndex:1000,overflowY:'auto'}}>
+            <div style={{minHeight:'100%',padding:'0 16px 40px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                position:'sticky',top:0,background:'#fff',padding:'16px 0 14px',
+                borderBottom:'1px solid #EBEBEA',zIndex:1,marginBottom:20}}>
+                <div style={{fontSize:17,fontWeight:700,color:'#1a1a1a'}}>💬 Editar consulta</div>
+                <button onClick={()=>setEditandoId(null)}
+                  style={{background:'none',border:'none',cursor:'pointer',fontSize:22,color:'#888',lineHeight:1,
+                    minWidth:40,minHeight:40,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+              </div>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Tipo *</label>
+              <div style={{display:'flex',gap:8,marginBottom:14}}>
+                {[['primera','Primera consulta'],['seguimiento','Otras consultas']].map(([v,l])=>(
+                  <button key={v} onClick={()=>setEditForm({...editForm,tipo:v})}
+                    style={{flex:1,padding:'10px 6px',border:editForm.tipo===v?'1px solid #2B6CB0':'1px solid #e2e2e2',borderRadius:8,fontSize:13,fontWeight:500,cursor:'pointer',background:editForm.tipo===v?'#E6F1FB':'#f9f8f5',color:editForm.tipo===v?'#0C447C':'#4a4a4a'}}>{l}</button>
+                ))}
+              </div>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Cliente *</label>
+              <input value={editForm.cliente} onChange={ev=>setEditForm({...editForm,cliente:ev.target.value})} placeholder="Nombre del cliente"
+                style={{...inputStyle,fontSize:15}} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Fecha *</label>
+              <input type="date" value={editForm.fecha} onChange={ev=>setEditForm({...editForm,fecha:ev.target.value})}
+                style={{...inputStyle,fontSize:15}} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Abogada *</label>
+              <select value={editForm.abogada} onChange={ev=>setEditForm({...editForm,abogada:ev.target.value})
+              } style={{...inputStyle,fontSize:15}}>
+                {ABOGADAS.map(a=><option key={a}>{a}</option>)}
+              </select>
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Motivo *</label>
+              <input value={editForm.motivo} onChange={ev=>setEditForm({...editForm,motivo:ev.target.value})} placeholder="Motivo de la consulta"
+                style={{...inputStyle,fontSize:15}} />
+              <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:6}}>Comentario / próximo paso (opcional)</label>
+              <textarea value={editForm.comentario||''} onChange={ev=>setEditForm({...editForm,comentario:ev.target.value})} placeholder="Próximo paso..."
+                style={{...inputStyle,minHeight:80,resize:'vertical',fontSize:14}} />
+              <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:20}}>
+                <button onClick={()=>guardarEdicion()} style={{...btnPrimary,padding:'14px',fontSize:15,textAlign:'center',justifyContent:'center'}}>Guardar cambios</button>
+                <button onClick={()=>setEditandoId(null)}
+                  style={{padding:'14px',borderRadius:8,fontSize:15,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',textAlign:'center'}}>Cancelar</button>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
