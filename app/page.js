@@ -4845,7 +4845,8 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
   const [audiencias, setAudiencias] = useState([]);
   const [turnos, setTurnos] = useState([]);
   const [evPersonales, setEvPersonales] = useState([]);
-  const [vistaAg, setVistaAg] = useState('mes');
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [vistaAg, setVistaAg] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? 'schedule' : 'mes');
   const [navDate, setNavDate] = useState(new Date(HOY_LOCAL+'T00:00:00'));
   const [panelEv, setPanelEv] = useState(null);
   const [modalNuevo, setModalNuevo] = useState(null);
@@ -4857,6 +4858,12 @@ function AgendaUnificada({ expedientes, clientes, tareas, perfil, setVista, setE
     if(perfil?.id) cargar();
   // eslint-disable-next-line
   },[perfil?.id]);
+
+  useEffect(()=>{
+    const fn=()=>setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize',fn);
+    return ()=>window.removeEventListener('resize',fn);
+  },[]);
 
   async function cargar() {
     const [r0,r1,r2] = await Promise.all([
