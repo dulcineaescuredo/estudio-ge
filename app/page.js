@@ -326,6 +326,7 @@ export default function Home() {
             {[
               ['consultas','💬','Consultas'],
               ['tareas','✅','Tareas'],
+              ['llamadas','📞','Llamadas'],
             ].map(([id,emoji,label])=>(
               <button key={id} onClick={()=>{setVista(id);setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
                 style={{display:'flex',alignItems:'center',gap:8,
