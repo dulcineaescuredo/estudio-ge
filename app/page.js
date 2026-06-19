@@ -203,6 +203,12 @@ export default function Home() {
   // eslint-disable-next-line
   }, [perfil?.id]);
 
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth < 768); }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const crearNotificacion = async ({ destinatario_id, mensaje, link = null, contexto = null }) => {
     if (!perfil || destinatario_id === perfil.id) return;
     await supabase.from('notificaciones').insert({
