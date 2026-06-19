@@ -6488,7 +6488,7 @@ function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asu
 
 const CHIPS_DUR = [1, 5, 10, 15, 30, 45, 60];
 
-function Llamadas({ perfil, clientes }) {
+function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
   const [llamadas, setLlamadas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [clienteQ, setClienteQ] = useState('');
@@ -6498,12 +6498,16 @@ function Llamadas({ perfil, clientes }) {
   const [duracionMin, setDuracionMin] = useState(null);
   const [duracionLibre, setDuracionLibre] = useState('');
   const [comentario, setComentario] = useState('');
+  const [registradoPorId, setRegistradoPorId] = useState('');
+  const [filtroRegistrador, setFiltroRegistrador] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [toast, setToast] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [editDuracion, setEditDuracion] = useState(null);
   const [editDurLibre, setEditDurLibre] = useState('');
   const [editComentario, setEditComentario] = useState('');
+
+  useEffect(() => { if (perfil?.id) setRegistradoPorId(perfil.id); }, [perfil?.id]);
 
   async function cargar() {
     setCargando(true);
@@ -6516,6 +6520,9 @@ function Llamadas({ perfil, clientes }) {
   }
 
   useEffect(() => { cargar(); }, []);
+
+  const perfilMap = {};
+  (perfilesEstudio || []).forEach(p => { perfilMap[p.id] = p.nombre; });
 
   const sugsCliente = !clienteId && clienteQ
     ? (clientes || []).filter(cl => (nombreCompleto(cl) || '').toLowerCase().includes(clienteQ.toLowerCase())).slice(0, 8)
@@ -6552,7 +6559,7 @@ function Llamadas({ perfil, clientes }) {
     await supabase.from('llamadas').insert({
       estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b',
       cliente_id: clienteId,
-      usuario_id: perfil.id,
+      usuario_id: registradoPorId || perfil.id,
       duracion_minutos: duracionFinal(),
       comentario: comentario.trim() || null,
     });
@@ -6562,6 +6569,7 @@ function Llamadas({ perfil, clientes }) {
     setDuracionMin(null);
     setDuracionLibre('');
     setComentario('');
+    setRegistradoPorId(perfil.id);
     cargar();
   }
 
@@ -6575,8 +6583,12 @@ function Llamadas({ perfil, clientes }) {
     cargar();
   }
 
+  const llamadasFiltradas = filtroRegistrador
+    ? llamadas.filter(l => l.usuario_id === filtroRegistrador)
+    : llamadas;
+
   const contadorPorClienteDia = {};
-  llamadas.forEach(l => {
+  llamadasFiltradas.forEach(l => {
     const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
     const key = `${l.cliente_id}-${dia}`;
     contadorPorClienteDia[key] = (contadorPorClienteDia[key] || 0) + 1;
@@ -6644,6 +6656,12 @@ function Llamadas({ perfil, clientes }) {
           </div>
         )}
 
+        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Registrado por *</label>
+        <select style={inputStyle} value={registradoPorId} onChange={e=>setRegistradoPorId(e.target.value)}>
+          <option value="">Seleccioná</option>
+          {(perfilesEstudio||[]).map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
+        </select>
+
         <div style={{marginBottom:10}}>
           <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
@@ -6678,16 +6696,33 @@ function Llamadas({ perfil, clientes }) {
       </Card>
 
       <Card title="Historial de llamadas">
+        {perfilesEstudio.length > 0 && (
+          <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:14,flexWrap:'wrap'}}>
+            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>REGISTRADO POR</span>
+            <select value={filtroRegistrador} onChange={e=>setFiltroRegistrador(e.target.value)}
+              style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',background:'#fff',color:'#4a4a4a'}}>
+              <option value="">Todos</option>
+              {perfilesEstudio.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+            {filtroRegistrador && (
+              <button onClick={()=>setFiltroRegistrador('')}
+                style={{padding:'4px 10px',borderRadius:20,fontSize:11,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280',fontFamily:'system-ui'}}>
+                Limpiar ✕
+              </button>
+            )}
+          </div>
+        )}
         {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:10}}>Cargando...</div>}
-        {!cargando && llamadas.length===0 && (
+        {!cargando && llamadasFiltradas.length===0 && (
           <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin llamadas registradas todavía.</div>
         )}
-        {!cargando && llamadas.map(l=>{
+        {!cargando && llamadasFiltradas.map(l=>{
           const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
           const key = `${l.cliente_id}-${dia}`;
           const count = contadorPorClienteDia[key] || 1;
           const esEditando = editandoId===l.id;
           const nc = nombreClienteLlamada(l);
+          const registranteName = perfilMap[l.usuario_id] || '';
           return (
             <div key={l.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
               {esEditando ? (
@@ -6727,6 +6762,7 @@ function Llamadas({ perfil, clientes }) {
                     </div>
                     <div style={{fontSize:11,color:'#8a8a8a',marginBottom:l.comentario?3:0}}>
                       {fmtFechaLlamada(l.fecha)} · {fmtHoraLlamada(l.fecha)}
+                      {registranteName&&<span style={{marginLeft:8}}>· {registranteName}</span>}
                     </div>
                     {l.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic'}}>{l.comentario}</div>}
                   </div>
