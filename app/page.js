@@ -252,20 +252,45 @@ export default function Home() {
     );
   }
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
   return (
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui',background:'#F7F6F3',color:'#1A1A1A',overflow:'hidden'}}>
+
+      {/* ── MOBILE: header fijo superior ── */}
+      {isMobile && (
+        <div style={{position:'fixed',top:0,left:0,right:0,height:52,background:'#9B4F6A',display:'flex',alignItems:'center',padding:'0 4px 0 0',zIndex:60,boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
+          <button onClick={()=>setSidebarAbierta(true)}
+            style={{background:'none',border:'none',color:'#fff',fontSize:20,cursor:'pointer',padding:'4px 12px',lineHeight:1,minHeight:52,flexShrink:0}}>
+            ☰
+          </button>
+          <div style={{width:28,height:28,borderRadius:8,background:'#fff',color:'#9B4F6A',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginRight:8}}>GE</div>
+          <div style={{fontSize:14,fontWeight:700,color:'#fff',flex:1,minWidth:0,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Guazzaroni Escuredo</div>
+          {notifNoLeidas > 0 && (
+            <button onClick={()=>{setVista('notificaciones');setSidebarAbierta(false);}}
+              style={{position:'relative',background:'none',border:'none',color:'#fff',fontSize:18,cursor:'pointer',padding:'4px 12px',lineHeight:1,flexShrink:0,minHeight:52}}>
+              🔔
+              <span style={{position:'absolute',top:6,right:4,background:'#DC2626',color:'#fff',borderRadius:'50%',width:15,height:15,fontSize:9,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>
+                {notifNoLeidas > 9 ? '9+' : notifNoLeidas}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Backdrop (mobile, cuando sidebar está abierto) ── */}
       {sidebarAbierta && isMobile && (
         <div onClick={()=>setSidebarAbierta(false)}
           style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:40}} />
       )}
-      {!sidebarAbierta && (
+
+      {/* ── DESKTOP: hamburguesa cuando sidebar cerrado ── */}
+      {!sidebarAbierta && !isMobile && (
         <button onClick={()=>setSidebarAbierta(true)}
           style={{position:'fixed',top:12,left:0,zIndex:50,background:'#9B4F6A',color:'#fff',border:'none',borderRadius:'0 8px 8px 0',padding:'8px 12px',fontSize:18,cursor:'pointer',lineHeight:1,minHeight:44}}>
           ☰
         </button>
       )}
+
+      {/* ── Sidebar (desktop: en flujo; mobile: overlay) ── */}
       {sidebarAbierta && (
         <div style={{width:224,minWidth:224,background:'#9B4F6A',display:'flex',flexDirection:'column',
           ...(isMobile ? {position:'fixed',top:0,left:0,height:'100vh',zIndex:50} : {})}}>
@@ -391,7 +416,9 @@ export default function Home() {
           </div>
         </div>
       )}
-      <div style={{flex:1,overflowY:'auto',padding:isMobile?12:24,minWidth:0}}>
+
+      {/* ── Contenido principal ── */}
+      <div style={{flex:1,overflowY:'auto',padding:isMobile?'64px 12px 12px':24,minWidth:0}}>
         {cargandoDatos && <div style={{color:'#8a8a8a',fontSize:13,marginBottom:12}}>Cargando datos...</div>}
         <Contenido
           vista={vista} setVista={setVista}
