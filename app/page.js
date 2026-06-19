@@ -6583,6 +6583,12 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
     cargar();
   }
 
+  async function eliminar(id) {
+    if (!confirm('¿Eliminar esta llamada?')) return;
+    await supabase.from('llamadas').delete().eq('id', id);
+    setLlamadas(prev => prev.filter(l => l.id !== id));
+  }
+
   const llamadasFiltradas = filtroRegistrador
     ? llamadas.filter(l => l.usuario_id === filtroRegistrador)
     : llamadas;
@@ -6611,6 +6617,13 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
     if (l.clientes) return nombreCompleto(l.clientes) || l.clientes.nombre || '—';
     return '—';
   }
+
+  const chipStyle = (active, col) => ({
+    padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+    border:active?`1.5px solid ${col.color}`:'1.5px solid #e2e2e2',
+    background:active?col.bg:'#fff',
+    color:active?col.color:'#8a8a8a',
+  });
 
   return (
     <div>
@@ -6656,11 +6669,16 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
           </div>
         )}
 
-        <label style={{fontSize:12,fontWeight:500,color:'#4a4a4a',display:'block',marginBottom:5}}>Registrado por *</label>
-        <select style={inputStyle} value={registradoPorId} onChange={e=>setRegistradoPorId(e.target.value)}>
-          <option value="">Seleccioná</option>
-          {(perfilesEstudio||[]).map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Registrado por</div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {(perfilesEstudio||[]).map(p=>{
+              const active = registradoPorId===p.id;
+              const col = socioColor(p.nombre);
+              return <button key={p.id} type="button" onClick={()=>setRegistradoPorId(p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
+            })}
+          </div>
+        </div>
 
         <div style={{marginBottom:10}}>
           <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
@@ -6697,19 +6715,20 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
 
       <Card title="Historial de llamadas">
         {perfilesEstudio.length > 0 && (
-          <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:14,flexWrap:'wrap'}}>
-            <span style={{fontSize:11,color:'#6B7280',fontWeight:600,whiteSpace:'nowrap'}}>REGISTRADO POR</span>
-            <select value={filtroRegistrador} onChange={e=>setFiltroRegistrador(e.target.value)}
-              style={{padding:'4px 8px',border:'1px solid #DDDCDA',borderRadius:8,fontSize:12,fontFamily:'system-ui',background:'#fff',color:'#4a4a4a'}}>
-              <option value="">Todos</option>
-              {perfilesEstudio.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
-            </select>
-            {filtroRegistrador && (
-              <button onClick={()=>setFiltroRegistrador('')}
-                style={{padding:'4px 10px',borderRadius:20,fontSize:11,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',color:'#6B7280',fontFamily:'system-ui'}}>
-                Limpiar ✕
-              </button>
-            )}
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
+            <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',marginRight:2,whiteSpace:'nowrap'}}>Registrado por</div>
+            <button type="button" onClick={()=>setFiltroRegistrador('')}
+              style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                border:!filtroRegistrador?'1.5px solid #6B7280':'1.5px solid #e2e2e2',
+                background:!filtroRegistrador?'#F3F4F6':'#fff',
+                color:!filtroRegistrador?'#374151':'#8a8a8a'}}>
+              Todos
+            </button>
+            {perfilesEstudio.map(p=>{
+              const active = filtroRegistrador===p.id;
+              const col = socioColor(p.nombre);
+              return <button key={p.id} type="button" onClick={()=>setFiltroRegistrador(active?'':p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
+            })}
           </div>
         )}
         {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:10}}>Cargando...</div>}
@@ -6752,8 +6771,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
                   </div>
                 </div>
               ) : (
-                <div style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer'}}
-                  onClick={()=>{setEditandoId(l.id);setEditDuracion(l.duracion_minutos||null);setEditDurLibre('');setEditComentario(l.comentario||'');}}>
+                <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2,flexWrap:'wrap'}}>
                       <span style={{fontSize:13,fontWeight:500}}>{nc}</span>
@@ -6766,7 +6784,16 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
                     </div>
                     {l.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic'}}>{l.comentario}</div>}
                   </div>
-                  <span style={{fontSize:11,color:'#c9c9c4',flexShrink:0,marginTop:2}}>editar</span>
+                  <div style={{display:'flex',gap:4,flexShrink:0,marginTop:1}}>
+                    <button
+                      onClick={()=>{setEditandoId(l.id);setEditDuracion(l.duracion_minutos||null);setEditDurLibre('');setEditComentario(l.comentario||'');}}
+                      title="Editar"
+                      style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>✏️</button>
+                    <button
+                      onClick={()=>eliminar(l.id)}
+                      title="Eliminar"
+                      style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>🗑️</button>
+                  </div>
                 </div>
               )}
             </div>
