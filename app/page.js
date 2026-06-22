@@ -7657,6 +7657,16 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
                   {nombrePerfil(e.subido_por)} · {formatFechaCorta(e.created_at)}
                 </div>
               </div>
+              {procesandoIds.has(e.id) ? (
+                <span style={{fontSize:11,color:'#8a8a8a',flexShrink:0,whiteSpace:'nowrap'}}>Procesando...</span>
+              ) : e.texto_extraido !== null ? (
+                <span style={{fontSize:15,color:'#22863a',flexShrink:0,lineHeight:1,cursor:'default'}} title="Texto extraído">✓</span>
+              ) : (
+                <button onClick={()=>extraerTexto(e.id,e.archivo_url)}
+                  style={{fontSize:11,color:'#9B4F6A',background:'none',border:'1px solid #9B4F6A',cursor:'pointer',padding:'3px 8px',flexShrink:0,lineHeight:1.4,borderRadius:5,fontFamily:'system-ui',whiteSpace:'nowrap'}}>
+                  Extraer texto
+                </button>
+              )}
               <button onClick={()=>eliminar(e)}
                 style={{fontSize:13,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0,lineHeight:1}}>
                 🗑️
