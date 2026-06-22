@@ -2994,7 +2994,7 @@ function Clientes({ clientes, setVista, setCliActual, expedientes }) {
                   onClick={()=>{setCliActual(cl);setVista('detalle-cliente');}}>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontWeight:500}}>{nombreCompleto(cl)}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12,color:'#6B7280'}}>{cl.dni||'—'}</td>
-                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{cl.telefono||'—'}</td>
+                  <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED',fontSize:12}}>{cl.telefono?<a href={telHref(cl.telefono)} onClick={e=>e.stopPropagation()} style={{color:'inherit',textDecoration:'none',cursor:'pointer'}}>{cl.telefono}</a>:'—'}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}>{cl.responsable?<Badge bg={socioColor(cl.responsable).bg} color={socioColor(cl.responsable).color}>{cl.responsable}</Badge>:<span style={{fontSize:12,color:'#6B7280'}}>—</span>}</td>
                   <td style={{padding:'12px 10px',borderBottom:'1px solid #F0EFED'}}><Badge bg="#EAF3DE" color="#27500A">{exps.length}</Badge></td>
                 </tr>;
