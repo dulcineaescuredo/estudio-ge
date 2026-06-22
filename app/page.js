@@ -7148,26 +7148,47 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
   );
 }
 
-function GestionContactos({ perfil, contactos, recargar }) {
+function GestionContactos({ perfil, contactos, clientes, recargar }) {
   const [q, setQ] = useState('');
   const [formAbierto, setFormAbierto] = useState(false);
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [rol, setRol] = useState('Cliente');
+  const [rol, setRol] = useState('Abogado');
   const [rolDetalle, setRolDetalle] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [editNombre, setEditNombre] = useState('');
   const [editTelefono, setEditTelefono] = useState('');
-  const [editRol, setEditRol] = useState('Cliente');
+  const [editRol, setEditRol] = useState('Abogado');
   const [editRolDetalle, setEditRolDetalle] = useState('');
+  const [editandoTelId, setEditandoTelId] = useState(null);
+  const [editTelVal, setEditTelVal] = useState('');
   const [toast, setToast] = useState('');
 
   function mostrarToast(msg) { setToast(msg); setTimeout(()=>setToast(''), 3000); }
 
-  const contactosFiltrados = q
-    ? (contactos||[]).filter(c=>(c.nombre||'').toLowerCase().includes(q.toLowerCase())||(c.telefono||'').toLowerCase().includes(q.toLowerCase()))
-    : (contactos||[]);
+  const listaCompleta = [
+    ...(clientes||[]).map(cl => ({
+      _tipo:'cliente', _id:cl.id,
+      _nombre: nombreCompleto(cl)||cl.nombre||'',
+      _telefono: cl.telefono||'',
+      _raw: cl,
+    })),
+    ...(contactos||[]).map(c => ({
+      _tipo:'contacto', _id:c.id,
+      _nombre: c.nombre||'',
+      _telefono: c.telefono||'',
+      _rolLabel: c.rol==='Otro'?(c.rol_detalle||'Otro'):c.rol,
+      _raw: c,
+    })),
+  ].sort((a,b)=>a._nombre.localeCompare(b._nombre,'es',{sensitivity:'base'}));
+
+  const listaFiltrada = q
+    ? listaCompleta.filter(item=>
+        item._nombre.toLowerCase().includes(q.toLowerCase()) ||
+        item._telefono.toLowerCase().includes(q.toLowerCase())
+      )
+    : listaCompleta;
 
   async function guardar() {
     if (!nombre.trim()||!telefono.trim()) { alert('Nombre y teléfono son obligatorios'); return; }
@@ -7182,7 +7203,7 @@ function GestionContactos({ perfil, contactos, recargar }) {
     });
     setGuardando(false);
     setFormAbierto(false);
-    setNombre(''); setTelefono(''); setRol('Cliente'); setRolDetalle('');
+    setNombre(''); setTelefono(''); setRol('Abogado'); setRolDetalle('');
     mostrarToast('Contacto guardado ✓');
     recargar();
   }
@@ -7207,10 +7228,19 @@ function GestionContactos({ perfil, contactos, recargar }) {
     recargar();
   }
 
+  async function guardarTelefonoCliente(clienteId) {
+    if (!editTelVal.trim()) return;
+    await supabase.from('clientes').update({ telefono: editTelVal.trim() }).eq('id', clienteId);
+    setEditandoTelId(null);
+    setEditTelVal('');
+    mostrarToast('Teléfono guardado ✓');
+    recargar();
+  }
+
   function ChipsRol({ activeRol, setActiveRol }) {
     return (
       <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
-        {['Cliente','Abogado','Perito','Otro'].map(r=>{
+        {['Abogado','Perito','Cliente','Otro'].map(r=>{
           const col = rolContactoColor(r);
           const active = activeRol===r;
           return (
@@ -7235,7 +7265,7 @@ function GestionContactos({ perfil, contactos, recargar }) {
       )}
       <Card>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A'}}>👤 Contactos</div>
+          <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A'}}>👤 Clientes y contactos</div>
           <button onClick={()=>setFormAbierto(f=>!f)} style={btnPrimary}>+ Nuevo contacto</button>
         </div>
 
@@ -7253,7 +7283,7 @@ function GestionContactos({ perfil, contactos, recargar }) {
               <button onClick={guardar} disabled={guardando} style={{...btnPrimary,opacity:guardando?0.5:1}}>
                 {guardando?'Guardando...':'Guardar contacto'}
               </button>
-              <button onClick={()=>{setFormAbierto(false);setNombre('');setTelefono('');setRol('Cliente');setRolDetalle('');}}
+              <button onClick={()=>{setFormAbierto(false);setNombre('');setTelefono('');setRol('Abogado');setRolDetalle('');}}
                 style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
                 Cancelar
               </button>
@@ -7261,20 +7291,79 @@ function GestionContactos({ perfil, contactos, recargar }) {
           </div>
         )}
 
-        <input style={{...inputStyle,marginBottom:14}} placeholder="Buscar por nombre o teléfono..." value={q} onChange={e=>setQ(e.target.value)} />
+        <input
+          style={{...inputStyle,marginBottom:14}}
+          placeholder="Buscar por nombre o teléfono..."
+          value={q}
+          onChange={e=>setQ(e.target.value)}
+        />
 
-        {contactosFiltrados.length===0 && (
+        {listaFiltrada.length===0 && (
           <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>
-            {q?'Sin resultados para tu búsqueda.':'No hay contactos todavía. Agregá el primero.'}
+            {q?'Sin resultados para tu búsqueda.':'No hay clientes ni contactos cargados.'}
           </div>
         )}
 
-        {contactosFiltrados.map(c=>{
+        {listaFiltrada.map(item=>{
+          if (item._tipo==='cliente') {
+            const cl = item._raw;
+            const sinTel = !item._telefono;
+            const esEditandoTel = editandoTelId===cl.id;
+            return (
+              <div key={`cli-${cl.id}`} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,borderRadius:6,padding:'2px 0'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='#F7F6F3'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2,flexWrap:'wrap'}}>
+                      <span style={{fontSize:13,fontWeight:500}}>{item._nombre}</span>
+                      <Badge bg={rolContactoColor('Cliente').bg} color={rolContactoColor('Cliente').color}>Cliente</Badge>
+                    </div>
+                    {esEditandoTel ? (
+                      <div style={{display:'flex',gap:6,alignItems:'center',marginTop:4}}>
+                        <input
+                          autoFocus
+                          style={{...inputStyle,marginBottom:0,flex:1}}
+                          placeholder="Teléfono..."
+                          value={editTelVal}
+                          onChange={e=>setEditTelVal(e.target.value)}
+                          onKeyDown={e=>{if(e.key==='Enter')guardarTelefonoCliente(cl.id);if(e.key==='Escape'){setEditandoTelId(null);setEditTelVal('');}}}
+                        />
+                        <button onClick={()=>guardarTelefonoCliente(cl.id)}
+                          style={{...btnPrimary,padding:'6px 12px',fontSize:12,whiteSpace:'nowrap',flexShrink:0}}>Guardar</button>
+                        <button onClick={()=>{setEditandoTelId(null);setEditTelVal('');}}
+                          style={{padding:'6px 10px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',flexShrink:0}}>✕</button>
+                      </div>
+                    ) : sinTel ? (
+                      <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+                        <span style={{fontSize:12,color:'#b0b0b0',fontStyle:'italic'}}>Sin teléfono</span>
+                        <button
+                          onClick={()=>{setEditandoTelId(cl.id);setEditTelVal('');}}
+                          style={{fontSize:11,color:'#9B4F6A',background:'none',border:'none',cursor:'pointer',padding:'1px 4px',fontFamily:'system-ui',fontWeight:600}}>
+                          + Agregar
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={{fontSize:12,color:'#6B7280'}}>{item._telefono}</span>
+                        <button
+                          onClick={()=>{setEditandoTelId(cl.id);setEditTelVal(item._telefono);}}
+                          title="Editar teléfono"
+                          style={{fontSize:12,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'1px 4px',lineHeight:1}}>✏️</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          const c = item._raw;
           const col = rolContactoColor(c.rol);
-          const rolLabel = c.rol==='Otro'?(c.rol_detalle||'Otro'):c.rol;
+          const rolLabel = item._rolLabel;
           const esEditando = editandoId===c.id;
           return (
-            <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div key={`cnt-${c.id}`} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
               {esEditando ? (
                 <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:440}}>
                   <input style={inputStyle} placeholder="Nombre *" value={editNombre} onChange={e=>setEditNombre(e.target.value)} />
@@ -7303,7 +7392,7 @@ function GestionContactos({ perfil, contactos, recargar }) {
                   </div>
                   <div style={{display:'flex',gap:4,flexShrink:0}}>
                     <button
-                      onClick={()=>{setEditandoId(c.id);setEditNombre(c.nombre);setEditTelefono(c.telefono||'');setEditRol(c.rol||'Cliente');setEditRolDetalle(c.rol_detalle||'');}}
+                      onClick={()=>{setEditandoId(c.id);setEditNombre(c.nombre);setEditTelefono(c.telefono||'');setEditRol(c.rol||'Abogado');setEditRolDetalle(c.rol_detalle||'');}}
                       title="Editar"
                       style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>✏️</button>
                     <button onClick={()=>eliminar(c.id)}
