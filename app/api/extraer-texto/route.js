@@ -1,5 +1,11 @@
 export const runtime = 'nodejs';
 
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {
+    constructor() {}
+  };
+}
+
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request) {
