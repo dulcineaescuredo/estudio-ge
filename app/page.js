@@ -391,6 +391,15 @@ export default function Home() {
               </span>
               Notificaciones
             </button>
+            <button onClick={()=>{setVista('pluma');setExpActual(null);if(isMobile)setSidebarAbierta(false);}}
+              style={{display:'flex',alignItems:'center',gap:8,
+                width:vista==='pluma'?'calc(100% - 8px)':'100%',
+                marginLeft:vista==='pluma'?4:0,marginRight:vista==='pluma'?4:0,
+                textAlign:'left',padding:'8px 10px',borderRadius:6,fontSize:15,border:'none',
+                background:vista==='pluma'?'rgba(255,255,255,0.18)':'transparent',
+                color:'#FFFFFF',fontWeight:vista==='pluma'?600:400,cursor:'pointer',marginBottom:1,fontFamily:'system-ui',minHeight:44}}>
+              <span style={{fontSize:16,flexShrink:0}}>✒️</span>Pluma
+            </button>
             {[
               ['honorarios','💰','Honorarios'],
               ['clientes','👥','Clientes'],
