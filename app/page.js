@@ -6995,7 +6995,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
                           onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
                           onMouseLeave={e=>e.currentTarget.style.background=''}>
                           <span style={{fontWeight:500,flex:1}}>{item._nombre}</span>
-                          {item._telefono&&<span style={{fontSize:11,color:'#8a8a8a'}}>{item._telefono}</span>}
+                          {item._telefono&&<a href={telHref(item._telefono)} onClick={e=>e.stopPropagation()} style={{fontSize:11,color:'#8a8a8a',textDecoration:'none',cursor:'pointer'}}>{item._telefono}</a>}
                           {item._dni&&<span style={{fontSize:11,color:'#8a8a8a'}}>DNI {item._dni}</span>}
                           <span style={{background:rc.bg,color:rc.color,borderRadius:10,padding:'2px 8px',fontSize:10,fontWeight:600,whiteSpace:'nowrap',flexShrink:0}}>{item._rol}</span>
                         </div>
