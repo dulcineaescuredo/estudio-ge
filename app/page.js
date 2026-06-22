@@ -105,6 +105,7 @@ function formatFecha(f) {
   const meses = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   return `${parseInt(p[2])} ${meses[parseInt(p[1])]}`;
 }
+function telHref(t) { return 'tel:' + (t||'').replace(/[^0-9+]/g, ''); }
 
 export default function Home() {
   const [session, setSession] = useState(null);
