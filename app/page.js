@@ -7653,15 +7653,70 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
         <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(150px,1fr))',gap:14}}>
           {todasLasCarpetas.map(tipo => {
             const cnt = countCarpeta(tipo);
+            const isEditing = editandoCarpeta === tipo;
+            const isHovered = carpetaHovered === tipo && !isEditing;
             return (
-              <div key={tipo} onClick={()=>setCarpetaActual(tipo)}
-                style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,padding:'24px 14px 18px',
+              <div key={tipo}
+                style={{
+                  position:'relative',
+                  background:'#fff',
+                  border: isEditing ? '1px solid #9B4F6A' : isHovered ? '1px solid #C68AA2' : '1px solid #EBEBEA',
+                  borderRadius:14,padding:'24px 14px 18px',
                   display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-                  cursor:'pointer',boxShadow:'0 1px 3px rgba(0,0,0,0.06)',textAlign:'center',minHeight:120,gap:6}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 12px rgba(155,79,106,0.15)';e.currentTarget.style.borderColor='#C68AA2';}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';e.currentTarget.style.borderColor='#EBEBEA';}}>
+                  cursor: isEditing ? 'default' : 'pointer',
+                  boxShadow: isHovered ? '0 4px 12px rgba(155,79,106,0.15)' : '0 1px 3px rgba(0,0,0,0.06)',
+                  textAlign:'center',minHeight:120,gap:6,
+                }}
+                onClick={() => { if (!isEditing) setCarpetaActual(tipo); }}
+                onMouseEnter={() => setCarpetaHovered(tipo)}
+                onMouseLeave={() => setCarpetaHovered(null)}
+              >
+                <button
+                  onClick={ev=>{ev.stopPropagation();setEditandoCarpeta(tipo);setEditNombreCarpeta(tipo);setRenombraError('');}}
+                  style={{
+                    position:'absolute',top:8,right:8,
+                    background:'none',border:'none',cursor:'pointer',
+                    fontSize:12,padding:'2px 4px',lineHeight:1,color:'#9B4F6A',
+                    opacity: isMobile || isHovered || isEditing ? 1 : 0,
+                    transition:'opacity 0.12s',
+                    pointerEvents: isMobile || isHovered ? 'auto' : 'none',
+                  }}>
+                  ✏️
+                </button>
+
                 <span style={{fontSize:40,lineHeight:1}}>📁</span>
-                <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A',marginTop:6,wordBreak:'break-word'}}>{tipo}</div>
+
+                {isEditing ? (
+                  <>
+                    <input
+                      autoFocus
+                      value={editNombreCarpeta}
+                      onFocus={ev=>ev.target.select()}
+                      onChange={ev=>{setEditNombreCarpeta(ev.target.value);setRenombraError('');}}
+                      onKeyDown={ev=>{
+                        ev.stopPropagation();
+                        if(ev.key==='Enter') confirmarRenombre(tipo);
+                        if(ev.key==='Escape'){setEditandoCarpeta(null);setRenombraError('');}
+                      }}
+                      onClick={ev=>ev.stopPropagation()}
+                      style={{width:'100%',padding:'5px 8px',border:'1px solid #9B4F6A',borderRadius:6,fontSize:13,fontFamily:'system-ui',outline:'none',textAlign:'center',boxSizing:'border-box',marginTop:4}}
+                    />
+                    {renombraError && <div style={{fontSize:10,color:'#C53030',marginTop:2,lineHeight:1.3}}>{renombraError}</div>}
+                    <div style={{display:'flex',gap:4,marginTop:4}}>
+                      <button onClick={ev=>{ev.stopPropagation();confirmarRenombre(tipo);}}
+                        style={{padding:'4px 10px',borderRadius:5,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:600,lineHeight:1}}>
+                        ✓
+                      </button>
+                      <button onClick={ev=>{ev.stopPropagation();setEditandoCarpeta(null);setRenombraError('');}}
+                        style={{padding:'4px 10px',borderRadius:5,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',lineHeight:1}}>
+                        ✕
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A',marginTop:6,wordBreak:'break-word'}}>{tipo}</div>
+                )}
+
                 <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>
                   {cnt === 0 ? 'Vacía' : `${cnt} archivo${cnt === 1 ? '' : 's'}`}
                 </div>
