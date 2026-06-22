@@ -7423,11 +7423,13 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
 function Pluma({ perfil, perfilesEstudio = [] }) {
   const [escritos, setEscritos] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [carpetaActual, setCarpetaActual] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [formTipo, setFormTipo] = useState('Demanda');
   const [formFile, setFormFile] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
+  const [extraCategorias, setExtraCategorias] = useState([]);
+  const [showNuevaCatInput, setShowNuevaCatInput] = useState(false);
+  const [nuevaCatNombre, setNuevaCatNombre] = useState('');
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
@@ -7458,6 +7460,36 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  function iconArchivo(nombre) {
+    const ext = (nombre || '').split('.').pop().toLowerCase();
+    if (ext === 'pdf') return '📄';
+    if (ext === 'doc' || ext === 'docx') return '📝';
+    return '📎';
+  }
+
+  const FIJAS = ['Demanda', 'Contestación'];
+  const tiposEnDatos = [...new Set((escritos || []).map(e => e.tipo).filter(Boolean))];
+  const tiposExtra = tiposEnDatos.filter(t => !FIJAS.includes(t));
+  const todasLasCarpetas = [
+    ...FIJAS,
+    ...tiposExtra,
+    ...extraCategorias.filter(c => !FIJAS.includes(c) && !tiposExtra.includes(c)),
+  ];
+
+  function countCarpeta(tipo) {
+    return escritos.filter(e => e.tipo === tipo).length;
+  }
+
+  function confirmarNuevaCat() {
+    const nombre = nuevaCatNombre.trim();
+    if (!nombre) return;
+    if (!todasLasCarpetas.includes(nombre)) {
+      setExtraCategorias(prev => [...prev, nombre]);
+    }
+    setNuevaCatNombre('');
+    setShowNuevaCatInput(false);
+  }
+
   async function eliminar(e) {
     if (!confirm(`¿Eliminar el ejemplo "${e.archivo_nombre}"?`)) return;
     const marker = '/object/public/escritos-ejemplos/';
@@ -7479,7 +7511,7 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     if (upErr) { alert('Error al subir: ' + JSON.stringify(upErr)); setSubiendo(false); return; }
     const publicUrl = supabase.storage.from('escritos-ejemplos').getPublicUrl(path).data.publicUrl;
     const { error: insErr } = await supabase.from('escritos_ejemplo').insert({
-      tipo: formTipo,
+      tipo: carpetaActual,
       archivo_nombre: formFile.name,
       archivo_url: publicUrl,
       estudio_id: perfil.estudio_id,
@@ -7489,56 +7521,75 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     if (insErr) { alert('Error al guardar: ' + JSON.stringify(insErr)); setSubiendo(false); return; }
     setShowForm(false);
     setFormFile(null);
-    setFormTipo('Demanda');
     setSubiendo(false);
     cargar();
   }
 
-  function tipoColor(tipo) {
-    if (tipo === 'Demanda') return { bg: '#FEF0E6', color: '#9C4221' };
-    if (tipo === 'Contestación') return { bg: '#E6F1FB', color: '#0C447C' };
-    return { bg: '#F1EFE8', color: '#444441' };
-  }
+  const archivosEnCarpeta = carpetaActual ? escritos.filter(e => e.tipo === carpetaActual) : [];
 
-  const lista = filtroTipo === 'todos' ? escritos : escritos.filter(e => e.tipo === filtroTipo);
+  const modalForm = showForm && (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:'#fff',borderRadius:16,padding:28,width:'100%',maxWidth:420,boxShadow:'0 8px 40px rgba(0,0,0,0.18)'}}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:18,color:'#1A1A1A'}}>Subir ejemplo de escrito</div>
 
-  return (
-    <div>
-      <div style={{display:'flex',alignItems:isMobile?'flex-start':'center',justifyContent:'space-between',marginBottom:18,flexWrap:'wrap',gap:10}}>
-        <div>
-          <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>✒️ Pluma</div>
-          <div style={{fontSize:13,color:'#6B7280',marginTop:2}}>Ejemplos de escritos para entrenar al asistente</div>
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Tipo</div>
+        <div style={{background:'#F7F6F3',borderRadius:8,padding:'9px 12px',fontSize:13,color:'#1A1A1A',marginBottom:16,fontFamily:'system-ui',border:'1px solid #DDDCDA'}}>
+          {carpetaActual}
         </div>
-        <button onClick={()=>setShowForm(true)}
-          style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,whiteSpace:'nowrap'}}>
-          + Subir ejemplo
-        </button>
-      </div>
 
-      <div style={{display:'flex',gap:6,marginBottom:16,flexWrap:'wrap'}}>
-        {['todos','Demanda','Contestación','Otro'].map(t => (
-          <button key={t} onClick={()=>setFiltroTipo(t)}
-            style={{padding:'6px 14px',borderRadius:20,fontSize:12,cursor:'pointer',fontFamily:'system-ui',fontWeight:filtroTipo===t?600:400,
-              border:filtroTipo===t?'none':'1px solid #DDDCDA',
-              background:filtroTipo===t?'#9B4F6A':'#fff',
-              color:filtroTipo===t?'#fff':'#444441'}}>
-            {t === 'todos' ? 'Todos' : t}
-          </button>
-        ))}
-      </div>
-
-      <Card>
-        {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:20,textAlign:'center'}}>Cargando...</div>}
-        {!cargando && lista.length === 0 && (
-          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>
-            No hay ejemplos cargados todavía.
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Archivo</div>
+        <input type="file" accept=".pdf,.doc,.docx"
+          onChange={ev=>setFormFile(ev.target.files[0]||null)}
+          style={{width:'100%',marginBottom:16,fontSize:13,fontFamily:'system-ui',boxSizing:'border-box'}} />
+        {formFile && (
+          <div style={{fontSize:12,color:'#6B7280',marginBottom:16,background:'#F7F6F3',borderRadius:6,padding:'6px 10px',wordBreak:'break-all'}}>
+            {iconArchivo(formFile.name)} {formFile.name}
           </div>
         )}
-        {!cargando && lista.map(e => {
-          const col = tipoColor(e.tipo);
-          return (
-            <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid #F0EFED',flexWrap:isMobile?'wrap':'nowrap'}}>
-              <Badge bg={col.bg} color={col.color}>{e.tipo}</Badge>
+
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
+          <button onClick={()=>{setShowForm(false);setFormFile(null);}}
+            style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+            Cancelar
+          </button>
+          <button onClick={subir} disabled={subiendo}
+            style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:subiendo?'default':'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,opacity:subiendo?0.7:1}}>
+            {subiendo ? 'Subiendo...' : 'Guardar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Vista de carpeta ──────────────────────────────────────
+  if (carpetaActual !== null) {
+    return (
+      <div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18,flexWrap:'wrap',gap:10}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <button onClick={()=>{setCarpetaActual(null);setShowForm(false);setFormFile(null);}}
+              style={{background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontFamily:'system-ui',fontWeight:600,padding:'4px 0',display:'flex',alignItems:'center',gap:4}}>
+              ← Volver
+            </button>
+            <div style={{width:1,height:18,background:'#DDDCDA',flexShrink:0}}></div>
+            <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>📁 {carpetaActual}</div>
+          </div>
+          <button onClick={()=>{setFormFile(null);setShowForm(true);}}
+            style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,whiteSpace:'nowrap'}}>
+            + Subir ejemplo
+          </button>
+        </div>
+
+        <Card>
+          {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:20,textAlign:'center'}}>Cargando...</div>}
+          {!cargando && archivosEnCarpeta.length === 0 && (
+            <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>
+              No hay archivos en esta carpeta todavía.
+            </div>
+          )}
+          {!cargando && archivosEnCarpeta.map(e => (
+            <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid #F0EFED'}}>
+              <span style={{fontSize:20,flexShrink:0,lineHeight:1}}>{iconArchivo(e.archivo_nombre)}</span>
               <div style={{flex:1,minWidth:0}}>
                 <a href={e.archivo_url} target="_blank" rel="noopener noreferrer"
                   style={{fontSize:13,color:'#1A1A1A',fontWeight:500,textDecoration:'none',wordBreak:'break-all'}}
@@ -7555,49 +7606,78 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
                 🗑️
               </button>
             </div>
-          );
-        })}
-      </Card>
+          ))}
+        </Card>
 
-      {showForm && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-          <div style={{background:'#fff',borderRadius:16,padding:28,width:'100%',maxWidth:420,boxShadow:'0 8px 40px rgba(0,0,0,0.18)'}}>
-            <div style={{fontSize:16,fontWeight:700,marginBottom:18,color:'#1A1A1A'}}>Subir ejemplo de escrito</div>
+        {modalForm}
+      </div>
+    );
+  }
 
-            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Tipo</div>
-            <div style={{display:'flex',gap:8,marginBottom:16}}>
-              {['Demanda','Contestación','Otro'].map(t => (
-                <button key={t} onClick={()=>setFormTipo(t)}
-                  style={{flex:1,padding:'8px 0',borderRadius:8,fontSize:13,cursor:'pointer',fontFamily:'system-ui',fontWeight:formTipo===t?600:400,
-                    border:formTipo===t?'none':'1px solid #DDDCDA',
-                    background:formTipo===t?'#9B4F6A':'#F7F6F3',
-                    color:formTipo===t?'#fff':'#444441'}}>
-                  {t}
-                </button>
-              ))}
-            </div>
+  // ── Vista principal: grilla de carpetas ──────────────────
+  return (
+    <div>
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>✒️ Pluma</div>
+        <div style={{fontSize:13,color:'#6B7280',marginTop:2}}>Ejemplos de escritos para entrenar al asistente</div>
+      </div>
 
-            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Archivo</div>
-            <input type="file" accept=".pdf,.doc,.docx"
-              onChange={ev=>setFormFile(ev.target.files[0]||null)}
-              style={{width:'100%',marginBottom:16,fontSize:13,fontFamily:'system-ui',boxSizing:'border-box'}} />
-            {formFile && (
-              <div style={{fontSize:12,color:'#6B7280',marginBottom:16,background:'#F7F6F3',borderRadius:6,padding:'6px 10px',wordBreak:'break-all'}}>
-                📄 {formFile.name}
+      {cargando ? (
+        <div style={{color:'#8a8a8a',fontSize:13,padding:20}}>Cargando...</div>
+      ) : (
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(150px,1fr))',gap:14}}>
+          {todasLasCarpetas.map(tipo => {
+            const cnt = countCarpeta(tipo);
+            return (
+              <div key={tipo} onClick={()=>setCarpetaActual(tipo)}
+                style={{background:'#fff',border:'1px solid #EBEBEA',borderRadius:14,padding:'24px 14px 18px',
+                  display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                  cursor:'pointer',boxShadow:'0 1px 3px rgba(0,0,0,0.06)',textAlign:'center',minHeight:120,gap:6}}
+                onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 12px rgba(155,79,106,0.15)';e.currentTarget.style.borderColor='#C68AA2';}}
+                onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';e.currentTarget.style.borderColor='#EBEBEA';}}>
+                <span style={{fontSize:40,lineHeight:1}}>📁</span>
+                <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A',marginTop:6,wordBreak:'break-word'}}>{tipo}</div>
+                <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>
+                  {cnt === 0 ? 'Vacía' : `${cnt} archivo${cnt === 1 ? '' : 's'}`}
+                </div>
               </div>
-            )}
+            );
+          })}
 
-            <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
-              <button onClick={()=>{setShowForm(false);setFormFile(null);setFormTipo('Demanda');}}
-                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
-                Cancelar
-              </button>
-              <button onClick={subir} disabled={subiendo}
-                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:subiendo?'default':'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,opacity:subiendo?0.7:1}}>
-                {subiendo ? 'Subiendo...' : 'Guardar'}
-              </button>
+          {showNuevaCatInput ? (
+            <div style={{background:'#fff',border:'1px solid #9B4F6A',borderRadius:14,padding:'18px 12px',
+              display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+              boxShadow:'0 1px 3px rgba(0,0,0,0.06)',textAlign:'center',minHeight:120,gap:8}}>
+              <input
+                autoFocus
+                value={nuevaCatNombre}
+                onChange={e=>setNuevaCatNombre(e.target.value)}
+                onKeyDown={e=>{if(e.key==='Enter')confirmarNuevaCat();if(e.key==='Escape'){setShowNuevaCatInput(false);setNuevaCatNombre('');}}}
+                placeholder="Nombre..."
+                style={{width:'100%',padding:'7px 10px',border:'1px solid #DDDCDA',borderRadius:6,fontSize:13,fontFamily:'system-ui',outline:'none',boxSizing:'border-box',textAlign:'center'}}
+              />
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={confirmarNuevaCat}
+                  style={{padding:'5px 12px',borderRadius:6,fontSize:12,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500}}>
+                  Crear
+                </button>
+                <button onClick={()=>{setShowNuevaCatInput(false);setNuevaCatNombre('');}}
+                  style={{padding:'5px 12px',borderRadius:6,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+                  Cancelar
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div onClick={()=>setShowNuevaCatInput(true)}
+              style={{background:'#FDFCFA',border:'2px dashed #C68AA2',borderRadius:14,padding:'24px 14px 18px',
+                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                cursor:'pointer',textAlign:'center',minHeight:120,gap:6}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='#9B4F6A';e.currentTarget.style.background='#FDF4F7';}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='#C68AA2';e.currentTarget.style.background='#FDFCFA';}}>
+              <span style={{fontSize:32,color:'#9B4F6A',lineHeight:1,fontWeight:300}}>+</span>
+              <div style={{fontSize:13,fontWeight:600,color:'#9B4F6A',marginTop:4}}>Nueva categoría</div>
+            </div>
+          )}
         </div>
       )}
     </div>
