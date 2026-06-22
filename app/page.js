@@ -426,7 +426,7 @@ export default function Home() {
         <Contenido
           vista={vista} setVista={setVista}
           perfil={perfil}
-          expedientes={expedientes} consultas={consultas} tareas={tareas} notas={notas} clientes={clientes}
+          expedientes={expedientes} consultas={consultas} tareas={tareas} notas={notas} clientes={clientes} contactos={contactos}
           honorarios={honorarios} cuotas={cuotas} valorUhon={valorUhon}
           expActual={expActual} setExpActual={setExpActual}
           cliActual={cliActual} setCliActual={setCliActual}
