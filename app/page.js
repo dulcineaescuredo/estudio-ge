@@ -7724,6 +7724,37 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     </div>
   );
 
+  // ── Vista de draft generado ───────────────────────────────
+  if (draftTexto !== null) {
+    return (
+      <div>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
+          <button onClick={()=>setDraftTexto(null)}
+            style={{background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontFamily:'system-ui',fontWeight:600,padding:'4px 0',display:'flex',alignItems:'center',gap:4}}>
+            ← Volver
+          </button>
+          <div style={{width:1,height:18,background:'#DDDCDA',flexShrink:0}}></div>
+          <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>✨ Draft generado</div>
+        </div>
+        <Card>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
+            <div style={{fontSize:13,color:'#6B7280'}}>Revisá y editá el borrador antes de usarlo.</div>
+            <button
+              onClick={()=>navigator.clipboard.writeText(draftTexto).then(()=>alert('Copiado al portapapeles'))}
+              style={{padding:'7px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #9B4F6A',background:'#fff',color:'#9B4F6A',fontFamily:'system-ui',fontWeight:500,whiteSpace:'nowrap'}}>
+              📋 Copiar al portapapeles
+            </button>
+          </div>
+          <textarea
+            value={draftTexto}
+            onChange={e=>setDraftTexto(e.target.value)}
+            style={{width:'100%',minHeight:500,padding:'14px 16px',border:'1px solid #DDDCDA',borderRadius:10,fontSize:13,fontFamily:'system-ui',lineHeight:1.7,background:'#FAFAF9',outline:'none',resize:'vertical',boxSizing:'border-box',color:'#1A1A1A'}}
+          />
+        </Card>
+      </div>
+    );
+  }
+
   // ── Vista de carpeta ──────────────────────────────────────
   if (carpetaActual !== null) {
     return (
