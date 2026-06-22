@@ -7564,12 +7564,19 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
         </div>
 
         <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Archivo</div>
-        <input type="file" accept=".pdf,.doc,.docx"
+        <input ref={fileInputPlumaRef} type="file" accept=".pdf,.doc,.docx"
           onChange={ev=>setFormFile(ev.target.files[0]||null)}
-          style={{width:'100%',marginBottom:16,fontSize:13,fontFamily:'system-ui',boxSizing:'border-box'}} />
-        {formFile && (
-          <div style={{fontSize:12,color:'#6B7280',marginBottom:16,background:'#F7F6F3',borderRadius:6,padding:'6px 10px',wordBreak:'break-all'}}>
-            {iconArchivo(formFile.name)} {formFile.name}
+          style={{position:'absolute',opacity:0,width:0,height:0,pointerEvents:'none'}} />
+        {!formFile ? (
+          <button type="button" onClick={()=>fileInputPlumaRef.current?.click()}
+            style={{display:'flex',alignItems:'center',gap:8,padding:'9px 14px',borderRadius:8,fontSize:13,fontFamily:'system-ui',cursor:'pointer',border:'1px solid #9B4F6A',background:'#fff',color:'#9B4F6A',fontWeight:500,marginBottom:16,width:'100%',boxSizing:'border-box'}}>
+            📎 Agregar archivo
+          </button>
+        ) : (
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'9px 14px',borderRadius:8,fontSize:13,fontFamily:'system-ui',border:'1px solid #9B4F6A',background:'#fff',color:'#9B4F6A',marginBottom:16,boxSizing:'border-box'}}>
+            <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',minWidth:0}}>{iconArchivo(formFile.name)} {formFile.name}</span>
+            <button type="button" onClick={()=>{setFormFile(null);if(fileInputPlumaRef.current)fileInputPlumaRef.current.value='';}}
+              style={{background:'none',border:'none',cursor:'pointer',padding:'0 2px',fontSize:14,color:'#9B4F6A',lineHeight:1,flexShrink:0}}>✕</button>
           </div>
         )}
 
