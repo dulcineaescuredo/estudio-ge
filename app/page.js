@@ -6958,7 +6958,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
       </div>
 
       {subVista === 'contactos' ? (
-        <GestionContactos perfil={perfil} contactos={contactos} recargar={recargar} />
+        <GestionContactos perfil={perfil} contactos={contactos} clientes={clientes} recargar={recargar} />
       ) : (
         <>
           <Card title="📞 Registrar llamada">
