@@ -7389,7 +7389,7 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
                       <span style={{fontSize:13,fontWeight:500}}>{c.nombre}</span>
                       <Badge bg={col.bg} color={col.color}>{rolLabel}</Badge>
                     </div>
-                    {c.telefono&&<div style={{fontSize:12,color:'#6B7280'}}>{c.telefono}</div>}
+                    {c.telefono&&<div style={{fontSize:12,color:'#6B7280'}}><a href={telHref(c.telefono)} style={{color:'inherit',textDecoration:'none',cursor:'pointer'}}>{c.telefono}</a></div>}
                   </div>
                   <div style={{display:'flex',gap:4,flexShrink:0}}>
                     <button
