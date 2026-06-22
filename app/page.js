@@ -7419,3 +7419,187 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
     </div>
   );
 }
+
+function Pluma({ perfil, perfilesEstudio = [] }) {
+  const [escritos, setEscritos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [showForm, setShowForm] = useState(false);
+  const [formTipo, setFormTipo] = useState('Demanda');
+  const [formFile, setFormFile] = useState(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
+  async function cargar() {
+    if (!perfil?.estudio_id) return;
+    setCargando(true);
+    const { data } = await supabase.from('escritos_ejemplo').select('*').eq('estudio_id', perfil.estudio_id).order('created_at', { ascending: false });
+    setEscritos(data || []);
+    setCargando(false);
+  }
+
+  useEffect(() => { cargar(); }, [perfil?.estudio_id]);
+
+  function nombrePerfil(id) {
+    const p = perfilesEstudio.find(x => x.id === id);
+    return p?.nombre || '—';
+  }
+
+  function formatFechaCorta(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  async function eliminar(e) {
+    if (!confirm(`¿Eliminar el ejemplo "${e.archivo_nombre}"?`)) return;
+    const marker = '/object/public/escritos-ejemplos/';
+    const idx = e.archivo_url.indexOf(marker);
+    if (idx !== -1) await supabase.storage.from('escritos-ejemplos').remove([e.archivo_url.slice(idx + marker.length)]);
+    await supabase.from('escritos_ejemplo').delete().eq('id', e.id);
+    cargar();
+  }
+
+  async function subir() {
+    if (!formFile) { alert('Seleccioná un archivo.'); return; }
+    setSubiendo(true);
+    const safeName = formFile.name
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${perfil.estudio_id}/${Date.now()}_${safeName}`;
+    const { error: upErr } = await supabase.storage.from('escritos-ejemplos').upload(path, formFile, { upsert: false });
+    if (upErr) { alert('Error al subir: ' + JSON.stringify(upErr)); setSubiendo(false); return; }
+    const publicUrl = supabase.storage.from('escritos-ejemplos').getPublicUrl(path).data.publicUrl;
+    const { error: insErr } = await supabase.from('escritos_ejemplo').insert({
+      tipo: formTipo,
+      archivo_nombre: formFile.name,
+      archivo_url: publicUrl,
+      estudio_id: perfil.estudio_id,
+      subido_por: perfil.id,
+      texto_extraido: null,
+    });
+    if (insErr) { alert('Error al guardar: ' + JSON.stringify(insErr)); setSubiendo(false); return; }
+    setShowForm(false);
+    setFormFile(null);
+    setFormTipo('Demanda');
+    setSubiendo(false);
+    cargar();
+  }
+
+  function tipoColor(tipo) {
+    if (tipo === 'Demanda') return { bg: '#FEF0E6', color: '#9C4221' };
+    if (tipo === 'Contestación') return { bg: '#E6F1FB', color: '#0C447C' };
+    return { bg: '#F1EFE8', color: '#444441' };
+  }
+
+  const lista = filtroTipo === 'todos' ? escritos : escritos.filter(e => e.tipo === filtroTipo);
+
+  return (
+    <div>
+      <div style={{display:'flex',alignItems:isMobile?'flex-start':'center',justifyContent:'space-between',marginBottom:18,flexWrap:'wrap',gap:10}}>
+        <div>
+          <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>✒️ Pluma</div>
+          <div style={{fontSize:13,color:'#6B7280',marginTop:2}}>Ejemplos de escritos para entrenar al asistente</div>
+        </div>
+        <button onClick={()=>setShowForm(true)}
+          style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,whiteSpace:'nowrap'}}>
+          + Subir ejemplo
+        </button>
+      </div>
+
+      <div style={{display:'flex',gap:6,marginBottom:16,flexWrap:'wrap'}}>
+        {['todos','Demanda','Contestación','Otro'].map(t => (
+          <button key={t} onClick={()=>setFiltroTipo(t)}
+            style={{padding:'6px 14px',borderRadius:20,fontSize:12,cursor:'pointer',fontFamily:'system-ui',fontWeight:filtroTipo===t?600:400,
+              border:filtroTipo===t?'none':'1px solid #DDDCDA',
+              background:filtroTipo===t?'#9B4F6A':'#fff',
+              color:filtroTipo===t?'#fff':'#444441'}}>
+            {t === 'todos' ? 'Todos' : t}
+          </button>
+        ))}
+      </div>
+
+      <Card>
+        {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:20,textAlign:'center'}}>Cargando...</div>}
+        {!cargando && lista.length === 0 && (
+          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:20}}>
+            No hay ejemplos cargados todavía.
+          </div>
+        )}
+        {!cargando && lista.map(e => {
+          const col = tipoColor(e.tipo);
+          return (
+            <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid #F0EFED',flexWrap:isMobile?'wrap':'nowrap'}}>
+              <Badge bg={col.bg} color={col.color}>{e.tipo}</Badge>
+              <div style={{flex:1,minWidth:0}}>
+                <a href={e.archivo_url} target="_blank" rel="noopener noreferrer"
+                  style={{fontSize:13,color:'#1A1A1A',fontWeight:500,textDecoration:'none',wordBreak:'break-all'}}
+                  onMouseEnter={ev=>ev.currentTarget.style.color='#9B4F6A'}
+                  onMouseLeave={ev=>ev.currentTarget.style.color='#1A1A1A'}>
+                  {e.archivo_nombre}
+                </a>
+                <div style={{fontSize:11,color:'#8a8a8a',marginTop:2}}>
+                  {nombrePerfil(e.subido_por)} · {formatFechaCorta(e.created_at)}
+                </div>
+              </div>
+              <button onClick={()=>eliminar(e)}
+                style={{fontSize:13,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',flexShrink:0,lineHeight:1}}>
+                🗑️
+              </button>
+            </div>
+          );
+        })}
+      </Card>
+
+      {showForm && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#fff',borderRadius:16,padding:28,width:'100%',maxWidth:420,boxShadow:'0 8px 40px rgba(0,0,0,0.18)'}}>
+            <div style={{fontSize:16,fontWeight:700,marginBottom:18,color:'#1A1A1A'}}>Subir ejemplo de escrito</div>
+
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Tipo</div>
+            <div style={{display:'flex',gap:8,marginBottom:16}}>
+              {['Demanda','Contestación','Otro'].map(t => (
+                <button key={t} onClick={()=>setFormTipo(t)}
+                  style={{flex:1,padding:'8px 0',borderRadius:8,fontSize:13,cursor:'pointer',fontFamily:'system-ui',fontWeight:formTipo===t?600:400,
+                    border:formTipo===t?'none':'1px solid #DDDCDA',
+                    background:formTipo===t?'#9B4F6A':'#F7F6F3',
+                    color:formTipo===t?'#fff':'#444441'}}>
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Archivo</div>
+            <input type="file" accept=".pdf,.doc,.docx"
+              onChange={ev=>setFormFile(ev.target.files[0]||null)}
+              style={{width:'100%',marginBottom:16,fontSize:13,fontFamily:'system-ui',boxSizing:'border-box'}} />
+            {formFile && (
+              <div style={{fontSize:12,color:'#6B7280',marginBottom:16,background:'#F7F6F3',borderRadius:6,padding:'6px 10px',wordBreak:'break-all'}}>
+                📄 {formFile.name}
+              </div>
+            )}
+
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
+              <button onClick={()=>{setShowForm(false);setFormFile(null);setFormTipo('Demanda');}}
+                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+                Cancelar
+              </button>
+              <button onClick={subir} disabled={subiendo}
+                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:subiendo?'default':'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:500,opacity:subiendo?0.7:1}}>
+                {subiendo ? 'Subiendo...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
