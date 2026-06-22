@@ -7437,6 +7437,7 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
   const [carpetaHovered, setCarpetaHovered] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const fileInputPlumaRef = useRef(null);
+  const [procesandoIds, setProcesandoIds] = useState(new Set());
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
