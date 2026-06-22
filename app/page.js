@@ -7558,19 +7558,20 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     const { error: upErr } = await supabase.storage.from('escritos-ejemplos').upload(path, formFile, { upsert: false });
     if (upErr) { alert('Error al subir: ' + JSON.stringify(upErr)); setSubiendo(false); return; }
     const publicUrl = supabase.storage.from('escritos-ejemplos').getPublicUrl(path).data.publicUrl;
-    const { error: insErr } = await supabase.from('escritos_ejemplo').insert({
+    const { data: insData, error: insErr } = await supabase.from('escritos_ejemplo').insert({
       tipo: carpetaActual,
       archivo_nombre: formFile.name,
       archivo_url: publicUrl,
       estudio_id: perfil.estudio_id,
       subido_por: perfil.id,
       texto_extraido: null,
-    });
+    }).select('id').single();
     if (insErr) { alert('Error al guardar: ' + JSON.stringify(insErr)); setSubiendo(false); return; }
     setShowForm(false);
     setFormFile(null);
     setSubiendo(false);
     cargar();
+    if (insData?.id) extraerTexto(insData.id, publicUrl);
   }
 
   const archivosEnCarpeta = carpetaActual ? escritos.filter(e => e.tipo === carpetaActual) : [];
