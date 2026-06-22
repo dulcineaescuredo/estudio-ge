@@ -1,0 +1,63 @@
+import { createClient } from '@supabase/supabase-js';
+
+export async function POST(request) {
+  try {
+    const { archivo_url, escrito_id, access_token } = await request.json();
+
+    if (!archivo_url || !escrito_id) {
+      return Response.json({ error: 'Faltan parámetros: archivo_url y escrito_id son requeridos' }, { status: 400 });
+    }
+
+    const ext = archivo_url.split('?')[0].split('.').pop().toLowerCase();
+
+    const fileRes = await fetch(archivo_url);
+    if (!fileRes.ok) {
+      return Response.json({ error: `No se pudo descargar el archivo (HTTP ${fileRes.status})` }, { status: 502 });
+    }
+    const buffer = Buffer.from(await fileRes.arrayBuffer());
+
+    let texto_extraido = '';
+
+    if (ext === 'pdf') {
+      const { PDFParse } = await import('pdf-parse');
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      texto_extraido = result.text || '';
+    } else if (ext === 'doc' || ext === 'docx') {
+      const mammoth = await import('mammoth');
+      const result = await mammoth.extractRawText({ buffer });
+      texto_extraido = result.value || '';
+    } else {
+      return Response.json({ error: `Formato no soportado: .${ext}` }, { status: 400 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    let supabase;
+    if (serviceKey) {
+      supabase = createClient(supabaseUrl, serviceKey);
+    } else if (access_token) {
+      supabase = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: `Bearer ${access_token}` } },
+      });
+    } else {
+      supabase = createClient(supabaseUrl, anonKey);
+    }
+
+    const { error: updateError } = await supabase
+      .from('escritos_ejemplo')
+      .update({ texto_extraido })
+      .eq('id', escrito_id);
+
+    if (updateError) {
+      return Response.json({ error: 'Error al guardar en la base de datos: ' + updateError.message }, { status: 500 });
+    }
+
+    return Response.json({ success: true, texto_extraido });
+  } catch (err) {
+    return Response.json({ error: err.message || 'Error inesperado' }, { status: 500 });
+  }
+}
