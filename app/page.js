@@ -7455,6 +7455,27 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
 
   useEffect(() => { cargar(); }, [perfil?.estudio_id]);
 
+  async function extraerTexto(escrito_id, archivo_url) {
+    setProcesandoIds(prev => new Set([...prev, escrito_id]));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/extraer-texto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ escrito_id, archivo_url, access_token: session?.access_token }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('extraer-texto error:', err);
+      }
+    } catch (err) {
+      console.error('extraer-texto fetch error:', err);
+    } finally {
+      setProcesandoIds(prev => { const s = new Set(prev); s.delete(escrito_id); return s; });
+      cargar();
+    }
+  }
+
   function nombrePerfil(id) {
     const p = perfilesEstudio.find(x => x.id === id);
     return p?.nombre || '—';
