@@ -7346,7 +7346,7 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
                       </div>
                     ) : (
                       <div style={{display:'flex',alignItems:'center',gap:6}}>
-                        <span style={{fontSize:12,color:'#6B7280'}}>{item._telefono}</span>
+                        <a href={telHref(item._telefono)} style={{fontSize:12,color:'#6B7280',textDecoration:'none',cursor:'pointer'}}>{item._telefono}</a>
                         <button
                           onClick={()=>{setEditandoTelId(cl.id);setEditTelVal(item._telefono);}}
                           title="Editar teléfono"
