@@ -7494,6 +7494,27 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     setShowNuevaCatInput(false);
   }
 
+  async function confirmarRenombre(nombreAnterior) {
+    const nuevoNombre = editNombreCarpeta.trim();
+    if (!nuevoNombre) return;
+    if (nuevoNombre === nombreAnterior) { setEditandoCarpeta(null); setRenombraError(''); return; }
+    const otrasExistentes = todasLasCarpetas.filter(c => c !== nombreAnterior);
+    if (otrasExistentes.includes(nuevoNombre)) { setRenombraError('Ya existe una carpeta con ese nombre'); return; }
+    const { error } = await supabase.from('escritos_ejemplo')
+      .update({ tipo: nuevoNombre })
+      .eq('tipo', nombreAnterior)
+      .eq('estudio_id', perfil.estudio_id);
+    if (error) { alert('Error al renombrar: ' + JSON.stringify(error)); return; }
+    if (carpetasFijas.includes(nombreAnterior)) {
+      setCarpetasFijas(prev => prev.map(c => c === nombreAnterior ? nuevoNombre : c));
+    } else {
+      setExtraCategorias(prev => prev.map(c => c === nombreAnterior ? nuevoNombre : c));
+    }
+    setEditandoCarpeta(null);
+    setRenombraError('');
+    cargar();
+  }
+
   async function eliminar(e) {
     if (!confirm(`¿Eliminar el ejemplo "${e.archivo_nombre}"?`)) return;
     const marker = '/object/public/escritos-ejemplos/';
