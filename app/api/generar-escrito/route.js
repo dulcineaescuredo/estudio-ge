@@ -1,0 +1,119 @@
+export const runtime = 'nodejs';
+
+import { createClient } from '@supabase/supabase-js';
+
+export async function POST(request) {
+  try {
+    const { tipo, cliente_id, expediente_id, instrucciones } = await request.json();
+
+    if (!tipo || !cliente_id || !expediente_id) {
+      return Response.json({ error: 'Faltan parámetros: tipo, cliente_id y expediente_id son requeridos' }, { status: 400 });
+    }
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return Response.json({ error: 'Falta la variable de entorno ANTHROPIC_API_KEY' }, { status: 500 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabase = createClient(supabaseUrl, serviceKey || anonKey);
+
+    const { data: ejemplos, error: ejError } = await supabase
+      .from('escritos_ejemplo')
+      .select('texto_extraido, archivo_nombre')
+      .eq('tipo', tipo)
+      .not('texto_extraido', 'is', null);
+
+    if (ejError) {
+      return Response.json({ error: 'Error al consultar ejemplos: ' + ejError.message }, { status: 500 });
+    }
+    if (!ejemplos || ejemplos.length === 0) {
+      return Response.json({
+        error: `No hay ejemplos con texto extraído para el tipo "${tipo}". Subí al menos un archivo en esa carpeta y extraé su texto antes de generar un draft.`
+      }, { status: 422 });
+    }
+
+    const { data: expediente, error: expError } = await supabase
+      .from('expedientes')
+      .select('*')
+      .eq('id', expediente_id)
+      .single();
+
+    if (expError || !expediente) {
+      return Response.json({ error: 'No se encontró el expediente' }, { status: 404 });
+    }
+
+    const { data: cliente, error: cliError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', cliente_id)
+      .single();
+
+    if (cliError || !cliente) {
+      return Response.json({ error: 'No se encontró el cliente' }, { status: 404 });
+    }
+
+    const nombreCliente = cliente.apellido && cliente.nombre_pila
+      ? `${cliente.apellido}, ${cliente.nombre_pila}`
+      : (cliente.apellido || cliente.nombre_pila || cliente.nombre || '');
+
+    const ejemplosTexto = ejemplos.map((e, i) =>
+      `--- EJEMPLO ${i + 1}${e.archivo_nombre ? ` (${e.archivo_nombre})` : ''} ---\n${e.texto_extraido}`
+    ).join('\n\n');
+
+    const datosExpediente = [
+      expediente.caratula && `Carátula: ${expediente.caratula}`,
+      expediente.numero && `Número: ${expediente.numero}`,
+      expediente.juzgado && `Juzgado: ${expediente.juzgado}`,
+      expediente.tipo_proceso && `Tipo de proceso: ${expediente.tipo_proceso}`,
+      expediente.rol && `Rol de la parte: ${expediente.rol}`,
+      expediente.fuero && `Fuero: ${expediente.fuero}`,
+    ].filter(Boolean).join('\n');
+
+    const prompt = `Sos un asistente legal especializado en redacción de escritos judiciales argentinos. Tu tarea es redactar un escrito judicial de tipo "${tipo}" completo, listo para revisar y editar. No escribas un resumen ni un esquema: redactá el escrito en forma íntegra, con el encabezado, cuerpo y cierre correspondientes.
+
+Basate estrictamente en el estilo, la estructura y las convenciones que se observan en los siguientes ejemplos:
+
+${ejemplosTexto}
+
+DATOS DEL EXPEDIENTE:
+${datosExpediente}
+
+DATOS DEL CLIENTE/PARTE:
+${nombreCliente}
+${instrucciones ? `\nINSTRUCCIONES ADICIONALES DEL ABOGADO:\n${instrucciones}` : ''}
+
+Redactá ahora el escrito completo:`;
+
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!anthropicRes.ok) {
+      const errData = await anthropicRes.json().catch(() => ({}));
+      return Response.json({
+        error: `Error de la API de Claude: ${errData.error?.message || anthropicRes.statusText}`
+      }, { status: 502 });
+    }
+
+    const anthropicData = await anthropicRes.json();
+    const draft = anthropicData.content?.[0]?.text || '';
+
+    return Response.json({ success: true, draft });
+
+  } catch (err) {
+    return Response.json({ error: err.message || 'Error inesperado' }, { status: 500 });
+  }
+}
