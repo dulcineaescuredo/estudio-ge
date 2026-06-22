@@ -7427,9 +7427,14 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
   const [showForm, setShowForm] = useState(false);
   const [formFile, setFormFile] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
+  const [carpetasFijas, setCarpetasFijas] = useState(['Demanda', 'Contestación de demanda']);
   const [extraCategorias, setExtraCategorias] = useState([]);
   const [showNuevaCatInput, setShowNuevaCatInput] = useState(false);
   const [nuevaCatNombre, setNuevaCatNombre] = useState('');
+  const [editandoCarpeta, setEditandoCarpeta] = useState(null);
+  const [editNombreCarpeta, setEditNombreCarpeta] = useState('');
+  const [renombraError, setRenombraError] = useState('');
+  const [carpetaHovered, setCarpetaHovered] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
