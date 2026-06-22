@@ -7420,7 +7420,7 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
   );
 }
 
-function Pluma({ perfil, perfilesEstudio = [] }) {
+function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }) {
   const [escritos, setEscritos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [carpetaActual, setCarpetaActual] = useState(null);
