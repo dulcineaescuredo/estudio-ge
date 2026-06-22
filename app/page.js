@@ -7464,15 +7464,16 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ escrito_id, archivo_url, access_token: session?.access_token }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        console.error('extraer-texto error:', err);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setEscritos(prev => prev.map(e => e.id === escrito_id ? { ...e, texto_extraido: data.texto_extraido } : e));
+      } else {
+        console.error('extraer-texto error:', data);
       }
     } catch (err) {
       console.error('extraer-texto fetch error:', err);
     } finally {
       setProcesandoIds(prev => { const s = new Set(prev); s.delete(escrito_id); return s; });
-      cargar();
     }
   }
 
