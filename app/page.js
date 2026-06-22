@@ -2282,7 +2282,7 @@ function NuevaConsulta({ perfil, recargar, clientes, setVista }) {
                       onMouseLeave={e=>e.currentTarget.style.background=''}>
                       <span style={{fontWeight:500}}>{nombreCompleto(cl)}</span>
                       {cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
-                      {cl.telefono&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>· {cl.telefono}</span>}
+                      {cl.telefono&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>· <a href={telHref(cl.telefono)} onClick={e=>e.stopPropagation()} style={{color:'inherit',textDecoration:'none',cursor:'pointer'}}>{cl.telefono}</a></span>}
                     </div>
                   ))}
                   <div
