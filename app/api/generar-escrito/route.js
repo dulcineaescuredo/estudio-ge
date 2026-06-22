@@ -20,6 +20,14 @@ export async function POST(request) {
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const supabase = createClient(supabaseUrl, serviceKey || anonKey);
 
+    console.log('[generar-escrito] tipo recibido:', JSON.stringify(tipo));
+
+    const { data: todosLosTipos } = await supabase
+      .from('escritos_ejemplo')
+      .select('tipo, texto_extraido')
+      .not('texto_extraido', 'is', null);
+    console.log('[generar-escrito] tipos con texto_extraido en DB:', JSON.stringify((todosLosTipos || []).map(r => r.tipo)));
+
     const { data: ejemplos, error: ejError } = await supabase
       .from('escritos_ejemplo')
       .select('texto_extraido, archivo_nombre')
