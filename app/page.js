@@ -6752,13 +6752,26 @@ function Notificaciones({ perfil, setVista, notifNoLeidas, setNotifNoLeidas, asu
 
 const CHIPS_DUR = [1, 5, 10, 15, 30, 45, 60];
 
-function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
+const ROL_CONTACTO_COLORS = {
+  'Cliente': { bg:'#FBEAF0', color:'#9B4F6A' },
+  'Abogado': { bg:'#E6F1FB', color:'#0C447C' },
+  'Perito':  { bg:'#EAF3DE', color:'#27500A' },
+  'Otro':    { bg:'#F1EFE8', color:'#444441' },
+};
+function rolContactoColor(rol) {
+  return ROL_CONTACTO_COLORS[rol] || ROL_CONTACTO_COLORS['Otro'];
+}
+
+function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], recargar }) {
+  const [subVista, setSubVista] = useState('registro');
   const [llamadas, setLlamadas] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [clienteQ, setClienteQ] = useState('');
-  const [clienteId, setClienteId] = useState('');
-  const [clienteNombre, setClienteNombre] = useState('');
-  const [clienteAbierto, setClienteAbierto] = useState(false);
+  const [personaQ, setPersonaQ] = useState('');
+  const [personaId, setPersonaId] = useState('');
+  const [personaNombre, setPersonaNombre] = useState('');
+  const [personaTipo, setPersonaTipo] = useState('');
+  const [personaRol, setPersonaRol] = useState('');
+  const [personaAbierto, setPersonaAbierto] = useState(false);
   const [duracionMin, setDuracionMin] = useState(null);
   const [duracionLibre, setDuracionLibre] = useState('');
   const [comentario, setComentario] = useState('');
@@ -6788,21 +6801,34 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
   const perfilMap = {};
   (perfilesEstudio || []).forEach(p => { perfilMap[p.id] = p.nombre; });
 
-  const sugsCliente = !clienteId && clienteQ
-    ? (clientes || []).filter(cl => (nombreCompleto(cl) || '').toLowerCase().includes(clienteQ.toLowerCase())).slice(0, 8)
+  const sugsPersona = !personaId && personaQ
+    ? [
+        ...(clientes || [])
+          .filter(cl => (nombreCompleto(cl)||'').toLowerCase().includes(personaQ.toLowerCase()))
+          .slice(0, 5)
+          .map(cl => ({ _id:cl.id, _tipo:'cliente', _nombre:nombreCompleto(cl), _rol:'Cliente', _telefono:cl.telefono||'', _dni:cl.dni||'' })),
+        ...(contactos || [])
+          .filter(c => (c.nombre||'').toLowerCase().includes(personaQ.toLowerCase()) || (c.telefono||'').toLowerCase().includes(personaQ.toLowerCase()))
+          .slice(0, 5)
+          .map(c => ({ _id:c.id, _tipo:'contacto', _nombre:c.nombre, _rol:c.rol==='Otro'?(c.rol_detalle||'Otro'):c.rol, _telefono:c.telefono||'', _dni:'' })),
+      ].slice(0, 10)
     : [];
 
-  function seleccionarCliente(cl) {
-    setClienteId(cl.id);
-    setClienteNombre(nombreCompleto(cl));
-    setClienteQ('');
-    setClienteAbierto(false);
+  function seleccionarPersona(item) {
+    setPersonaId(item._id);
+    setPersonaNombre(item._nombre);
+    setPersonaTipo(item._tipo);
+    setPersonaRol(item._rol);
+    setPersonaQ('');
+    setPersonaAbierto(false);
   }
 
-  function limpiarCliente() {
-    setClienteId('');
-    setClienteNombre('');
-    setClienteQ('');
+  function limpiarPersona() {
+    setPersonaId('');
+    setPersonaNombre('');
+    setPersonaTipo('');
+    setPersonaRol('');
+    setPersonaQ('');
   }
 
   function mostrarToast(msg) {
@@ -6817,19 +6843,22 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
   }
 
   async function guardar() {
-    if (!clienteId) { alert('Seleccioná un cliente'); return; }
+    if (!personaId) { alert('Seleccioná un cliente o contacto'); return; }
     if (!perfil) return;
     setGuardando(true);
-    await supabase.from('llamadas').insert({
+    const insert = {
       estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b',
-      cliente_id: clienteId,
       usuario_id: registradoPorId || perfil.id,
       duracion_minutos: duracionFinal(),
       comentario: comentario.trim() || null,
-    });
+      contacto_tipo: personaTipo,
+      contacto_id: personaId,
+    };
+    if (personaTipo === 'cliente') insert.cliente_id = personaId;
+    await supabase.from('llamadas').insert(insert);
     setGuardando(false);
-    mostrarToast(`Llamada con ${clienteNombre} registrada ✓`);
-    limpiarCliente();
+    mostrarToast(`Llamada con ${personaNombre} registrada ✓`);
+    limpiarPersona();
     setDuracionMin(null);
     setDuracionLibre('');
     setComentario('');
@@ -6857,11 +6886,12 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
     ? llamadas.filter(l => l.usuario_id === filtroRegistrador)
     : llamadas;
 
-  const contadorPorClienteDia = {};
+  const contadorPorPersonaDia = {};
   llamadasFiltradas.forEach(l => {
     const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
-    const key = `${l.cliente_id}-${dia}`;
-    contadorPorClienteDia[key] = (contadorPorClienteDia[key] || 0) + 1;
+    const pid = l.contacto_id || l.cliente_id || 'desconocido';
+    const key = `${pid}-${dia}`;
+    contadorPorPersonaDia[key] = (contadorPorPersonaDia[key] || 0) + 1;
   });
 
   function fmtFechaLlamada(ts) {
@@ -6877,9 +6907,26 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
     return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  function nombreClienteLlamada(l) {
+  function nombrePersonaLlamada(l) {
+    if (l.contacto_tipo === 'contacto' && l.contacto_id) {
+      const c = (contactos || []).find(c => c.id === l.contacto_id);
+      return c ? c.nombre : '—';
+    }
     if (l.clientes) return nombreCompleto(l.clientes) || l.clientes.nombre || '—';
+    if (l.cliente_id) {
+      const cl = (clientes || []).find(c => c.id === l.cliente_id);
+      return cl ? nombreCompleto(cl) : '—';
+    }
     return '—';
+  }
+
+  function rolPersonaLlamada(l) {
+    if (l.contacto_tipo === 'contacto' && l.contacto_id) {
+      const c = (contactos || []).find(c => c.id === l.contacto_id);
+      if (!c) return null;
+      return c.rol === 'Otro' ? (c.rol_detalle || 'Otro') : c.rol;
+    }
+    return null;
   }
 
   const chipStyle = (active, col) => ({
@@ -6897,164 +6944,369 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [] }) {
         </div>
       )}
 
-      <Card title="📞 Registrar llamada">
-        {clienteId ? (
-          <div style={{display:'flex',alignItems:'center',gap:10,background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',marginBottom:12}}>
-            <span style={{fontSize:18,color:'#27500A',flexShrink:0}}>✓</span>
-            <div style={{flex:1,fontSize:13,fontWeight:600,color:'#27500A'}}>{clienteNombre}</div>
-            <button onClick={limpiarCliente}
-              style={{background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:4,flexShrink:0}}>×</button>
-          </div>
-        ) : (
-          <div style={{position:'relative',marginBottom:12}}>
-            <input
-              style={{...inputStyle,marginBottom:0}}
-              placeholder="Buscar cliente..."
-              value={clienteQ}
-              onChange={ev=>{setClienteQ(ev.target.value);setClienteAbierto(true);}}
-              onFocus={()=>setClienteAbierto(true)}
-              onBlur={()=>setTimeout(()=>setClienteAbierto(false),150)}
-            />
-            {clienteAbierto && clienteQ && (
-              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:240,overflowY:'auto',marginTop:2}}>
-                {sugsCliente.map(cl=>(
-                  <div key={cl.id} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarCliente(cl)}
-                    style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',color:'#1a1a1a'}}
-                    onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
-                    onMouseLeave={e=>e.currentTarget.style.background=''}>
-                    <span style={{fontWeight:500}}>{nombreCompleto(cl)}</span>
-                    {cl.dni&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>DNI {cl.dni}</span>}
-                    {cl.telefono&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>· {cl.telefono}</span>}
+      <div style={{display:'flex',gap:0,marginBottom:20,borderBottom:'2px solid #F0EFED'}}>
+        {[['registro','📞 Registro de llamadas'],['contactos','👤 Contactos']].map(([id,label])=>(
+          <button key={id} onClick={()=>setSubVista(id)}
+            style={{padding:'8px 18px',fontSize:13,fontWeight:subVista===id?700:400,
+              color:subVista===id?'#9B4F6A':'#6B7280',
+              background:'none',border:'none',cursor:'pointer',fontFamily:'system-ui',
+              borderBottom:subVista===id?'2px solid #9B4F6A':'2px solid transparent',
+              marginBottom:-2}}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {subVista === 'contactos' ? (
+        <GestionContactos perfil={perfil} contactos={contactos} recargar={recargar} />
+      ) : (
+        <>
+          <Card title="📞 Registrar llamada">
+            {personaId ? (
+              <div style={{display:'flex',alignItems:'center',gap:10,background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,padding:'10px 14px',marginBottom:12}}>
+                <span style={{fontSize:18,color:'#27500A',flexShrink:0}}>✓</span>
+                <div style={{flex:1,fontSize:13,fontWeight:600,color:'#27500A'}}>
+                  {personaNombre}
+                  {personaTipo==='contacto'&&personaRol&&(
+                    <span style={{marginLeft:8,fontSize:11,fontWeight:400,opacity:0.75}}>({personaRol})</span>
+                  )}
+                </div>
+                <button onClick={limpiarPersona}
+                  style={{background:'none',border:'none',cursor:'pointer',color:'#8a8a8a',fontSize:18,lineHeight:1,padding:4,flexShrink:0}}>×</button>
+              </div>
+            ) : (
+              <div style={{position:'relative',marginBottom:12}}>
+                <input
+                  style={{...inputStyle,marginBottom:0}}
+                  placeholder="Buscar cliente o contacto..."
+                  value={personaQ}
+                  onChange={ev=>{setPersonaQ(ev.target.value);setPersonaAbierto(true);}}
+                  onFocus={()=>setPersonaAbierto(true)}
+                  onBlur={()=>setTimeout(()=>setPersonaAbierto(false),150)}
+                />
+                {personaAbierto && personaQ && (
+                  <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:'1px solid #DDDCDA',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:20,maxHeight:260,overflowY:'auto',marginTop:2}}>
+                    {sugsPersona.map(item=>{
+                      const rc = rolContactoColor(item._tipo==='cliente'?'Cliente':item._rol);
+                      return (
+                        <div key={`${item._tipo}-${item._id}`} onMouseDown={e=>e.preventDefault()} onClick={()=>seleccionarPersona(item)}
+                          style={{padding:'9px 12px',cursor:'pointer',fontSize:13,borderBottom:'1px solid #F0EFED',display:'flex',alignItems:'center',gap:8}}
+                          onMouseEnter={e=>e.currentTarget.style.background='#F5F5F5'}
+                          onMouseLeave={e=>e.currentTarget.style.background=''}>
+                          <span style={{fontWeight:500,flex:1}}>{item._nombre}</span>
+                          {item._telefono&&<span style={{fontSize:11,color:'#8a8a8a'}}>{item._telefono}</span>}
+                          {item._dni&&<span style={{fontSize:11,color:'#8a8a8a'}}>DNI {item._dni}</span>}
+                          <span style={{background:rc.bg,color:rc.color,borderRadius:10,padding:'2px 8px',fontSize:10,fontWeight:600,whiteSpace:'nowrap',flexShrink:0}}>{item._rol}</span>
+                        </div>
+                      );
+                    })}
+                    {sugsPersona.length===0&&<div style={{padding:'9px 12px',fontSize:13,color:'#8a8a8a'}}>Sin resultados</div>}
                   </div>
-                ))}
-                {sugsCliente.length===0 && <div style={{padding:'9px 12px',fontSize:13,color:'#8a8a8a'}}>Sin resultados</div>}
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        <div style={{marginBottom:12}}>
-          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Registrado por</div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            {(perfilesEstudio||[]).map(p=>{
-              const active = registradoPorId===p.id;
-              const col = socioColor(p.nombre);
-              return <button key={p.id} type="button" onClick={()=>setRegistradoPorId(p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
-            })}
-          </div>
-        </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Registrado por</div>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                {(perfilesEstudio||[]).map(p=>{
+                  const active = registradoPorId===p.id;
+                  const col = socioColor(p.nombre);
+                  return <button key={p.id} type="button" onClick={()=>setRegistradoPorId(p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
+                })}
+              </div>
+            </div>
 
-        <div style={{marginBottom:10}}>
-          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-            {CHIPS_DUR.map(m=>(
-              <button key={m} type="button"
-                onClick={()=>{setDuracionMin(duracionMin===m?null:m);setDuracionLibre('');}}
-                style={{padding:'5px 11px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
-                  border:duracionMin===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
-                  background:duracionMin===m?'#FBEAF0':'#fff',
-                  color:duracionMin===m?'#9B4F6A':'#8a8a8a'}}>
-                {m===60?'1h':`${m}m`}
-              </button>
-            ))}
-            <input type="number" min="1" placeholder="otro (min)"
-              value={duracionLibre}
-              onChange={ev=>{setDuracionLibre(ev.target.value);setDuracionMin(null);}}
-              style={{padding:'5px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:96,outline:'none'}} />
-          </div>
-        </div>
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                {CHIPS_DUR.map(m=>(
+                  <button key={m} type="button"
+                    onClick={()=>{setDuracionMin(duracionMin===m?null:m);setDuracionLibre('');}}
+                    style={{padding:'5px 11px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                      border:duracionMin===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
+                      background:duracionMin===m?'#FBEAF0':'#fff',
+                      color:duracionMin===m?'#9B4F6A':'#8a8a8a'}}>
+                    {m===60?'1h':`${m}m`}
+                  </button>
+                ))}
+                <input type="number" min="1" placeholder="otro (min)"
+                  value={duracionLibre}
+                  onChange={ev=>{setDuracionLibre(ev.target.value);setDuracionMin(null);}}
+                  style={{padding:'5px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:96,outline:'none'}} />
+              </div>
+            </div>
 
-        <div style={{marginBottom:14}}>
-          <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Comentario (opcional)</div>
-          <input style={{...inputStyle,marginBottom:0}} placeholder="Anotá lo que quieras..."
-            value={comentario} onChange={e=>setComentario(e.target.value)}
-            onKeyDown={e=>{if(e.key==='Enter'&&clienteId)guardar();}} />
-        </div>
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Comentario (opcional)</div>
+              <input style={{...inputStyle,marginBottom:0}} placeholder="Anotá lo que quieras..."
+                value={comentario} onChange={e=>setComentario(e.target.value)}
+                onKeyDown={e=>{if(e.key==='Enter'&&personaId)guardar();}} />
+            </div>
 
-        <button onClick={guardar} disabled={!clienteId||guardando}
-          style={{...btnPrimary,opacity:(!clienteId||guardando)?0.5:1,cursor:(!clienteId||guardando)?'default':'pointer'}}>
-          {guardando?'Guardando...':'Registrar llamada'}
-        </button>
-      </Card>
-
-      <Card title="Historial de llamadas">
-        {perfilesEstudio.length > 0 && (
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
-            <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',marginRight:2,whiteSpace:'nowrap'}}>Registrado por</div>
-            <button type="button" onClick={()=>setFiltroRegistrador('')}
-              style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
-                border:!filtroRegistrador?'1.5px solid #6B7280':'1.5px solid #e2e2e2',
-                background:!filtroRegistrador?'#F3F4F6':'#fff',
-                color:!filtroRegistrador?'#374151':'#8a8a8a'}}>
-              Todos
+            <button onClick={guardar} disabled={!personaId||guardando}
+              style={{...btnPrimary,opacity:(!personaId||guardando)?0.5:1,cursor:(!personaId||guardando)?'default':'pointer'}}>
+              {guardando?'Guardando...':'Registrar llamada'}
             </button>
-            {perfilesEstudio.map(p=>{
-              const active = filtroRegistrador===p.id;
-              const col = socioColor(p.nombre);
-              return <button key={p.id} type="button" onClick={()=>setFiltroRegistrador(active?'':p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
+          </Card>
+
+          <Card title="Historial de llamadas">
+            {perfilesEstudio.length > 0 && (
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
+                <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',marginRight:2,whiteSpace:'nowrap'}}>Registrado por</div>
+                <button type="button" onClick={()=>setFiltroRegistrador('')}
+                  style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                    border:!filtroRegistrador?'1.5px solid #6B7280':'1.5px solid #e2e2e2',
+                    background:!filtroRegistrador?'#F3F4F6':'#fff',
+                    color:!filtroRegistrador?'#374151':'#8a8a8a'}}>
+                  Todos
+                </button>
+                {perfilesEstudio.map(p=>{
+                  const active = filtroRegistrador===p.id;
+                  const col = socioColor(p.nombre);
+                  return <button key={p.id} type="button" onClick={()=>setFiltroRegistrador(active?'':p.id)} style={chipStyle(active,col)}>{p.nombre}</button>;
+                })}
+              </div>
+            )}
+            {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:10}}>Cargando...</div>}
+            {!cargando && llamadasFiltradas.length===0 && (
+              <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin llamadas registradas todavía.</div>
+            )}
+            {!cargando && llamadasFiltradas.map(l=>{
+              const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
+              const pid = l.contacto_id || l.cliente_id || 'desconocido';
+              const key = `${pid}-${dia}`;
+              const count = contadorPorPersonaDia[key] || 1;
+              const esEditando = editandoId===l.id;
+              const nc = nombrePersonaLlamada(l);
+              const rol = rolPersonaLlamada(l);
+              const registranteName = perfilMap[l.usuario_id] || '';
+              return (
+                <div key={l.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+                  {esEditando ? (
+                    <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:440}}>
+                      <div style={{fontSize:12,color:'#4a4a4a',marginBottom:2,fontWeight:500}}>
+                        {nc}{rol&&<span style={{fontSize:11,color:'#8a8a8a',marginLeft:6}}>({rol})</span>}
+                      </div>
+                      <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                        {CHIPS_DUR.map(m=>(
+                          <button key={m} type="button"
+                            onClick={()=>{setEditDuracion(editDuracion===m?null:m);setEditDurLibre('');}}
+                            style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                              border:editDuracion===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
+                              background:editDuracion===m?'#FBEAF0':'#fff',
+                              color:editDuracion===m?'#9B4F6A':'#8a8a8a'}}>
+                            {m===60?'1h':`${m}m`}
+                          </button>
+                        ))}
+                        <input type="number" min="1" placeholder="otro (min)" value={editDurLibre}
+                          onChange={ev=>{setEditDurLibre(ev.target.value);setEditDuracion(null);}}
+                          style={{padding:'4px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:90,outline:'none'}} />
+                      </div>
+                      <input style={{...inputStyle,marginBottom:0}} placeholder="Comentario..."
+                        value={editComentario} onChange={e=>setEditComentario(e.target.value)} />
+                      <div style={{display:'flex',gap:8}}>
+                        <button onClick={()=>guardarEdicion(l.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                        <button onClick={()=>setEditandoId(null)}
+                          style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2,flexWrap:'wrap'}}>
+                          <span style={{fontSize:13,fontWeight:500}}>{nc}</span>
+                          {rol&&<Badge bg={rolContactoColor(rol).bg} color={rolContactoColor(rol).color}>{rol}</Badge>}
+                          {count>1&&<span style={{background:'#FBEAF0',color:'#9B4F6A',borderRadius:10,padding:'1px 8px',fontSize:11,fontWeight:600}}>×{count}</span>}
+                          {l.duracion_minutos&&<Badge bg="#EEEDFE" color="#3C3489">{l.duracion_minutos===60?'1h':`${l.duracion_minutos}m`}</Badge>}
+                        </div>
+                        <div style={{fontSize:11,color:'#8a8a8a',marginBottom:l.comentario?3:0}}>
+                          {fmtFechaLlamada(l.fecha)} · {fmtHoraLlamada(l.fecha)}
+                          {registranteName&&<span style={{marginLeft:8}}>· {registranteName}</span>}
+                        </div>
+                        {l.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic'}}>{l.comentario}</div>}
+                      </div>
+                      <div style={{display:'flex',gap:4,flexShrink:0,marginTop:1}}>
+                        <button
+                          onClick={()=>{setEditandoId(l.id);setEditDuracion(l.duracion_minutos||null);setEditDurLibre('');setEditComentario(l.comentario||'');}}
+                          title="Editar"
+                          style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>✏️</button>
+                        <button
+                          onClick={()=>eliminar(l.id)}
+                          title="Eliminar"
+                          style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>🗑️</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
             })}
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+function GestionContactos({ perfil, contactos, recargar }) {
+  const [q, setQ] = useState('');
+  const [formAbierto, setFormAbierto] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [rol, setRol] = useState('Cliente');
+  const [rolDetalle, setRolDetalle] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
+  const [editNombre, setEditNombre] = useState('');
+  const [editTelefono, setEditTelefono] = useState('');
+  const [editRol, setEditRol] = useState('Cliente');
+  const [editRolDetalle, setEditRolDetalle] = useState('');
+  const [toast, setToast] = useState('');
+
+  function mostrarToast(msg) { setToast(msg); setTimeout(()=>setToast(''), 3000); }
+
+  const contactosFiltrados = q
+    ? (contactos||[]).filter(c=>(c.nombre||'').toLowerCase().includes(q.toLowerCase())||(c.telefono||'').toLowerCase().includes(q.toLowerCase()))
+    : (contactos||[]);
+
+  async function guardar() {
+    if (!nombre.trim()||!telefono.trim()) { alert('Nombre y teléfono son obligatorios'); return; }
+    if (!perfil) return;
+    setGuardando(true);
+    await supabase.from('contactos').insert({
+      estudio_id: perfil.estudio_id,
+      nombre: nombre.trim(),
+      telefono: telefono.trim(),
+      rol,
+      rol_detalle: rol==='Otro' ? (rolDetalle.trim()||null) : null,
+    });
+    setGuardando(false);
+    setFormAbierto(false);
+    setNombre(''); setTelefono(''); setRol('Cliente'); setRolDetalle('');
+    mostrarToast('Contacto guardado ✓');
+    recargar();
+  }
+
+  async function guardarEdicion(id) {
+    if (!editNombre.trim()||!editTelefono.trim()) { alert('Nombre y teléfono son obligatorios'); return; }
+    await supabase.from('contactos').update({
+      nombre: editNombre.trim(),
+      telefono: editTelefono.trim(),
+      rol: editRol,
+      rol_detalle: editRol==='Otro' ? (editRolDetalle.trim()||null) : null,
+    }).eq('id', id);
+    setEditandoId(null);
+    mostrarToast('Contacto actualizado ✓');
+    recargar();
+  }
+
+  async function eliminar(id) {
+    if (!confirm('¿Eliminar este contacto?')) return;
+    await supabase.from('contactos').delete().eq('id', id);
+    mostrarToast('Contacto eliminado');
+    recargar();
+  }
+
+  function ChipsRol({ activeRol, setActiveRol }) {
+    return (
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+        {['Cliente','Abogado','Perito','Otro'].map(r=>{
+          const col = rolContactoColor(r);
+          const active = activeRol===r;
+          return (
+            <button key={r} type="button" onClick={()=>setActiveRol(r)}
+              style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                border:active?`1.5px solid ${col.color}`:'1.5px solid #e2e2e2',
+                background:active?col.bg:'#fff',color:active?col.color:'#8a8a8a'}}>
+              {r}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',fontSize:14,fontWeight:500,zIndex:9999,boxShadow:'0 4px 20px rgba(0,0,0,0.2)',pointerEvents:'none',whiteSpace:'nowrap'}}>
+          {toast}
+        </div>
+      )}
+      <Card>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+          <div style={{fontSize:14,fontWeight:600,color:'#1A1A1A'}}>👤 Contactos</div>
+          <button onClick={()=>setFormAbierto(f=>!f)} style={btnPrimary}>+ Nuevo contacto</button>
+        </div>
+
+        {formAbierto && (
+          <div style={{background:'#F7F6F3',border:'1px solid #EBEBEA',borderRadius:10,padding:16,marginBottom:16}}>
+            <div style={{fontSize:13,fontWeight:600,marginBottom:12,color:'#1A1A1A'}}>Nuevo contacto</div>
+            <input style={inputStyle} placeholder="Nombre *" value={nombre} onChange={e=>setNombre(e.target.value)} />
+            <input style={inputStyle} placeholder="Teléfono *" value={telefono} onChange={e=>setTelefono(e.target.value)} />
+            <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Rol</div>
+            <ChipsRol activeRol={rol} setActiveRol={setRol} />
+            {rol==='Otro'&&(
+              <input style={inputStyle} placeholder="Especificar rol..." value={rolDetalle} onChange={e=>setRolDetalle(e.target.value)} />
+            )}
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={guardar} disabled={guardando} style={{...btnPrimary,opacity:guardando?0.5:1}}>
+                {guardando?'Guardando...':'Guardar contacto'}
+              </button>
+              <button onClick={()=>{setFormAbierto(false);setNombre('');setTelefono('');setRol('Cliente');setRolDetalle('');}}
+                style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>
+                Cancelar
+              </button>
+            </div>
           </div>
         )}
-        {cargando && <div style={{color:'#8a8a8a',fontSize:13,padding:10}}>Cargando...</div>}
-        {!cargando && llamadasFiltradas.length===0 && (
-          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>Sin llamadas registradas todavía.</div>
+
+        <input style={{...inputStyle,marginBottom:14}} placeholder="Buscar por nombre o teléfono..." value={q} onChange={e=>setQ(e.target.value)} />
+
+        {contactosFiltrados.length===0 && (
+          <div style={{color:'#8a8a8a',fontSize:13,textAlign:'center',padding:30}}>
+            {q?'Sin resultados para tu búsqueda.':'No hay contactos todavía. Agregá el primero.'}
+          </div>
         )}
-        {!cargando && llamadasFiltradas.map(l=>{
-          const dia = l.fecha ? new Date(l.fecha).toDateString() : 'sin-fecha';
-          const key = `${l.cliente_id}-${dia}`;
-          const count = contadorPorClienteDia[key] || 1;
-          const esEditando = editandoId===l.id;
-          const nc = nombreClienteLlamada(l);
-          const registranteName = perfilMap[l.usuario_id] || '';
+
+        {contactosFiltrados.map(c=>{
+          const col = rolContactoColor(c.rol);
+          const rolLabel = c.rol==='Otro'?(c.rol_detalle||'Otro'):c.rol;
+          const esEditando = editandoId===c.id;
           return (
-            <div key={l.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
+            <div key={c.id} style={{padding:'10px 0',borderBottom:'1px solid #F0EFED'}}>
               {esEditando ? (
                 <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:440}}>
-                  <div style={{fontSize:12,color:'#4a4a4a',marginBottom:2,fontWeight:500}}>{nc}</div>
-                  <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-                    {CHIPS_DUR.map(m=>(
-                      <button key={m} type="button"
-                        onClick={()=>{setEditDuracion(editDuracion===m?null:m);setEditDurLibre('');}}
-                        style={{padding:'4px 10px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
-                          border:editDuracion===m?'1.5px solid #9B4F6A':'1.5px solid #e2e2e2',
-                          background:editDuracion===m?'#FBEAF0':'#fff',
-                          color:editDuracion===m?'#9B4F6A':'#8a8a8a'}}>
-                        {m===60?'1h':`${m}m`}
-                      </button>
-                    ))}
-                    <input type="number" min="1" placeholder="otro (min)" value={editDurLibre}
-                      onChange={ev=>{setEditDurLibre(ev.target.value);setEditDuracion(null);}}
-                      style={{padding:'4px 10px',borderRadius:20,fontSize:12,border:'1.5px solid #e2e2e2',background:'#fff',fontFamily:'system-ui',width:90,outline:'none'}} />
-                  </div>
-                  <input style={{...inputStyle,marginBottom:0}} placeholder="Comentario..."
-                    value={editComentario} onChange={e=>setEditComentario(e.target.value)} />
+                  <input style={inputStyle} placeholder="Nombre *" value={editNombre} onChange={e=>setEditNombre(e.target.value)} />
+                  <input style={inputStyle} placeholder="Teléfono *" value={editTelefono} onChange={e=>setEditTelefono(e.target.value)} />
+                  <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:0,textTransform:'uppercase',letterSpacing:'0.06em'}}>Rol</div>
+                  <ChipsRol activeRol={editRol} setActiveRol={setEditRol} />
+                  {editRol==='Otro'&&(
+                    <input style={inputStyle} placeholder="Especificar rol..." value={editRolDetalle} onChange={e=>setEditRolDetalle(e.target.value)} />
+                  )}
                   <div style={{display:'flex',gap:8}}>
-                    <button onClick={()=>guardarEdicion(l.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
+                    <button onClick={()=>guardarEdicion(c.id)} style={{...btnPrimary,padding:'6px 12px',fontSize:12}}>Guardar</button>
                     <button onClick={()=>setEditandoId(null)}
                       style={{padding:'6px 12px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
                   </div>
                 </div>
               ) : (
-                <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,borderRadius:6,padding:'2px 0'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='#F7F6F3'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2,flexWrap:'wrap'}}>
-                      <span style={{fontSize:13,fontWeight:500}}>{nc}</span>
-                      {count>1&&<span style={{background:'#FBEAF0',color:'#9B4F6A',borderRadius:10,padding:'1px 8px',fontSize:11,fontWeight:600}}>×{count}</span>}
-                      {l.duracion_minutos&&<Badge bg="#EEEDFE" color="#3C3489">{l.duracion_minutos===60?'1h':`${l.duracion_minutos}m`}</Badge>}
+                      <span style={{fontSize:13,fontWeight:500}}>{c.nombre}</span>
+                      <Badge bg={col.bg} color={col.color}>{rolLabel}</Badge>
                     </div>
-                    <div style={{fontSize:11,color:'#8a8a8a',marginBottom:l.comentario?3:0}}>
-                      {fmtFechaLlamada(l.fecha)} · {fmtHoraLlamada(l.fecha)}
-                      {registranteName&&<span style={{marginLeft:8}}>· {registranteName}</span>}
-                    </div>
-                    {l.comentario&&<div style={{fontSize:12,color:'#4a4a4a',fontStyle:'italic'}}>{l.comentario}</div>}
+                    {c.telefono&&<div style={{fontSize:12,color:'#6B7280'}}>{c.telefono}</div>}
                   </div>
-                  <div style={{display:'flex',gap:4,flexShrink:0,marginTop:1}}>
+                  <div style={{display:'flex',gap:4,flexShrink:0}}>
                     <button
-                      onClick={()=>{setEditandoId(l.id);setEditDuracion(l.duracion_minutos||null);setEditDurLibre('');setEditComentario(l.comentario||'');}}
+                      onClick={()=>{setEditandoId(c.id);setEditNombre(c.nombre);setEditTelefono(c.telefono||'');setEditRol(c.rol||'Cliente');setEditRolDetalle(c.rol_detalle||'');}}
                       title="Editar"
                       style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>✏️</button>
-                    <button
-                      onClick={()=>eliminar(l.id)}
+                    <button onClick={()=>eliminar(c.id)}
                       title="Eliminar"
                       style={{fontSize:14,color:'#c9c9c4',background:'none',border:'none',cursor:'pointer',padding:'2px 4px',lineHeight:1}}>🗑️</button>
                   </div>
