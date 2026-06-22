@@ -7467,13 +7467,12 @@ function Pluma({ perfil, perfilesEstudio = [] }) {
     return '📎';
   }
 
-  const FIJAS = ['Demanda', 'Contestación'];
   const tiposEnDatos = [...new Set((escritos || []).map(e => e.tipo).filter(Boolean))];
-  const tiposExtra = tiposEnDatos.filter(t => !FIJAS.includes(t));
+  const tiposExtra = tiposEnDatos.filter(t => !carpetasFijas.includes(t));
   const todasLasCarpetas = [
-    ...FIJAS,
+    ...carpetasFijas,
     ...tiposExtra,
-    ...extraCategorias.filter(c => !FIJAS.includes(c) && !tiposExtra.includes(c)),
+    ...extraCategorias.filter(c => !carpetasFijas.includes(c) && !tiposExtra.includes(c)),
   ];
 
   function countCarpeta(tipo) {
