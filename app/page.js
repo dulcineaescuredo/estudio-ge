@@ -7580,7 +7580,108 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     if (insData?.id) extraerTexto(insData.id, publicUrl);
   }
 
+  async function generarEscrito() {
+    setGenerarError('');
+    setGenerando(true);
+    try {
+      const res = await fetch('/api/generar-escrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: generarForm.tipo,
+          cliente_id: generarForm.cliente_id,
+          expediente_id: generarForm.expediente_id,
+          instrucciones: generarForm.instrucciones,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setShowGenerarModal(false);
+        setDraftTexto(data.draft);
+      } else {
+        setGenerarError(data.error || 'Error desconocido al generar el escrito.');
+      }
+    } catch (err) {
+      setGenerarError('Error de red: ' + err.message);
+    } finally {
+      setGenerando(false);
+    }
+  }
+
   const archivosEnCarpeta = carpetaActual ? escritos.filter(e => e.tipo === carpetaActual) : [];
+
+  const expedientesDelCliente = generarForm.cliente_id
+    ? (expedientes || []).filter(e => e.cliente_id === generarForm.cliente_id)
+    : [];
+
+  const modalGenerar = showGenerarModal && (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:'#fff',borderRadius:16,padding:28,width:'100%',maxWidth:480,boxShadow:'0 8px 40px rgba(0,0,0,0.18)',maxHeight:'90vh',overflowY:'auto'}}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:4,color:'#1A1A1A'}}>✨ Nuevo escrito con IA</div>
+        <div style={{fontSize:13,color:'#6B7280',marginBottom:20}}>Generá un draft basado en tus ejemplos</div>
+
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Tipo de escrito</div>
+        <select
+          value={generarForm.tipo}
+          onChange={e => setGenerarForm(f => ({ ...f, tipo: e.target.value }))}
+          style={{...inputStyle}}>
+          <option value="">Elegí un tipo...</option>
+          {todasLasCarpetas.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Cliente</div>
+        <select
+          value={generarForm.cliente_id}
+          onChange={e => setGenerarForm(f => ({ ...f, cliente_id: e.target.value, expediente_id: '' }))}
+          style={{...inputStyle}}>
+          <option value="">Elegí un cliente...</option>
+          {(clientes || []).map(c => <option key={c.id} value={c.id}>{nombreCompleto(c)}</option>)}
+        </select>
+
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Expediente</div>
+        <select
+          value={generarForm.expediente_id}
+          onChange={e => setGenerarForm(f => ({ ...f, expediente_id: e.target.value }))}
+          disabled={!generarForm.cliente_id}
+          style={{...inputStyle, opacity:generarForm.cliente_id?1:0.5, cursor:generarForm.cliente_id?'pointer':'default'}}>
+          <option value="">{generarForm.cliente_id ? 'Elegí un expediente...' : 'Primero elegí un cliente'}</option>
+          {expedientesDelCliente.map(e => <option key={e.id} value={e.id}>{e.caratula || e.numero || e.id}</option>)}
+        </select>
+
+        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+          Instrucciones adicionales <span style={{fontWeight:400,color:'#8a8a8a',textTransform:'none'}}>(opcional)</span>
+        </div>
+        <textarea
+          value={generarForm.instrucciones}
+          onChange={e => setGenerarForm(f => ({ ...f, instrucciones: e.target.value }))}
+          placeholder="Ej: Incluir excepción de falta de legitimación activa, tono formal..."
+          rows={3}
+          style={{...inputStyle, resize:'vertical', minHeight:80}}
+        />
+
+        {generarError && (
+          <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#991B1B',marginBottom:12}}>
+            {generarError}
+          </div>
+        )}
+
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
+          <button onClick={()=>{setShowGenerarModal(false);setGenerarError('');}}
+            disabled={generando}
+            style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',opacity:generando?0.5:1}}>
+            Cancelar
+          </button>
+          <button onClick={generarEscrito}
+            disabled={generando||!generarForm.tipo||!generarForm.cliente_id||!generarForm.expediente_id}
+            style={{padding:'9px 20px',borderRadius:8,fontSize:13,border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:600,
+              opacity:generando||!generarForm.tipo||!generarForm.cliente_id||!generarForm.expediente_id?0.6:1,
+              cursor:generando||!generarForm.tipo||!generarForm.cliente_id||!generarForm.expediente_id?'default':'pointer'}}>
+            {generando ? '⏳ Generando draft...' : '✨ Generar draft'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const modalForm = showForm && (
     <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
