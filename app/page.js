@@ -616,6 +616,7 @@ function Contenido(props) {
   if (vista === 'agenda-tareas') return <AgendaUnificada filtro="tareas" {...props} />;
   if (vista === 'agenda-personal') return <AgendaUnificada filtro="personal" {...props} />;
   if (vista === 'notificaciones') return <Notificaciones {...props} />;
+  if (vista === 'pluma') return <Pluma {...props} />;
   return null;
 }
 
