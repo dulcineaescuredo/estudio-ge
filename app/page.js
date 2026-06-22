@@ -7438,6 +7438,11 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const fileInputPlumaRef = useRef(null);
   const [procesandoIds, setProcesandoIds] = useState(new Set());
+  const [showGenerarModal, setShowGenerarModal] = useState(false);
+  const [generarForm, setGenerarForm] = useState({ tipo: '', cliente_id: '', expediente_id: '', instrucciones: '' });
+  const [generando, setGenerando] = useState(false);
+  const [generarError, setGenerarError] = useState('');
+  const [draftTexto, setDraftTexto] = useState(null);
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
