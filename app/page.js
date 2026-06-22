@@ -161,7 +161,7 @@ export default function Home() {
 
   async function cargarDatos() {
     setCargandoDatos(true);
-    const [e, c, t, n, cl, h, cu, cfg, as_, ae] = await Promise.all([
+    const [e, c, t, n, cl, h, cu, cfg, as_, ae, cont] = await Promise.all([
       supabase.from('expedientes').select('*').order('creado_en', { ascending: false }),
       supabase.from('consultas').select('*').order('fecha', { ascending: false }),
       supabase.from('tareas').select('*').order('creado_en', { ascending: false }),
@@ -172,12 +172,14 @@ export default function Home() {
       supabase.from('config').select('*').maybeSingle(),
       supabase.from('asuntos').select('*').order('created_at', { ascending: false }),
       supabase.from('asunto_etapas').select('*').order('orden', { ascending: true }),
+      supabase.from('contactos').select('*').order('nombre', { ascending: true }),
     ]);
     setExpedientes(e.data || []);
     setConsultas(c.data || []);
     setTareas(t.data || []);
     setNotas(n.data || []);
     setClientes(cl.data || []);
+    setContactos(cont.data || []);
     setHonorarios(h.data || []);
     setCuotas(cu.data || []);
     setValorUhon(cfg.data?.valor_uhon ?? null);
