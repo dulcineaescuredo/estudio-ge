@@ -1,11 +1,5 @@
 export const runtime = 'nodejs';
 
-if (typeof globalThis.DOMMatrix === 'undefined') {
-  globalThis.DOMMatrix = class DOMMatrix {
-    constructor() {}
-  };
-}
-
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request) {
@@ -27,11 +21,10 @@ export async function POST(request) {
     let texto_extraido = '';
 
     if (ext === 'pdf') {
-      const { PDFParse } = await import('pdf-parse');
-      const parser = new PDFParse({ data: buffer });
-      const result = await parser.getText();
-      await parser.destroy();
-      texto_extraido = result.text || '';
+      const { extractText, getDocumentProxy } = await import('unpdf');
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text } = await extractText(pdf, { mergePages: true });
+      texto_extraido = text || '';
     } else if (ext === 'doc' || ext === 'docx') {
       const mammoth = await import('mammoth');
       const result = await mammoth.extractRawText({ buffer });
