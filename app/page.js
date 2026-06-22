@@ -120,6 +120,7 @@ export default function Home() {
   const [tareas, setTareas] = useState([]);
   const [notas, setNotas] = useState([]);
   const [clientes, setClientes] = useState([]);
+  const [contactos, setContactos] = useState([]);
   const [honorarios, setHonorarios] = useState([]);
   const [cuotas, setCuotas] = useState([]);
   const [valorUhon, setValorUhon] = useState(null);
