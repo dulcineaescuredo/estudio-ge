@@ -7945,6 +7945,7 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
           )}
         </div>
       )}
+      {modalGenerar}
     </div>
   );
 }
