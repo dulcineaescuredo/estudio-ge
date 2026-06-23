@@ -86,8 +86,32 @@ export async function POST(request) {
       expediente.fuero && `Fuero: ${expediente.fuero}`,
     ].filter(Boolean).join('\n');
 
-    const prompt = `Sos un asistente legal especializado en redacción de escritos judiciales argentinos. Tu tarea es redactar un escrito judicial de tipo "${tipo}" completo, listo para revisar y editar. No escribas un resumen ni un esquema: redactá el escrito en forma íntegra, con el encabezado, cuerpo y cierre correspondientes.
+    let hechosSeccion = '';
+    if (tipo === 'Demanda' && instrucciones_demanda) {
+      const d = instrucciones_demanda;
+      const lineas = [
+        d.tipo_proceso && `Tipo de proceso: ${d.tipo_proceso}`,
+        d.personeria && `Personería: ${d.personeria}`,
+        d.objeto && `Objeto: ${d.objeto}`,
+        d.hechos && `Hechos: ${d.hechos}`,
+        d.fundamento_legal && `Fundamento legal: ${d.fundamento_legal}`,
+        d.peticion && `Petición: ${d.peticion}`,
+        d.prueba && `Prueba ofrecida: ${d.prueba}`,
+        d.danio_moral
+          ? `Daño moral: Sí, con el siguiente fundamento: ${d.danio_moral_detalle || '(sin detalle)'}`
+          : 'Daño moral: No se reclama',
+        d.jurisprudencia && d.jurisprudencia_fallo
+          ? `Jurisprudencia citada: Fallo: ${d.jurisprudencia_fallo}${d.jurisprudencia_extracto ? ` — Parte relevante: ${d.jurisprudencia_extracto}` : ''}`
+          : null,
+        d.comentarios_adicionales && `Comentarios adicionales: ${d.comentarios_adicionales}`,
+      ].filter(Boolean);
+      if (lineas.length > 0) {
+        hechosSeccion = `## Hechos del caso (información provista por el usuario — esta es la fuente de verdad sobre lo ocurrido, no inventar hechos adicionales)\n${lineas.join('\n')}`;
+      }
+    }
 
+    const prompt = `Sos un asistente legal especializado en redacción de escritos judiciales argentinos. Tu tarea es redactar un escrito judicial de tipo "${tipo}" completo, listo para revisar y editar. No escribas un resumen ni un esquema: redactá el escrito en forma íntegra, con el encabezado, cuerpo y cierre correspondientes.
+${hechosSeccion ? `\n${hechosSeccion}\n` : ''}
 Basate estrictamente en el estilo, la estructura y las convenciones que se observan en los siguientes ejemplos:
 
 ${ejemplosTexto}
