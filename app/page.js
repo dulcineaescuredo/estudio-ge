@@ -7584,6 +7584,7 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     setGenerarError('');
     setGenerando(true);
     try {
+      const esDemanda = generarForm.tipo === 'Demanda';
       const res = await fetch('/api/generar-escrito', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -7591,7 +7592,22 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
           tipo: generarForm.tipo,
           cliente_id: generarForm.cliente_id,
           expediente_id: generarForm.expediente_id,
-          instrucciones: generarForm.instrucciones,
+          instrucciones: esDemanda ? null : generarForm.instrucciones,
+          instrucciones_demanda: esDemanda ? {
+            tipo_proceso: generarForm.tipo_proceso_demanda,
+            personeria: generarForm.personeria,
+            objeto: generarForm.objeto,
+            hechos: generarForm.hechos,
+            fundamento_legal: generarForm.fundamento_legal,
+            peticion: generarForm.peticion,
+            prueba: generarForm.prueba,
+            danio_moral: generarForm.danio_moral,
+            danio_moral_detalle: generarForm.danio_moral_detalle,
+            jurisprudencia: generarForm.jurisprudencia,
+            jurisprudencia_fallo: generarForm.jurisprudencia_fallo,
+            jurisprudencia_extracto: generarForm.jurisprudencia_extracto,
+            comentarios_adicionales: generarForm.comentarios_adicionales,
+          } : null,
         }),
       });
       const data = await res.json().catch(() => ({}));
