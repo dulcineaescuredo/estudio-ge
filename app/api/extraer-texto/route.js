@@ -39,6 +39,8 @@ export async function POST(request) {
       return Response.json({ error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY en el servidor' }, { status: 500 });
     }
     const supabase = createClient(supabaseUrl, serviceKey.trim());
+    const jwtPayload = JSON.parse(Buffer.from(serviceKey.split('.')[1], 'base64').toString());
+    console.log('[extraer-texto] role en el JWT:', jwtPayload.role);
 
     const { data: updateData, error: updateError } = await supabase
       .from('escritos_ejemplo')
