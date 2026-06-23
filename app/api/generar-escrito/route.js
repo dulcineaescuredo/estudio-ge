@@ -18,6 +18,7 @@ export async function POST(request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     console.log('[generar-escrito] service key existe:', !!serviceKey, 'longitud:', serviceKey?.length);
+    console.log('[generar-escrito] service key trim longitud:', serviceKey?.trim().length, 'primeros 4 chars:', JSON.stringify(serviceKey?.slice(0,4)), 'últimos 4 chars:', JSON.stringify(serviceKey?.slice(-4)));
     if (!serviceKey) {
       return Response.json({ error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY en el servidor' }, { status: 500 });
     }
