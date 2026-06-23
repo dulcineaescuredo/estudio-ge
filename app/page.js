@@ -7439,7 +7439,7 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
   const fileInputPlumaRef = useRef(null);
   const [procesandoIds, setProcesandoIds] = useState(new Set());
   const [showGenerarModal, setShowGenerarModal] = useState(false);
-  const [generarForm, setGenerarForm] = useState({ tipo: '', cliente_id: '', expediente_id: '', instrucciones: '' });
+  const [generarForm, setGenerarForm] = useState({ tipo: '', cliente_id: '', expediente_id: '', instrucciones: '', tipo_proceso_demanda: '', personeria: '', objeto: '', hechos: '', fundamento_legal: '', peticion: '', prueba: '', danio_moral: false, danio_moral_detalle: '', jurisprudencia: false, jurisprudencia_fallo: '', jurisprudencia_extracto: '', comentarios_adicionales: '' });
   const [generando, setGenerando] = useState(false);
   const [generarError, setGenerarError] = useState('');
   const [draftTexto, setDraftTexto] = useState(null);
