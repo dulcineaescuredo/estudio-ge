@@ -7657,7 +7657,11 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
         <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Expediente</div>
         <select
           value={generarForm.expediente_id}
-          onChange={e => setGenerarForm(f => ({ ...f, expediente_id: e.target.value }))}
+          onChange={e => {
+            const expId = e.target.value;
+            const expSel = expedientesDelCliente.find(ex => ex.id === expId);
+            setGenerarForm(f => ({ ...f, expediente_id: expId, tipo_proceso_demanda: expSel?.tipo_proceso || f.tipo_proceso_demanda }));
+          }}
           disabled={!generarForm.cliente_id}
           style={{...inputStyle, opacity:generarForm.cliente_id?1:0.5, cursor:generarForm.cliente_id?'pointer':'default'}}>
           <option value="">{generarForm.cliente_id ? 'Elegí un expediente...' : 'Primero elegí un cliente'}</option>
