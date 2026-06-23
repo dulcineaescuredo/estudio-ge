@@ -7668,16 +7668,81 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
           {expedientesDelCliente.map(e => <option key={e.id} value={e.id}>{e.caratula || e.numero || e.id}</option>)}
         </select>
 
-        <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>
-          Instrucciones adicionales <span style={{fontWeight:400,color:'#8a8a8a',textTransform:'none'}}>(opcional)</span>
+        <div style={{background:'#E0F2FE',border:'1px solid #BAE6FD',borderRadius:8,padding:'9px 14px',fontSize:12,color:'#0369A1',display:'flex',alignItems:'flex-start',gap:8,marginBottom:16}}>
+          <span style={{flexShrink:0}}>💡</span>
+          <span>Cuanto más contexto me den, mejor funciono.</span>
         </div>
-        <textarea
-          value={generarForm.instrucciones}
-          onChange={e => setGenerarForm(f => ({ ...f, instrucciones: e.target.value }))}
-          placeholder="Ej: Incluir excepción de falta de legitimación activa, tono formal..."
-          rows={3}
-          style={{...inputStyle, resize:'vertical', minHeight:80}}
-        />
+
+        {generarForm.tipo === 'Demanda' ? (
+          <>
+            <div style={{fontSize:11,fontWeight:700,color:'#6B7280',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10,borderBottom:'1px solid #ECECEC',paddingBottom:4}}>Encuadre</div>
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Tipo de proceso</div>
+            <select value={generarForm.tipo_proceso_demanda} onChange={e=>setGenerarForm(f=>({...f,tipo_proceso_demanda:e.target.value}))} style={{...inputStyle}}>
+              <option value="">Seleccioná...</option>
+              <option value="alimentos">Alimentos</option>
+              <option value="sucesion">Sucesión</option>
+              <option value="divorcio">Divorcio</option>
+              <option value="ordinario">Ordinario (conocimiento)</option>
+              <option value="ejecutivo">Ejecutivo (monitorio)</option>
+              <option value="laboral">Laboral</option>
+              <option value="incidente">Incidente</option>
+              <option value="medida cautelar">Medida cautelar</option>
+            </select>
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Personería</div>
+            <textarea value={generarForm.personeria} onChange={e=>setGenerarForm(f=>({...f,personeria:e.target.value}))} placeholder="Ej: en representación de [cliente], según poder/carta poder adjunto" rows={2} style={{...inputStyle,resize:'vertical'}} />
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Objeto</div>
+            <textarea value={generarForm.objeto} onChange={e=>setGenerarForm(f=>({...f,objeto:e.target.value}))} placeholder="Ej: por cobro de pesos, por daños y perjuicios, etc." rows={2} style={{...inputStyle,resize:'vertical'}} />
+
+            <div style={{fontSize:11,fontWeight:700,color:'#6B7280',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10,borderBottom:'1px solid #ECECEC',paddingBottom:4,marginTop:4}}>El caso</div>
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Hechos</div>
+            <textarea value={generarForm.hechos} onChange={e=>setGenerarForm(f=>({...f,hechos:e.target.value}))} placeholder="Contá qué pasó: fechas, montos, circunstancias relevantes" rows={6} style={{...inputStyle,resize:'vertical'}} />
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Artículos en que se funda la petición</div>
+            <textarea value={generarForm.fundamento_legal} onChange={e=>setGenerarForm(f=>({...f,fundamento_legal:e.target.value}))} placeholder="Ej: arts. 1716, 1737 CCyC" rows={3} style={{...inputStyle,resize:'vertical'}} />
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Petición</div>
+            <textarea value={generarForm.peticion} onChange={e=>setGenerarForm(f=>({...f,peticion:e.target.value}))} placeholder="Qué se le pide concretamente al juzgado" rows={4} style={{...inputStyle,resize:'vertical'}} />
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Prueba que se quiere ofrecer</div>
+            <textarea value={generarForm.prueba} onChange={e=>setGenerarForm(f=>({...f,prueba:e.target.value}))} placeholder="Documental, testimonial, pericial, etc." rows={4} style={{...inputStyle,resize:'vertical'}} />
+
+            <div style={{fontSize:11,fontWeight:700,color:'#6B7280',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10,borderBottom:'1px solid #ECECEC',paddingBottom:4,marginTop:4}}>Opcionales</div>
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:'#1A1A1A',marginBottom:generarForm.danio_moral?8:12}}>
+              <input type="checkbox" checked={generarForm.danio_moral} onChange={e=>setGenerarForm(f=>({...f,danio_moral:e.target.checked}))} style={{width:16,height:16,accentColor:'#9B4F6A',flexShrink:0}} />
+              ¿Se reclama daño moral?
+            </label>
+            {generarForm.danio_moral && (
+              <textarea value={generarForm.danio_moral_detalle} onChange={e=>setGenerarForm(f=>({...f,danio_moral_detalle:e.target.value}))} placeholder="Fundamento del daño moral" rows={2} style={{...inputStyle,resize:'vertical',marginBottom:12}} />
+            )}
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:'#1A1A1A',marginBottom:generarForm.jurisprudencia?8:12}}>
+              <input type="checkbox" checked={generarForm.jurisprudencia} onChange={e=>setGenerarForm(f=>({...f,jurisprudencia:e.target.checked}))} style={{width:16,height:16,accentColor:'#9B4F6A',flexShrink:0}} />
+              ¿Agregar jurisprudencia?
+            </label>
+            {generarForm.jurisprudencia && (
+              <>
+                <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Fallo</div>
+                <input value={generarForm.jurisprudencia_fallo} onChange={e=>setGenerarForm(f=>({...f,jurisprudencia_fallo:e.target.value}))} placeholder="Cámara Civil, Sala X, autos..." style={{...inputStyle}} />
+                <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Parte relevante</div>
+                <textarea value={generarForm.jurisprudencia_extracto} onChange={e=>setGenerarForm(f=>({...f,jurisprudencia_extracto:e.target.value}))} placeholder="Pegá el extracto del fallo que querés citar" rows={3} style={{...inputStyle,resize:'vertical'}} />
+              </>
+            )}
+
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+              Comentarios adicionales <span style={{fontWeight:400,color:'#8a8a8a',textTransform:'none'}}>(opcional)</span>
+            </div>
+            <textarea value={generarForm.comentarios_adicionales} onChange={e=>setGenerarForm(f=>({...f,comentarios_adicionales:e.target.value}))} placeholder="Cualquier otra indicación para el escrito" rows={2} style={{...inputStyle,resize:'vertical'}} />
+          </>
+        ) : (
+          <>
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+              Instrucciones adicionales <span style={{fontWeight:400,color:'#8a8a8a',textTransform:'none'}}>(opcional)</span>
+            </div>
+            <textarea
+              value={generarForm.instrucciones}
+              onChange={e => setGenerarForm(f => ({ ...f, instrucciones: e.target.value }))}
+              placeholder="Ej: Incluir excepción de falta de legitimación activa, tono formal..."
+              rows={3}
+              style={{...inputStyle, resize:'vertical', minHeight:80}}
+            />
+          </>
+        )}
 
         {generarError && (
           <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#991B1B',marginBottom:12}}>
