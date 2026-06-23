@@ -7626,6 +7626,26 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     }
   }
 
+  async function procesarFalloPdf(file) {
+    setProcesandoJurisprudencia(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/resumir-jurisprudencia', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.resumen) {
+        setGenerarForm(f => ({ ...f, jurisprudencia_extracto: data.resumen }));
+      } else {
+        alert(data.error || 'Error al procesar el archivo.');
+      }
+    } catch (err) {
+      alert('Error de red: ' + err.message);
+    } finally {
+      setProcesandoJurisprudencia(false);
+      if (jurisprudenciaPdfRef.current) jurisprudenciaPdfRef.current.value = '';
+    }
+  }
+
   const archivosEnCarpeta = carpetaActual ? escritos.filter(e => e.tipo === carpetaActual) : [];
 
   const expedientesDelCliente = generarForm.cliente_id
