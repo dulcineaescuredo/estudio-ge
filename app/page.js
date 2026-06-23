@@ -7911,7 +7911,7 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
           <div style={{fontSize:20,fontWeight:700,color:'#1A1A1A'}}>✒️ Pluma</div>
           <div style={{fontSize:13,color:'#6B7280',marginTop:2}}>Ejemplos de escritos para entrenar al asistente</div>
         </div>
-        <button onClick={()=>{setGenerarForm({tipo:todasLasCarpetas[0]||'',cliente_id:'',expediente_id:'',instrucciones:''});setGenerarError('');setShowGenerarModal(true);}}
+        <button onClick={()=>{setGenerarForm({tipo:todasLasCarpetas[0]||'',cliente_id:'',expediente_id:'',instrucciones:'',tipo_proceso_demanda:'',personeria:'',objeto:'',hechos:'',fundamento_legal:'',peticion:'',prueba:'',danio_moral:false,danio_moral_detalle:'',jurisprudencia:false,jurisprudencia_fallo:'',jurisprudencia_extracto:'',comentarios_adicionales:''});setGenerarError('');setShowGenerarModal(true);}}
           style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'none',background:'#9B4F6A',color:'#fff',fontFamily:'system-ui',fontWeight:600,whiteSpace:'nowrap',flexShrink:0}}>
           ✨ Nuevo escrito
         </button>
