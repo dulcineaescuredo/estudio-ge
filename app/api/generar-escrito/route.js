@@ -19,6 +19,8 @@ export async function POST(request) {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     console.log('[generar-escrito] service key existe:', !!serviceKey, 'longitud:', serviceKey?.length);
     console.log('[generar-escrito] service key trim longitud:', serviceKey?.trim().length, 'primeros 4 chars:', JSON.stringify(serviceKey?.slice(0,4)), 'últimos 4 chars:', JSON.stringify(serviceKey?.slice(-4)));
+    const jwtPayload = JSON.parse(Buffer.from(serviceKey.split('.')[1], 'base64').toString());
+    console.log('[generar-escrito] role en el JWT:', jwtPayload.role);
     if (!serviceKey) {
       return Response.json({ error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY en el servidor' }, { status: 500 });
     }
