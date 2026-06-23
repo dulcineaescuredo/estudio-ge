@@ -7742,6 +7742,11 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
                 <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Fallo</div>
                 <input value={generarForm.jurisprudencia_fallo} onChange={e=>setGenerarForm(f=>({...f,jurisprudencia_fallo:e.target.value}))} placeholder="Cámara Civil, Sala X, autos..." style={{...inputStyle}} />
                 <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Parte relevante</div>
+                <input ref={jurisprudenciaPdfRef} type="file" accept=".pdf,.docx" onChange={e=>{ const f=e.target.files[0]; if(f) procesarFalloPdf(f); }} style={{position:'absolute',opacity:0,width:0,height:0,pointerEvents:'none'}} />
+                <button type="button" onClick={()=>jurisprudenciaPdfRef.current?.click()} disabled={procesandoJurisprudencia}
+                  style={{display:'flex',alignItems:'center',gap:8,padding:'7px 14px',borderRadius:8,fontSize:13,fontFamily:'system-ui',cursor:procesandoJurisprudencia?'default':'pointer',border:'1px solid #9B4F6A',background:'#fff',color:'#9B4F6A',fontWeight:500,marginBottom:8,opacity:procesandoJurisprudencia?0.6:1}}>
+                  {procesandoJurisprudencia ? '⏳ Extrayendo lo relevante...' : '📎 Subir PDF del fallo'}
+                </button>
                 <textarea value={generarForm.jurisprudencia_extracto} onChange={e=>setGenerarForm(f=>({...f,jurisprudencia_extracto:e.target.value}))} placeholder="Pegá el extracto del fallo que querés citar" rows={3} style={{...inputStyle,resize:'vertical'}} />
               </>
             )}
