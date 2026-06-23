@@ -35,26 +35,24 @@ export async function POST(request) {
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    let supabase;
-    if (serviceKey) {
-      supabase = createClient(supabaseUrl, serviceKey);
-    } else if (access_token) {
-      supabase = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: `Bearer ${access_token}` } },
-      });
-    } else {
-      supabase = createClient(supabaseUrl, anonKey);
+    if (!serviceKey) {
+      return Response.json({ error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY en el servidor' }, { status: 500 });
     }
+    const supabase = createClient(supabaseUrl, serviceKey.trim());
 
-    const { error: updateError } = await supabase
+    const { data: updateData, error: updateError } = await supabase
       .from('escritos_ejemplo')
       .update({ texto_extraido })
-      .eq('id', escrito_id);
+      .eq('id', escrito_id)
+      .select('id');
+
+    console.log('[extraer-texto] update resultado — error:', updateError?.message ?? null, '| filas afectadas:', updateData?.length ?? 0);
 
     if (updateError) {
       return Response.json({ error: 'Error al guardar en la base de datos: ' + updateError.message }, { status: 500 });
+    }
+    if (!updateData || updateData.length === 0) {
+      return Response.json({ error: `El UPDATE no afectó ninguna fila. Verificá que el escrito_id "${escrito_id}" exista en la tabla.` }, { status: 500 });
     }
 
     return Response.json({ success: true, texto_extraido });
