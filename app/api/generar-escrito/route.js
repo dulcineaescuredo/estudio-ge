@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!serviceKey) {
       return Response.json({ error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY en el servidor' }, { status: 500 });
     }
-    const supabase = createClient(supabaseUrl, serviceKey);
+    const supabase = createClient(supabaseUrl, serviceKey.trim());
 
     console.log('[generar-escrito] tipo recibido:', JSON.stringify(tipo));
 
