@@ -140,6 +140,7 @@ export default function Home() {
   const [perfilesEstudio, setPerfilesEstudio] = useState([]);
   const [etapaPanelId, setEtapaPanelId] = useState(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [showPerfilModal, setShowPerfilModal] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
