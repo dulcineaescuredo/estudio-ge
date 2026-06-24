@@ -7289,12 +7289,13 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
 
   async function guardarEdicion(id) {
     if (!editNombre.trim()||!editTelefono.trim()) { alert('Nombre y teléfono son obligatorios'); return; }
-    await supabase.from('contactos').update({
+    const { error } = await supabase.from('contactos').update({
       nombre: editNombre.trim(),
       telefono: editTelefono.trim(),
       rol: editRol,
       rol_detalle: editRol==='Otro' ? (editRolDetalle.trim()||null) : null,
     }).eq('id', id);
+    if (error) { alert('Error al actualizar contacto: ' + error.message); return; }
     setEditandoId(null);
     mostrarToast('Contacto actualizado ✓');
     recargar();
