@@ -7592,9 +7592,13 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
 
   async function generarEscrito() {
     setGenerarError('');
+    const esDemanda = generarForm.tipo === 'Demanda';
+    if (esDemanda && generarForm.abogados_interponen.length === 0) {
+      setGenerarError('Seleccioná al menos un abogado que interpone la demanda.');
+      return;
+    }
     setGenerando(true);
     try {
-      const esDemanda = generarForm.tipo === 'Demanda';
       const res = await fetch('/api/generar-escrito', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
