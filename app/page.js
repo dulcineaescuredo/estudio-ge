@@ -6812,6 +6812,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
   const [editDuracion, setEditDuracion] = useState(null);
   const [editDurLibre, setEditDurLibre] = useState('');
   const [editComentario, setEditComentario] = useState('');
+  const [fechaLlamada, setFechaLlamada] = useState(datetimeLocalNow);
   const [crearContactoAbierto, setCrearContactoAbierto] = useState(false);
   const [ccApellido, setCcApellido] = useState('');
   const [ccNombrePila, setCcNombrePila] = useState('');
