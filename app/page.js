@@ -176,6 +176,7 @@ export default function Home() {
       supabase.from('asunto_etapas').select('*').order('orden', { ascending: true }),
       supabase.from('contactos').select('*').order('nombre', { ascending: true }),
     ]);
+    if (cont.error) console.error('[contactos]', cont.error);
     setExpedientes(e.data || []);
     setConsultas(c.data || []);
     setTareas(t.data || []);
