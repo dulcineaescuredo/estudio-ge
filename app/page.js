@@ -6977,6 +6977,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
       if (!c) return null;
       return c.rol === 'Otro' ? (c.rol_detalle || 'Otro') : c.rol;
     }
+    if (l.cliente_id) return 'Cliente';
     return null;
   }
 
