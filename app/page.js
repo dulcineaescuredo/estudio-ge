@@ -7702,6 +7702,38 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
           {(clientes || []).map(c => <option key={c.id} value={c.id}>{nombreCompleto(c)}</option>)}
         </select>
 
+        {generarForm.tipo === 'Demanda' && (
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+              Abogados que interponen <span style={{color:'#C53030',fontWeight:700,textTransform:'none'}}>*</span>
+            </div>
+            {abogadosModal.length === 0 ? (
+              <div style={{fontSize:12,color:'#8a8a8a',padding:'6px 0'}}>Cargando abogados...</div>
+            ) : (
+              abogadosModal.map(a => {
+                const seleccionado = generarForm.abogados_interponen.includes(a.id);
+                const mats = matriculasAbogados[a.id] || [];
+                return (
+                  <div key={a.id} style={{marginBottom: seleccionado ? 8 : 4}}>
+                    <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:'#1A1A1A'}}>
+                      <input type="checkbox" checked={seleccionado} onChange={() => toggleAbogado(a.id)} style={{width:16,height:16,accentColor:'#9B4F6A',flexShrink:0}} />
+                      {a.nombre}{a.rol ? ` (${a.rol})` : ''}
+                    </label>
+                    {seleccionado && (
+                      <div style={{marginLeft:24,marginTop:3,fontSize:12,color:'#6B7280',lineHeight:1.7}}>
+                        {mats.length > 0
+                          ? mats.map((m, i) => <div key={i}>└ {m.jurisdicciones?.nombre}: Tomo {m.tomo}, Folio {m.folio}</div>)
+                          : <div style={{color:'#8a8a8a',fontStyle:'italic'}}>Sin matrículas registradas</div>
+                        }
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
         <div style={{fontSize:12,fontWeight:600,color:'#9B4F6A',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>Expediente</div>
         <select
           value={generarForm.expediente_id}
