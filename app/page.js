@@ -6906,8 +6906,9 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
       contacto_id: personaId,
     };
     if (personaTipo === 'cliente') insert.cliente_id = personaId;
-    await supabase.from('llamadas').insert(insert);
+    const { error: errLlamada } = await supabase.from('llamadas').insert(insert);
     setGuardando(false);
+    if (errLlamada) { alert('Error al registrar llamada: ' + errLlamada.message); return; }
     mostrarToast(`Llamada con ${personaNombre} registrada ✓`);
     limpiarPersona();
     setDuracionMin(null);
