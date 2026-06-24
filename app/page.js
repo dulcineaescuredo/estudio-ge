@@ -7061,6 +7061,29 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
               </div>
             )}
 
+            {!personaId && crearContactoAbierto && (
+              <div style={{background:'#F7F6F3',border:'1px solid #EBEBEA',borderRadius:10,padding:16,marginBottom:12}}>
+                <div style={{fontSize:13,fontWeight:600,marginBottom:10,color:'#1A1A1A'}}>Nuevo contacto</div>
+                <input style={inputStyle} placeholder="Nombre *" value={ccNombre} onChange={e=>setCcNombre(e.target.value)} />
+                <input style={inputStyle} placeholder="Teléfono" value={ccTelefono} onChange={e=>setCcTelefono(e.target.value)} />
+                <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Rol</div>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+                  {['Abogado','Perito','Cliente','Otro'].map(r=>{
+                    const col=rolContactoColor(r);const active=ccRol===r;
+                    return <button key={r} type="button" onClick={()=>setCcRol(r)}
+                      style={{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'system-ui',
+                        border:active?`1.5px solid ${col.color}`:'1.5px solid #e2e2e2',background:active?col.bg:'#fff',color:active?col.color:'#8a8a8a'}}>{r}</button>;
+                  })}
+                </div>
+                {ccRol==='Otro'&&<input style={inputStyle} placeholder="Especificar rol..." value={ccRolDetalle} onChange={e=>setCcRolDetalle(e.target.value)} />}
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={crearYSeleccionarContacto} disabled={ccGuardando} style={{...btnPrimary,opacity:ccGuardando?0.5:1}}>{ccGuardando?'Guardando...':'Crear y seleccionar'}</button>
+                  <button onClick={()=>{setCrearContactoAbierto(false);setCcNombre('');setCcTelefono('');setCcRol('Abogado');setCcRolDetalle('');}}
+                    style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+                </div>
+              </div>
+            )}
+
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Registrado por</div>
               <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
