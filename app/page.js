@@ -6820,7 +6820,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
   async function cargar() {
     setCargando(true);
     const { data } = await supabase.from('llamadas')
-      .select('*, clientes(apellido, nombre_pila, nombre)')
+      .select('*')
       .eq('estudio_id', '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b')
       .order('fecha', { ascending: false });
     setLlamadas(data || []);
