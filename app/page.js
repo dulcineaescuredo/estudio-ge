@@ -6786,6 +6786,11 @@ function rolContactoColor(rol) {
   return ROL_CONTACTO_COLORS[rol] || ROL_CONTACTO_COLORS['Otro'];
 }
 
+function datetimeLocalNow() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
 function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], recargar }) {
   const [subVista, setSubVista] = useState('registro');
   const [llamadas, setLlamadas] = useState([]);
