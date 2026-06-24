@@ -6964,7 +6964,6 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
       const c = (contactos || []).find(c => c.id === l.contacto_id);
       return c ? c.nombre : '—';
     }
-    if (l.clientes) return nombreCompleto(l.clientes) || l.clientes.nombre || '—';
     if (l.cliente_id) {
       const cl = (clientes || []).find(c => c.id === l.cliente_id);
       return cl ? nombreCompleto(cl) : '—';
