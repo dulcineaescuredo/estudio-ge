@@ -8154,8 +8154,13 @@ function EditarPerfil({ perfil, setPerfil, session, onClose }) {
 
   useEffect(() => {
     cargarMatriculas();
-    supabase.from('jurisdicciones').select('id, nombre').order('nombre')
-      .then(({ data }) => setJurisdicciones(data || []));
+    fetch('/api/obtener-jurisdicciones')
+      .then(r => r.json())
+      .then(data => {
+        console.log('[EditarPerfil] jurisdicciones cargadas:', data.jurisdicciones?.length, data.jurisdicciones);
+        setJurisdicciones(data.jurisdicciones || []);
+      })
+      .catch(err => console.error('[EditarPerfil] error cargando jurisdicciones:', err));
   }, []);
 
   async function cargarMatriculas() {
