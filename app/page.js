@@ -8132,3 +8132,236 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     </div>
   );
 }
+
+function EditarPerfil({ perfil, setPerfil, session, onClose }) {
+  const [nombre, setNombre] = useState(perfil?.nombre || '');
+  const [nombreMostrado, setNombreMostrado] = useState(perfil?.nombre_mostrado || '');
+  const [telefono, setTelefono] = useState(perfil?.telefono || '');
+  const [matriculas, setMatriculas] = useState([]);
+  const [jurisdicciones, setJurisdicciones] = useState([]);
+  const [subFormMat, setSubFormMat] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [pwActual, setPwActual] = useState('');
+  const [pwNueva, setPwNueva] = useState('');
+  const [pwConfirmar, setPwConfirmar] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [errorPerfil, setErrorPerfil] = useState('');
+  const [msgMat, setMsgMat] = useState('');
+  const [errorMat, setErrorMat] = useState('');
+  const [msgPw, setMsgPw] = useState('');
+  const [errorPw, setErrorPw] = useState('');
+
+  useEffect(() => {
+    cargarMatriculas();
+    supabase.from('jurisdicciones').select('id, nombre').order('nombre')
+      .then(({ data }) => setJurisdicciones(data || []));
+  }, []);
+
+  async function cargarMatriculas() {
+    const { data } = await supabase
+      .from('matriculas_abogados')
+      .select('id, jurisdiccion_id, tomo, folio, jurisdicciones(nombre)')
+      .eq('abogado_id', perfil.id);
+    setMatriculas(data || []);
+  }
+
+  async function getToken() {
+    const { data: { session: s } } = await supabase.auth.getSession();
+    return s?.access_token;
+  }
+
+  async function guardarPerfil() {
+    setMsg(''); setErrorPerfil('');
+    setGuardando(true);
+    const token = await getToken();
+    const res = await fetch('/api/actualizar-perfil', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ nombre, nombre_mostrado: nombreMostrado, telefono }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setGuardando(false);
+    if (res.ok && data.success) {
+      setMsg('Perfil actualizado.');
+      setPerfil(p => ({ ...p, nombre, nombre_mostrado: nombreMostrado, telefono }));
+    } else {
+      setErrorPerfil(data.error || 'Error al guardar.');
+    }
+  }
+
+  async function guardarMatricula() {
+    setMsgMat(''); setErrorMat('');
+    if (!subFormMat?.jurisdiccion_id || !subFormMat?.tomo || !subFormMat?.folio) {
+      setErrorMat('Completá todos los campos.');
+      return;
+    }
+    const token = await getToken();
+    const isEdit = !!subFormMat.id;
+    const url = isEdit ? `/api/editar-matricula/${subFormMat.id}` : '/api/agregar-matricula';
+    const res = await fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ jurisdiccion_id: subFormMat.jurisdiccion_id, tomo_matricula: subFormMat.tomo, folio_matricula: subFormMat.folio }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      setSubFormMat(null);
+      setErrorMat('');
+      cargarMatriculas();
+      setMsgMat(isEdit ? 'Matrícula actualizada.' : 'Matrícula agregada.');
+    } else {
+      setErrorMat(data.error || 'Error al guardar.');
+    }
+  }
+
+  async function eliminarMatricula(id) {
+    if (!confirm('¿Eliminar esta matrícula?')) return;
+    const token = await getToken();
+    const res = await fetch(`/api/eliminar-matricula/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      cargarMatriculas();
+    } else {
+      alert(data.error || 'Error al eliminar.');
+    }
+  }
+
+  async function cambiarContrasena() {
+    setMsgPw(''); setErrorPw('');
+    if (!pwActual || !pwNueva || !pwConfirmar) { setErrorPw('Completá todos los campos.'); return; }
+    if (pwNueva.length < 6) { setErrorPw('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (pwNueva !== pwConfirmar) { setErrorPw('Las contraseñas nuevas no coinciden.'); return; }
+    const token = await getToken();
+    const res = await fetch('/api/cambiar-contrasena', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ contrasena_actual: pwActual, contrasena_nueva: pwNueva }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      setMsgPw('Contraseña actualizada correctamente.');
+      setPwActual(''); setPwNueva(''); setPwConfirmar('');
+      setShowPassword(false);
+    } else {
+      setErrorPw(data.error || 'Error al cambiar contraseña.');
+    }
+  }
+
+  const secLabel = { fontSize:11, fontWeight:700, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12, borderBottom:'1px solid #EBEBEA', paddingBottom:4, marginTop:4 };
+  const fLabel = { fontSize:12, fontWeight:500, color:'#4a4a4a', display:'block', marginBottom:5 };
+  const okBox = { background:'#EAF3DE', border:'1px solid #C0DD97', borderRadius:8, padding:'9px 12px', fontSize:13, color:'#27500A', marginBottom:12 };
+  const errBox = { background:'#FCEBEB', border:'1px solid #E8AAAA', borderRadius:8, padding:'9px 12px', fontSize:13, color:'#791F1F', marginBottom:12 };
+
+  return (
+    <>
+      <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:500}} />
+      <div style={{position:'fixed',right:0,top:0,bottom:0,width:'min(480px,100vw)',background:'#fff',zIndex:501,display:'flex',flexDirection:'column',boxShadow:'-4px 0 24px rgba(0,0,0,0.18)'}}>
+
+        <div style={{padding:'18px 22px 14px',borderBottom:'1px solid #EBEBEA',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:'#1A1A1A'}}>⚙️ Mi perfil</div>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#8a8a8a',padding:4,lineHeight:1}}>✕</button>
+        </div>
+
+        <div style={{flex:1,overflowY:'auto',padding:'20px 22px'}}>
+
+          <div style={{...secLabel,marginTop:0}}>Información personal</div>
+          {msg && <div style={okBox}>✓ {msg}</div>}
+          {errorPerfil && <div style={errBox}>{errorPerfil}</div>}
+
+          <label style={fLabel}>Nombre completo</label>
+          <input value={nombre} onChange={e=>setNombre(e.target.value)} style={{...inputStyle}} placeholder="Tu nombre completo" />
+
+          <label style={fLabel}>Cómo aparecés en la app <span style={{fontWeight:400,color:'#8a8a8a'}}>(opcional)</span></label>
+          <input value={nombreMostrado} onChange={e=>setNombreMostrado(e.target.value)} style={{...inputStyle}} placeholder="Ej: Claudia, Dulcinea" />
+
+          <label style={fLabel}>Email</label>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <div style={{...inputStyle,background:'#F1EFE8',color:'#6B7280',cursor:'default',flex:1,marginBottom:0,padding:'9px 12px',display:'flex',alignItems:'center',minHeight:44}}>{session?.user?.email}</div>
+            <button onClick={()=>navigator.clipboard.writeText(session?.user?.email||'')} style={{padding:'0 14px',borderRadius:8,fontSize:12,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',flexShrink:0,minHeight:44}}>Copiar</button>
+          </div>
+
+          <label style={fLabel}>Teléfono <span style={{fontWeight:400,color:'#8a8a8a'}}>(opcional)</span></label>
+          <input value={telefono} onChange={e=>setTelefono(e.target.value)} style={{...inputStyle}} placeholder="+54 2302 ..." />
+
+          <button onClick={guardarPerfil} disabled={guardando} style={{...btnPrimary,width:'100%',textAlign:'center',marginBottom:28,boxSizing:'border-box'}}>
+            {guardando ? 'Guardando...' : 'Guardar cambios'}
+          </button>
+
+          <div style={secLabel}>Mis matrículas</div>
+          {msgMat && <div style={okBox}>✓ {msgMat}</div>}
+          {errorMat && <div style={errBox}>{errorMat}</div>}
+
+          {matriculas.length === 0 && !subFormMat && (
+            <div style={{fontSize:13,color:'#8a8a8a',marginBottom:12}}>No tenés matrículas registradas aún.</div>
+          )}
+          {matriculas.map(m => (
+            <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',background:'#F7F6F3',borderRadius:8,marginBottom:6,fontSize:13}}>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{fontWeight:600,color:'#1A1A1A'}}>{m.jurisdicciones?.nombre || '—'}</span>
+                <span style={{color:'#6B7280',marginLeft:8}}>Tomo {m.tomo} · Folio {m.folio}</span>
+              </div>
+              <button onClick={()=>setSubFormMat({id:m.id,jurisdiccion_id:m.jurisdiccion_id,tomo:m.tomo,folio:m.folio})} style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:'2px 4px',color:'#9B4F6A'}}>✏️</button>
+              <button onClick={()=>eliminarMatricula(m.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:'2px 4px',color:'#c9c9c4'}}>🗑️</button>
+            </div>
+          ))}
+
+          {subFormMat ? (
+            <div style={{background:'#FDF4F7',border:'1px solid #E8C4D0',borderRadius:8,padding:'14px 16px',marginBottom:20}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#9B4F6A',marginBottom:12}}>{subFormMat.id ? 'Editar matrícula' : 'Nueva matrícula'}</div>
+              <label style={fLabel}>Jurisdicción</label>
+              <select value={subFormMat.jurisdiccion_id||''} onChange={e=>setSubFormMat(f=>({...f,jurisdiccion_id:e.target.value}))} style={{...inputStyle}}>
+                <option value="">Seleccioná...</option>
+                {jurisdicciones.map(j=><option key={j.id} value={j.id}>{j.nombre}</option>)}
+              </select>
+              <label style={fLabel}>Tomo</label>
+              <input value={subFormMat.tomo||''} onChange={e=>setSubFormMat(f=>({...f,tomo:e.target.value}))} style={{...inputStyle}} placeholder="Ej: III" />
+              <label style={fLabel}>Folio</label>
+              <input value={subFormMat.folio||''} onChange={e=>setSubFormMat(f=>({...f,folio:e.target.value}))} style={{...inputStyle}} placeholder="Ej: 220" />
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={guardarMatricula} style={{...btnPrimary,flex:1,textAlign:'center'}}>Guardar</button>
+                <button onClick={()=>{setSubFormMat(null);setErrorMat('');}} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={()=>setSubFormMat({jurisdiccion_id:'',tomo:'',folio:''})} style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#9B4F6A',background:'none',border:'1px solid #C68AA2',borderRadius:8,padding:'7px 14px',cursor:'pointer',fontFamily:'system-ui',marginBottom:28}}>
+              ➕ Agregar matrícula
+            </button>
+          )}
+
+          <div style={secLabel}>Seguridad</div>
+          {!showPassword ? (
+            <button onClick={()=>setShowPassword(true)} style={{fontSize:13,color:'#9B4F6A',background:'none',border:'1px solid #C68AA2',borderRadius:8,padding:'8px 14px',cursor:'pointer',fontFamily:'system-ui'}}>
+              🔑 Cambiar contraseña
+            </button>
+          ) : (
+            <div style={{background:'#F7F6F3',border:'1px solid #DDDCDA',borderRadius:8,padding:'14px 16px'}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#1A1A1A',marginBottom:12}}>Cambiar contraseña</div>
+              {msgPw && <div style={okBox}>✓ {msgPw}</div>}
+              {errorPw && <div style={errBox}>{errorPw}</div>}
+              <label style={fLabel}>Contraseña actual</label>
+              <input type="password" value={pwActual} onChange={e=>setPwActual(e.target.value)} style={{...inputStyle}} />
+              <label style={fLabel}>Nueva contraseña</label>
+              <input type="password" value={pwNueva} onChange={e=>setPwNueva(e.target.value)} style={{...inputStyle}} />
+              <label style={fLabel}>Confirmar nueva contraseña</label>
+              <input type="password" value={pwConfirmar} onChange={e=>setPwConfirmar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&cambiarContrasena()} style={{...inputStyle}} />
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={cambiarContrasena} style={{...btnPrimary,flex:1,textAlign:'center'}}>Cambiar</button>
+                <button onClick={()=>{setShowPassword(false);setPwActual('');setPwNueva('');setPwConfirmar('');setErrorPw('');}} style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{padding:'14px 22px',borderTop:'1px solid #EBEBEA',flexShrink:0}}>
+          <button onClick={onClose} style={{width:'100%',padding:'10px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui',color:'#6B7280'}}>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
