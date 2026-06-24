@@ -416,17 +416,21 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:9}}>
-            <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
-              {perfil?.nombre?.[0] || session.user.email[0].toUpperCase()}
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre || session.user.email}</div>
-              <div style={{display:'flex',gap:8,marginTop:1}}>
-                <button onClick={logout} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Cerrar sesión</button>
-                <button onClick={()=>setVista('cambiar-password')} style={{fontSize:11,color:'#FFFFFF',background:'none',border:'none',padding:0,cursor:'pointer',opacity:0.8}}>Contraseña</button>
+          <div style={{padding:'10px 12px',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
+            <button onClick={()=>setShowPerfilModal(true)}
+              style={{width:'100%',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.14)',borderRadius:8,padding:'9px 10px',cursor:'pointer',display:'flex',alignItems:'center',gap:9,fontFamily:'system-ui',marginBottom:6}}>
+              <div style={{width:30,height:30,borderRadius:'50%',background:socioColor(perfil?.nombre).bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:socioColor(perfil?.nombre).color,flexShrink:0}}>
+                {(perfil?.nombre_mostrado || perfil?.nombre)?.[0]?.toUpperCase() || session.user.email[0].toUpperCase()}
               </div>
-            </div>
+              <div style={{flex:1,minWidth:0,textAlign:'left'}}>
+                <div style={{fontSize:12,fontWeight:600,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.nombre_mostrado || perfil?.nombre || session.user.email}</div>
+                <div style={{fontSize:11,color:'rgba(255,255,255,0.65)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{perfil?.rol || session.user.email}</div>
+              </div>
+              <span style={{fontSize:13,flexShrink:0,opacity:0.7}}>⚙️</span>
+            </button>
+            <button onClick={logout} style={{width:'100%',fontSize:11,color:'rgba(255,255,255,0.6)',background:'none',border:'none',padding:'3px 0',cursor:'pointer',textAlign:'center',fontFamily:'system-ui'}}>
+              Cerrar sesión
+            </button>
           </div>
         </div>
       )}
