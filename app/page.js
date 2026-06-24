@@ -7311,7 +7311,8 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
 
   async function guardarTelefonoCliente(clienteId) {
     if (!editTelVal.trim()) return;
-    await supabase.from('clientes').update({ telefono: editTelVal.trim() }).eq('id', clienteId);
+    const { error } = await supabase.from('clientes').update({ telefono: editTelVal.trim() }).eq('id', clienteId);
+    if (error) { alert('Error al guardar teléfono: ' + error.message); return; }
     setEditandoTelId(null);
     setEditTelVal('');
     mostrarToast('Teléfono guardado ✓');
