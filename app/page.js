@@ -7445,6 +7445,8 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
   const [draftTexto, setDraftTexto] = useState(null);
   const [procesandoJurisprudencia, setProcesandoJurisprudencia] = useState(false);
   const jurisprudenciaPdfRef = useRef(null);
+  const [abogadosModal, setAbogadosModal] = useState([]);
+  const [matriculasAbogados, setMatriculasAbogados] = useState({});
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
