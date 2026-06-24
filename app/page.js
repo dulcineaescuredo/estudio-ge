@@ -7622,6 +7622,7 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
             jurisprudencia_extracto: generarForm.jurisprudencia_extracto,
             comentarios_adicionales: generarForm.comentarios_adicionales,
           } : null,
+          abogados_interponen: esDemanda ? generarForm.abogados_interponen : [],
         }),
       });
       const data = await res.json().catch(() => ({}));
