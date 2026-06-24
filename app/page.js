@@ -7303,7 +7303,8 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
 
   async function eliminar(id) {
     if (!confirm('¿Eliminar este contacto?')) return;
-    await supabase.from('contactos').delete().eq('id', id);
+    const { error } = await supabase.from('contactos').delete().eq('id', id);
+    if (error) { alert('Error al eliminar contacto: ' + error.message); return; }
     mostrarToast('Contacto eliminado');
     recargar();
   }
