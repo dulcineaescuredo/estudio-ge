@@ -7050,6 +7050,12 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
                       );
                     })}
                     {sugsPersona.length===0&&<div style={{padding:'9px 12px',fontSize:13,color:'#8a8a8a'}}>Sin resultados</div>}
+                    <div onMouseDown={e=>{e.preventDefault();setCcNombre(personaQ);setCrearContactoAbierto(true);setPersonaAbierto(false);}}
+                      style={{padding:'9px 12px',cursor:'pointer',fontSize:13,color:'#9B4F6A',fontWeight:600,borderTop:'1px solid #F0EFED',display:'flex',alignItems:'center',gap:6}}
+                      onMouseEnter={e=>e.currentTarget.style.background='#FBEAF0'}
+                      onMouseLeave={e=>e.currentTarget.style.background=''}>
+                      + Crear contacto{personaQ?` "${personaQ}"`:''}
+                    </div>
                   </div>
                 )}
               </div>
