@@ -6863,12 +6863,13 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
   }
 
   async function crearYSeleccionarContacto() {
-    if (!ccNombre.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!ccApellido.trim() && !ccNombrePila.trim()) { alert('El apellido o nombre es obligatorio'); return; }
     if (!perfil) return;
     setCcGuardando(true);
+    const nombreCombinado = [ccApellido.trim(), ccNombrePila.trim()].filter(Boolean).join(', ');
     const { data, error } = await supabase.from('contactos').insert({
       estudio_id: perfil.estudio_id,
-      nombre: ccNombre.trim(),
+      nombre: nombreCombinado,
       telefono: ccTelefono.trim() || null,
       rol: ccRol,
       rol_detalle: ccRol === 'Otro' ? (ccRolDetalle.trim() || null) : null,
@@ -6876,7 +6877,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
     setCcGuardando(false);
     if (error) { alert('Error al crear contacto: ' + error.message); return; }
     seleccionarPersona({ _id: data.id, _tipo: 'contacto', _nombre: data.nombre, _rol: data.rol === 'Otro' ? (data.rol_detalle || 'Otro') : data.rol, _telefono: data.telefono || '', _dni: '' });
-    setCcNombre(''); setCcTelefono(''); setCcRol('Abogado'); setCcRolDetalle('');
+    setCcApellido(''); setCcNombrePila(''); setCcTelefono(''); setCcRol('Abogado'); setCcRolDetalle('');
     setCrearContactoAbierto(false);
     recargar();
   }
