@@ -8134,6 +8134,8 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
 }
 
 function EditarPerfil({ perfil, setPerfil, session, onClose }) {
+  console.log('[EditarPerfil] render — perfil:', perfil?.id, 'session:', session?.user?.email);
+
   const [nombre, setNombre] = useState(perfil?.nombre || '');
   const [nombreMostrado, setNombreMostrado] = useState(perfil?.nombre_mostrado || '');
   const [telefono, setTelefono] = useState(perfil?.telefono || '');
@@ -8153,22 +8155,29 @@ function EditarPerfil({ perfil, setPerfil, session, onClose }) {
   const [errorPw, setErrorPw] = useState('');
 
   useEffect(() => {
+    console.log('[EditarPerfil] useEffect ejecutado — perfil.id:', perfil?.id);
     cargarMatriculas();
+    console.log('[EditarPerfil] antes de fetch jurisdicciones');
     fetch('/api/obtener-jurisdicciones')
-      .then(r => r.json())
+      .then(r => { console.log('[EditarPerfil] respuesta del fetch:', r.status, r.ok); return r.json(); })
       .then(data => {
+        console.log('[EditarPerfil] data:', data);
         console.log('[EditarPerfil] jurisdicciones cargadas:', data.jurisdicciones?.length, data.jurisdicciones);
         setJurisdicciones(data.jurisdicciones || []);
       })
-      .catch(err => console.error('[EditarPerfil] error cargando jurisdicciones:', err));
+      .catch(err => console.error('[EditarPerfil] error en fetch jurisdicciones:', err));
   }, []);
 
   async function cargarMatriculas() {
-    const { data } = await supabase
-      .from('matriculas_abogados')
-      .select('id, jurisdiccion_id, tomo, folio, jurisdicciones(nombre)')
-      .eq('abogado_id', perfil.id);
-    setMatriculas(data || []);
+    console.log('[EditarPerfil] cargarMatriculas — abogado_id:', perfil?.id);
+    if (!perfil?.id) { console.warn('[EditarPerfil] perfil.id no disponible, no se cargan matrículas'); return; }
+    const token = await (async () => { const { data: { session: s } } = await supabase.auth.getSession(); return s?.access_token; })();
+    const res = await fetch('/api/obtener-matriculas', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    console.log('[EditarPerfil] matrículas:', data);
+    setMatriculas(data.matriculas || []);
   }
 
   async function getToken() {
