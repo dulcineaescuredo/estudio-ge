@@ -7109,6 +7109,16 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
               </div>
             </div>
 
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Fecha y hora</div>
+              <input
+                type="datetime-local"
+                value={fechaLlamada}
+                onChange={e=>setFechaLlamada(e.target.value)}
+                style={{padding:'6px 10px',borderRadius:8,fontSize:13,border:'1px solid #DDDCDA',background:'#F7F6F3',fontFamily:'system-ui',outline:'none',cursor:'pointer'}}
+              />
+            </div>
+
             <div style={{marginBottom:10}}>
               <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Duración (opcional)</div>
               <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
