@@ -7272,7 +7272,7 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
     if (!nombre.trim()||!telefono.trim()) { alert('Nombre y teléfono son obligatorios'); return; }
     if (!perfil) return;
     setGuardando(true);
-    await supabase.from('contactos').insert({
+    const { error } = await supabase.from('contactos').insert({
       estudio_id: perfil.estudio_id,
       nombre: nombre.trim(),
       telefono: telefono.trim(),
@@ -7280,6 +7280,7 @@ function GestionContactos({ perfil, contactos, clientes, recargar }) {
       rol_detalle: rol==='Otro' ? (rolDetalle.trim()||null) : null,
     });
     setGuardando(false);
+    if (error) { alert('Error al guardar contacto: ' + error.message); return; }
     setFormAbierto(false);
     setNombre(''); setTelefono(''); setRol('Abogado'); setRolDetalle('');
     mostrarToast('Contacto guardado ✓');
