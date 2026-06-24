@@ -86,6 +86,20 @@ export async function POST(request) {
       expediente.fuero && `Fuero: ${expediente.fuero}`,
     ].filter(Boolean).join('\n');
 
+    let interponentesSeccion = '';
+    if (tipo === 'Demanda' && Array.isArray(abogados_interponen) && abogados_interponen.length > 0) {
+      const { data: abogadosData } = await supabase.from('perfiles').select('id, nombre, rol').in('id', abogados_interponen);
+      const { data: matriculasData } = await supabase.from('matriculas_abogados').select('abogado_id, tomo, folio, jurisdicciones(nombre)').in('abogado_id', abogados_interponen);
+      const lineas = (abogadosData || []).map(a => {
+        const mats = (matriculasData || []).filter(m => m.abogado_id === a.id);
+        const matTexto = mats.map(m => `${m.jurisdicciones?.nombre}: Tomo ${m.tomo}, Folio ${m.folio}`).join('; ');
+        return `- ${(a.nombre || '').toUpperCase()}, ${a.rol || 'abogado/a'}${matTexto ? ` (${matTexto})` : ''}`;
+      });
+      if (lineas.length > 0) {
+        interponentesSeccion = `## Interponen la demanda:\n${lineas.join('\n')}`;
+      }
+    }
+
     let hechosSeccion = '';
     if (tipo === 'Demanda' && instrucciones_demanda) {
       const d = instrucciones_demanda;
