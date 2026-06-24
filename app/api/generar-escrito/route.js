@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request) {
   try {
-    const { tipo, cliente_id, expediente_id, instrucciones, instrucciones_demanda } = await request.json();
+    const { tipo, cliente_id, expediente_id, instrucciones, instrucciones_demanda, abogados_interponen } = await request.json();
 
     if (!tipo || !cliente_id || !expediente_id) {
       return Response.json({ error: 'Faltan parámetros: tipo, cliente_id y expediente_id son requeridos' }, { status: 400 });
