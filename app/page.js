@@ -6906,6 +6906,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
     const insert = {
       estudio_id: '51cc9627-71d2-4cab-a3d5-c5490b3b3e4b',
       usuario_id: registradoPorId || perfil.id,
+      fecha: new Date(fechaLlamada).toISOString(),
       duracion_minutos: duracionFinal(),
       comentario: comentario.trim() || null,
       contacto_tipo: personaTipo,
@@ -6921,6 +6922,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
     setDuracionLibre('');
     setComentario('');
     setRegistradoPorId(perfil.id);
+    setFechaLlamada(datetimeLocalNow());
     cargar();
   }
 
