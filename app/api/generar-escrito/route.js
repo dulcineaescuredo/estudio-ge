@@ -125,7 +125,7 @@ export async function POST(request) {
     }
 
     const prompt = `Sos un asistente legal especializado en redacción de escritos judiciales argentinos. Tu tarea es redactar un escrito judicial de tipo "${tipo}" completo, listo para revisar y editar. No escribas un resumen ni un esquema: redactá el escrito en forma íntegra, con el encabezado, cuerpo y cierre correspondientes.
-${hechosSeccion ? `\n${hechosSeccion}\n` : ''}
+${hechosSeccion ? `\n${hechosSeccion}\n` : ''}${interponentesSeccion ? `\n${interponentesSeccion}\nLos interponentes mencionados arriba son los abogados que interponen esta demanda. Redactá la cláusula de interpone incluyendo sus nombres completos, roles, matrículas y jurisdicciones de forma que se lea natural en un escrito judicial.\n` : ''}
 Basate estrictamente en el estilo, la estructura y las convenciones que se observan en los siguientes ejemplos:
 
 ${ejemplosTexto}
