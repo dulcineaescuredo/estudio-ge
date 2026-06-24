@@ -7464,6 +7464,12 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
 
   useEffect(() => { cargar(); }, [perfil?.estudio_id]);
 
+  useEffect(() => {
+    if (!showGenerarModal || !perfil?.estudio_id) return;
+    supabase.from('perfiles').select('id, nombre, rol').eq('estudio_id', perfil.estudio_id).order('nombre')
+      .then(({ data }) => setAbogadosModal(data || []));
+  }, [showGenerarModal, perfil?.estudio_id]);
+
   async function extraerTexto(escrito_id, archivo_url) {
     setProcesandoIds(prev => new Set([...prev, escrito_id]));
     try {
