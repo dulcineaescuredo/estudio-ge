@@ -7066,7 +7066,10 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
             {!personaId && crearContactoAbierto && (
               <div style={{background:'#F7F6F3',border:'1px solid #EBEBEA',borderRadius:10,padding:16,marginBottom:12}}>
                 <div style={{fontSize:13,fontWeight:600,marginBottom:10,color:'#1A1A1A'}}>Nuevo contacto</div>
-                <input style={inputStyle} placeholder="Nombre *" value={ccNombre} onChange={e=>setCcNombre(e.target.value)} />
+                <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>Apellido *</label>
+                <input style={{...inputStyle,textTransform:'uppercase'}} placeholder="APELLIDO" value={ccApellido} onChange={e=>setCcApellido(e.target.value.toUpperCase())} />
+                <label style={{fontSize:11,color:'#4a4a4a',display:'block',marginBottom:3}}>Nombre</label>
+                <input style={{...inputStyle,textTransform:'uppercase'}} placeholder="NOMBRE" value={ccNombrePila} onChange={e=>setCcNombrePila(e.target.value.toUpperCase())} />
                 <input style={inputStyle} placeholder="Teléfono" value={ccTelefono} onChange={e=>setCcTelefono(e.target.value)} />
                 <div style={{fontSize:11,color:'#9B4F6A',fontWeight:600,marginBottom:7,textTransform:'uppercase',letterSpacing:'0.06em'}}>Rol</div>
                 <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
@@ -7080,7 +7083,7 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
                 {ccRol==='Otro'&&<input style={inputStyle} placeholder="Especificar rol..." value={ccRolDetalle} onChange={e=>setCcRolDetalle(e.target.value)} />}
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={crearYSeleccionarContacto} disabled={ccGuardando} style={{...btnPrimary,opacity:ccGuardando?0.5:1}}>{ccGuardando?'Guardando...':'Crear y seleccionar'}</button>
-                  <button onClick={()=>{setCrearContactoAbierto(false);setCcNombre('');setCcTelefono('');setCcRol('Abogado');setCcRolDetalle('');}}
+                  <button onClick={()=>{setCrearContactoAbierto(false);setCcApellido('');setCcNombrePila('');setCcTelefono('');setCcRol('Abogado');setCcRolDetalle('');}}
                     style={{padding:'9px 16px',borderRadius:8,fontSize:13,cursor:'pointer',border:'1px solid #DDDCDA',background:'#fff',fontFamily:'system-ui'}}>Cancelar</button>
                 </div>
               </div>
