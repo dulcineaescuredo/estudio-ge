@@ -7659,6 +7659,19 @@ function Pluma({ perfil, perfilesEstudio = [], clientes = [], expedientes = [] }
     }
   }
 
+  async function toggleAbogado(id) {
+    const yaSeleccionado = generarForm.abogados_interponen.includes(id);
+    if (yaSeleccionado) {
+      setGenerarForm(f => ({ ...f, abogados_interponen: f.abogados_interponen.filter(x => x !== id) }));
+    } else {
+      setGenerarForm(f => ({ ...f, abogados_interponen: [...f.abogados_interponen, id] }));
+      if (!matriculasAbogados[id]) {
+        const { data } = await supabase.from('matriculas_abogados').select('tomo, folio, jurisdicciones(nombre)').eq('abogado_id', id);
+        setMatriculasAbogados(prev => ({ ...prev, [id]: data || [] }));
+      }
+    }
+  }
+
   const archivosEnCarpeta = carpetaActual ? escritos.filter(e => e.tipo === carpetaActual) : [];
 
   const expedientesDelCliente = generarForm.cliente_id
