@@ -457,6 +457,14 @@ export default function Home() {
           agendaFiltros={agendaFiltros} setAgendaFiltros={setAgendaFiltros}
         />
       </div>
+      {showPerfilModal && (
+        <EditarPerfil
+          perfil={perfil}
+          setPerfil={setPerfil}
+          session={session}
+          onClose={() => setShowPerfilModal(false)}
+        />
+      )}
     </div>
   );
 }
