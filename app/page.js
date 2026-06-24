@@ -6808,7 +6808,8 @@ function Llamadas({ perfil, clientes, perfilesEstudio = [], contactos = [], reca
   const [editDurLibre, setEditDurLibre] = useState('');
   const [editComentario, setEditComentario] = useState('');
   const [crearContactoAbierto, setCrearContactoAbierto] = useState(false);
-  const [ccNombre, setCcNombre] = useState('');
+  const [ccApellido, setCcApellido] = useState('');
+  const [ccNombrePila, setCcNombrePila] = useState('');
   const [ccTelefono, setCcTelefono] = useState('');
   const [ccRol, setCcRol] = useState('Abogado');
   const [ccRolDetalle, setCcRolDetalle] = useState('');
