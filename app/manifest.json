@@ -1,0 +1,11 @@
+{
+  "name": "Estudio GE",
+  "short_name": "Estudio GE",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#9B4F6A",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}
