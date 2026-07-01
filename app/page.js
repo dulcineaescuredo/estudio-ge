@@ -8243,6 +8243,17 @@ function EditarPerfil({ perfil, setPerfil, session, onClose }) {
   const [errorMat, setErrorMat] = useState('');
   const [msgPw, setMsgPw] = useState('');
   const [errorPw, setErrorPw] = useState('');
+  const [pushSuscripto, setPushSuscripto] = useState(false);
+  const [pushCargando, setPushCargando] = useState(false);
+  const [pushMsg, setPushMsg] = useState('');
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(reg =>
+        reg.pushManager.getSubscription().then(sub => { if (sub) setPushSuscripto(true); })
+      ).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     console.log('[EditarPerfil] useEffect ejecutado — perfil.id:', perfil?.id);
