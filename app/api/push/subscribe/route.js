@@ -24,7 +24,7 @@ export async function POST(request) {
     const { data: perfil } = await supabase
       .from('perfiles')
       .select('id, estudio_id')
-      .eq('id', user.id)
+      .eq('usuario', user.id)
       .single();
 
     if (!perfil) return Response.json({ error: 'Perfil no encontrado' }, { status: 404 });
