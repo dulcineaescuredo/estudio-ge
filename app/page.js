@@ -8366,6 +8366,45 @@ function EditarPerfil({ perfil, setPerfil, session, onClose }) {
     }
   }
 
+  async function activarNotificaciones() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushMsg('Tu navegador no soporta notificaciones push.');
+      return;
+    }
+    setPushCargando(true);
+    setPushMsg('');
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        setPushMsg('Permiso de notificaciones denegado.');
+        setPushCargando(false);
+        return;
+      }
+      await navigator.serviceWorker.register('/sw.js');
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array('BPjMn9BCWxt1GR6q7SGhf_wgYQPyzXOVPFtjgf2Iou-AhS83TWDsKHYM_Xgz7Tn6cWEudd9eWSdybOg4IIq16Ic'),
+      });
+      const subJson = sub.toJSON();
+      const token = await getToken();
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ endpoint: subJson.endpoint, keys: subJson.keys }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setPushSuscripto(true);
+      } else {
+        setPushMsg(data.error || 'Error al guardar la suscripción.');
+      }
+    } catch (err) {
+      setPushMsg(err.message || 'Error al activar notificaciones.');
+    }
+    setPushCargando(false);
+  }
+
   const secLabel = { fontSize:11, fontWeight:700, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12, borderBottom:'1px solid #EBEBEA', paddingBottom:4, marginTop:4 };
   const fLabel = { fontSize:12, fontWeight:500, color:'#4a4a4a', display:'block', marginBottom:5 };
   const okBox = { background:'#EAF3DE', border:'1px solid #C0DD97', borderRadius:8, padding:'9px 12px', fontSize:13, color:'#27500A', marginBottom:12 };
