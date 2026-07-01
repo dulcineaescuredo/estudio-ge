@@ -8508,6 +8508,19 @@ function EditarPerfil({ perfil, setPerfil, session, onClose }) {
               </div>
             </div>
           )}
+
+          <div style={{...secLabel,marginTop:20}}>Notificaciones</div>
+          {pushMsg && <div style={errBox}>{pushMsg}</div>}
+          {pushSuscripto ? (
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',background:'#EAF3DE',border:'1px solid #C0DD97',borderRadius:8,fontSize:13,color:'#27500A'}}>
+              ✓ Notificaciones activadas en este dispositivo
+            </div>
+          ) : (
+            <button onClick={activarNotificaciones} disabled={pushCargando}
+              style={{fontSize:13,color:'#9B4F6A',background:'none',border:'1px solid #C68AA2',borderRadius:8,padding:'8px 14px',cursor:pushCargando?'default':'pointer',fontFamily:'system-ui',display:'flex',alignItems:'center',gap:6}}>
+              🔔 {pushCargando ? 'Activando...' : 'Activar notificaciones'}
+            </button>
+          )}
         </div>
 
         <div style={{padding:'14px 22px',borderTop:'1px solid #EBEBEA',flexShrink:0}}>
